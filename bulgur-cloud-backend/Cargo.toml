@@ -1,0 +1,49 @@
+[package]
+name = "bulgur-cloud"
+description = "Simple and delicious cloud storage and sharing."
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+default-run = "bulgur-cloud"
+
+[features]
+# Enabled only to generate types for the frontend
+generate_types = []
+
+[dependencies]
+# Server
+actix-web = "4.0"
+actix-cors = "0.6"
+actix-service = "2.0"
+actix-files = "0.6"
+actix-multipart = "0.4"
+sanitize-filename = "0.3"
+qstring = "0.7"
+futures = "0.3"
+tokio = { version = "1.17", features = ["full"] }
+chrono = "0.4"
+actix-governor = "0.3.0"
+# Auth
+lru_time_cache = "0.11"
+nanoid = "0.4"
+derive_more = "0.99"
+simple-secrecy = { path = "../simple-secrecy" }
+# Data serialization
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
+# Logging
+tracing = "0.1"
+tracing-unwrap = { version = "0.9", default-features = false }
+tracing-actix-web = "0.5"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-bunyan-formatter = "0.3"
+# Password hashing
+scrypt = { version = "0.10" }
+# For use as a CLI tool
+structopt = { version = "0.3" }
+rpassword = "6.0"
+# Error management
+thiserror = "1.0"
+anyhow = "1.0"
+# Can we limit this to only if `generate_types` is set?
+typescript-type-def = "0.4"

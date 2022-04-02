@@ -1,0 +1,2 @@
+[workspace]
+members = ["bulgur-cloud-backend", "simple-secrecy", "bulgur-cloud-frontend"]

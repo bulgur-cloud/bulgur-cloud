@@ -1,0 +1,31 @@
+{
+  "dendron.rootDir": ".",
+  "pasteImage.path": "${currentFileDir}/assets/images",
+  "pasteImage.prefix": "/",
+  "editor.snippetSuggestions": "inline",
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.suggest.showSnippets": true,
+  "editor.tabCompletion": "on",
+  "editor.formatOnType": true,
+  "peacock.color": "#69310B",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#974710",
+    "activityBar.activeBorder": "#12ad51",
+    "activityBar.background": "#974710",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#12ad51",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "sash.hoverBorder": "#974710",
+    "sideBar.border": "#974710",
+    "statusBar.background": "#69310b",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#974710",
+    "statusBarItem.remoteBackground": "#69310b",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#69310b",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#69310b99",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  }
+}
