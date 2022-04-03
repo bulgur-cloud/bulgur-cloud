@@ -20,12 +20,12 @@ export function runAsync(
 ) {
   fn().catch((error) => {
     console.error(error);
-    store.dispatch(errorSlice.actions.addError(
-      {
+    store.dispatch(
+      errorSlice.actions.addError({
         key: `${new Date().getTime()}`,
-        error
-      }
-    ));
+        error,
+      }),
+    );
     if (onError) onError(error);
   });
 }
@@ -51,7 +51,11 @@ function isPathTokenResponse(data: any): data is api.PathTokenResponse {
 }
 
 function isFolderEntry(data: any): data is api.FolderEntry {
-  return isBoolean(data?.is_file) && isString(data?.name) && Number.isInteger(data?.size);
+  return (
+    isBoolean(data?.is_file) &&
+    isString(data?.name) &&
+    Number.isInteger(data?.size)
+  );
 }
 
 function isFolderResults(data: any): data is api.FolderResults {
@@ -69,7 +73,11 @@ export function useClient() {
   const dispatch = useAppDispatch();
 
   async function isTokenValid(token: string, site: string) {
-    const response = await Fetch.head({ url: "/api/stats", site, authToken: token });
+    const response = await Fetch.head({
+      url: "/api/stats",
+      site,
+      authToken: token,
+    });
     return response?.response.ok;
   }
   async function login({
@@ -78,16 +86,18 @@ export function useClient() {
     site,
   }: {
     username: string;
-      password: string;
-      site: string;
+    password: string;
+    site: string;
   }) {
-    const out = await (await Fetch.post({
-      url: "/auth/login",
-      site,
-      data: { username, password },
-    }))?.json();
+    const out = await (
+      await Fetch.post({
+        url: "/auth/login",
+        site,
+        data: { username, password },
+      })
+    )?.json();
     if (!isLoginResponse(out)) return;
-    
+
     const { token } = out;
     await Persist.set(PERSIST_AUTH_KEY, { username, password, token, site });
     dispatch(authSlice.actions.login({ username, password, token, site }));
@@ -97,11 +107,13 @@ export function useClient() {
     dispatch(authSlice.actions.logout());
   }
   async function loadFolder(path: string) {
-    const out = await (await Fetch.get({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-    }))?.json();
+    const out = await (
+      await Fetch.get({
+        url: joinURL(STORAGE, path),
+        authToken: token,
+        site,
+      })
+    )?.json();
     if (!isFolderResults(out)) return;
     dispatch(
       storageSlice.actions.loadFolder({
@@ -111,41 +123,46 @@ export function useClient() {
     );
   }
   async function peekFolder(path: string) {
-    const out = await (await Fetch.get({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-    }))?.json();
+    const out = await (
+      await Fetch.get({
+        url: joinURL(STORAGE, path),
+        authToken: token,
+        site,
+      })
+    )?.json();
     if (!isFolderResults(out)) return;
     return out;
   }
   async function getPathToken(path: string) {
     const data: api.StorageAction = {
-      action: "MakePathToken"
+      action: "MakePathToken",
     };
-    const out = await (await Fetch.post({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-      data,
-    }))?.json();
+    const out = await (
+      await Fetch.post({
+        url: joinURL(STORAGE, path),
+        authToken: token,
+        site,
+        data,
+      })
+    )?.json();
     if (!isPathTokenResponse(out)) return;
     return out.token;
   }
-  async function rename(from: string, to: string) {
-    const data: api.StorageAction = {
-      action: "Move",
-      new_path: to,
-    };
-    const response = await Fetch.post({
-      url: joinURL(STORAGE, from),
-      authToken: token,
-      site,
-      data
-    });
-    if (response?.response.ok) {
-      await loadFolder(currentPath);
+  async function rename(moves: { from: string; to: string }[]) {
+    for (const { from, to } of moves) {
+      const data: api.StorageAction = {
+        action: "Move",
+        new_path: to,
+      };
+      const response = await Fetch.post({
+        url: joinURL(STORAGE, from),
+        authToken: token,
+        site,
+        data,
+      });
+      if (!response?.response.ok) throw await response?.json();
     }
+    await loadFolder(currentPath);
   }
   async function deletePath(path: string) {
     const response = await Fetch.delete({
@@ -161,7 +178,7 @@ export function useClient() {
     const uploadForm = new FormData();
     files.map((file) => {
       uploadForm.append(file.name, file);
-    });  
+    });
 
     const response = await Fetch.put({
       url: joinURL(STORAGE, path),
@@ -175,7 +192,7 @@ export function useClient() {
   }
   async function createFolder(path: string) {
     const data: api.StorageAction = {
-      action: "CreateFolder"
+      action: "CreateFolder",
     };
     const response = await Fetch.post({
       url: joinURL(STORAGE, path),

@@ -27,5 +27,6 @@
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#69310b99",
     "titleBar.inactiveForeground": "#e7e7e799"
-  }
+  },
+  "editor.formatOnSave": true
 }

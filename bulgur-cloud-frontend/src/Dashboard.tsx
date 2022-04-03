@@ -1,7 +1,10 @@
 import {
   Center,
+  CloseIcon,
   HStack,
   Icon,
+  IconButton,
+  Spacer,
   Text,
   VStack,
 } from "native-base";
@@ -9,12 +12,11 @@ import React, { useEffect } from "react";
 import { runAsync, useClient } from "./client";
 import { FullPageLoading } from "./Loading";
 import { File } from "./storage/File";
-import { useAppSelector } from "./store";
+import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
-
 
 function StorageItem() {
   const isFolder = useAppSelector((state) => state.storage.is_folder);
@@ -94,11 +96,42 @@ export function Dashboard() {
           borderBottomWidth={2}
         >
           <BackButton />
-          <FillSpacer />
+          <MiddleSection />
           <Text>{username}</Text>
         </HStack>
         <StorageItem />
       </VStack>
     </Center>
+  );
+}
+
+function MiddleSection() {
+  const dispatch = useAppDispatch();
+  const numMarkedForMove = useAppSelector(
+    (state) => Object.keys(state.storage.markedForMove).length,
+  );
+
+  if (numMarkedForMove === 0) return <FillSpacer />;
+  return (
+    <FillSpacer>
+      <Center>
+        <HStack space={2}>
+          {numMarkedForMove === 1 ? (
+            <Text>{numMarkedForMove} item is marked to be moved</Text>
+          ) : (
+            <Text>{numMarkedForMove} items are marked to be moved</Text>
+          )}
+          <Spacer />
+          <IconButton
+            variant="unstyled"
+            accessibilityLabel="Dismiss error"
+            onPress={() => {
+              dispatch(storageSlice.actions.clearMarksForMove());
+            }}
+            icon={<CloseIcon size="2" color="darkText" />}
+          />
+        </HStack>
+      </Center>
+    </FillSpacer>
   );
 }

@@ -14,8 +14,8 @@ import {
 import { Platform } from "react-native";
 import { runAsync, useClient } from "./client";
 import { ERR_NOT_IMPLEMENTED } from "./error";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { useAppSelector } from "./store";
+import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { joinURL } from "./fetch";
 
 function selectFiles(): Promise<null | File[]> {
@@ -93,7 +93,12 @@ export function CreateNewDirectory() {
           setCreateNewFolderModal(true);
         }}
       ></Fab>
-      <CreateNewFolderModal isOpen={showCreateNewFolderModal} onClose={() => { setCreateNewFolderModal(false) }} />
+      <CreateNewFolderModal
+        isOpen={showCreateNewFolderModal}
+        onClose={() => {
+          setCreateNewFolderModal(false);
+        }}
+      />
     </View>
   );
 }
@@ -154,5 +159,45 @@ export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
         </Modal.Body>
       </Modal.Content>
     </Modal>
+  );
+}
+
+export function MoveItems() {
+  const dispatch = useAppDispatch();
+  const markedForMove = useAppSelector((state) => state.storage.markedForMove);
+  const currentPath = useAppSelector((store) => store.storage.currentPath);
+  const { rename } = useClient();
+
+  if (Object.keys(markedForMove).length === 0) return <View />;
+
+  return (
+    <View>
+      <Fab
+        placement="bottom-right"
+        right={48}
+        accessibilityLabel="move here"
+        icon={
+          <Icon
+            as={MaterialCommunityIcons}
+            name="select-place"
+            height="100%"
+            size={4}
+          />
+        }
+        onPress={() => {
+          runAsync(async () => {
+            rename(
+              Object.entries(markedForMove).map(([name, from]) => {
+                return {
+                  from,
+                  to: joinURL(currentPath, name),
+                };
+              }),
+            );
+            dispatch(storageSlice.actions.clearMarksForMove());
+          });
+        }}
+      ></Fab>
+    </View>
   );
 }

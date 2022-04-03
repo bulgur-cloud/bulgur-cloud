@@ -1,7 +1,7 @@
-import { Center, Text, VStack } from "native-base";
+import { Center, Text, View, VStack } from "native-base";
 import React from "react";
 import { useAppSelector } from "../store";
-import { CreateNewDirectory, UploadButton } from "../Upload";
+import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
 export function FolderList() {
@@ -11,6 +11,7 @@ export function FolderList() {
     return (
       <Center>
         <Text color="darkText">This folder is empty.</Text>
+        <FABs />
       </Center>
     );
   }
@@ -20,8 +21,17 @@ export function FolderList() {
       {contents.map((item, index) => (
         <FolderListEntry item={item} key={index} />
       ))}
+      <FABs />
+    </VStack>
+  );
+}
+
+function FABs() {
+  return (
+    <View>
       <UploadButton />
       <CreateNewDirectory />
-    </VStack>
+      <MoveItems />
+    </View>
   );
 }

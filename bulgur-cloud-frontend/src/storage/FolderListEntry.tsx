@@ -31,6 +31,12 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
   const dispatch = useAppDispatch();
   const { loadFolder } = useClient();
   const currentPath = useAppSelector((state) => state.storage.currentPath);
+  const isMarkedForMove = useAppSelector(
+    (state) =>
+      state.storage.markedForMove[item.name] !== undefined &&
+      state.storage.markedForMove[item.name] ===
+        joinURL(currentPath, item.name),
+  );
 
   function onPressHandler(item: api.FolderEntry) {
     return () => {
@@ -58,6 +64,7 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
         as={FontAwesome5}
         name={itemIconType({ isFile: item.is_file, itemName: item.name })}
         color="darkText"
+        opacity={isMarkedForMove ? 20 : 100}
         onPress={onPressHandler(item)}
       />
       <Text onPress={onPressHandler(item)}>{item.name}</Text>
@@ -78,7 +85,12 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
         height="100%"
         size={4}
         onPress={() => {
-          setRenameModelOpen(true);
+          dispatch(
+            storageSlice.actions.markForMove({
+              name: item.name,
+              path: joinURL(currentPath, item.name),
+            }),
+          );
         }}
       />
       <Spacer flexGrow={0} />

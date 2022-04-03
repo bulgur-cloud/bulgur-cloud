@@ -52,6 +52,8 @@ export type StorageState = {
   contents: api.FolderEntry[];
   is_folder: boolean;
   state: LoadState;
+  /** Maps item names to full paths, for items that have been marked to be moved. */
+  markedForMove: { [name: string]: string };
 };
 
 const initialStorageState: StorageState = {
@@ -59,11 +61,11 @@ const initialStorageState: StorageState = {
   contents: [],
   is_folder: true,
   state: "uninitialized",
+  markedForMove: {},
 };
 
 export type LoadFolderPayload = api.FolderResults & { currentPath: string };
 export type LoadFilePayload = api.FolderEntry & { currentPath: string };
-
 
 export const storageSlice = createSlice({
   name: "storage",
@@ -84,13 +86,21 @@ export const storageSlice = createSlice({
     markLoading: (state) => {
       state.state = "loading";
     },
+    markForMove: (
+      state,
+      action: { payload: { name: string; path: string } },
+    ) => {
+      state.markedForMove[action.payload.name] = action.payload.path;
+    },
+    clearMarksForMove: (state) => {
+      state.markedForMove = {};
+    },
   },
 });
 
-
 type ErrorState = {
-  errors: {[key: string]: any}
-}
+  errors: { [key: string]: any };
+};
 
 const initialErrorsState: ErrorState = {
   errors: {},
@@ -100,13 +110,13 @@ export const errorSlice = createSlice({
   name: "error",
   initialState: initialErrorsState,
   reducers: {
-    addError: (state, action: { payload: {key: string, error: any} }) => {
+    addError: (state, action: { payload: { key: string; error: any } }) => {
       state.errors[action.payload.key] = action.payload.error;
     },
-    clearError: (state, action: { payload: string}) => {
+    clearError: (state, action: { payload: string }) => {
       delete state.errors[action.payload];
-    }
-  }
+    },
+  },
 });
 
 export const store = configureStore({
