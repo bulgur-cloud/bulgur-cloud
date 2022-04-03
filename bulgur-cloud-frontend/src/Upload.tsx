@@ -93,7 +93,7 @@ export function CreateNewDirectory() {
           setCreateNewFolderModal(true);
         }}
       ></Fab>
-      <CreateNewFolderModal isOpen={showCreateNewFolderModal} />
+      <CreateNewFolderModal isOpen={showCreateNewFolderModal} onClose={() => { setCreateNewFolderModal(false) }} />
     </View>
   );
 }
@@ -101,7 +101,7 @@ export function CreateNewDirectory() {
 export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
   const [newName, setNewName] = useState("");
   const currentPath = useAppSelector((state) => state.storage.currentPath);
-  const { upload } = useClient();
+  const { createFolder } = useClient();
 
   return (
     <Modal {...props}>
@@ -126,14 +126,14 @@ export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
                   onPress={() => {
                     runAsync(async () => {
                       // An empty upload will just create the folder in the path
-                      await upload(joinURL(currentPath, newName), []);
+                      await createFolder(joinURL(currentPath, newName));
                       props.onClose();
                     });
                   }}
                   bgColor={"primary.800"}
                 >
                   <Text color={"lightText"} fontWeight={"semibold"}>
-                    Rename
+                    Create
                   </Text>
                 </Button>
                 <Button

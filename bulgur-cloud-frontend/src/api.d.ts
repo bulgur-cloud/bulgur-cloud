@@ -7,5 +7,5 @@ export type LoginResponse={"token":api.Token;"valid_for_seconds":api.U64;};
 export type FolderEntry={"is_file":boolean;"name":string;"size":api.U64;};
 export type FolderResults={"entries":(api.FolderEntry)[];};
 export type PathTokenResponse={"token":api.Token;};
-export type StorageAction=({"action":"MakePathToken";}|({"action":"Move";}&{"new_path":string;}));
+export type StorageAction=({"action":"MakePathToken";}|({"action":"Move";}&{"new_path":string;})|{"action":"CreateFolder";});
 }

@@ -136,6 +136,10 @@ async fn get_storage(
     }
 }
 
+fn empty_ok_response() -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
+
 #[tracing::instrument]
 #[delete("/{store}/{path:.*}")]
 async fn delete_storage(
@@ -153,7 +157,7 @@ async fn delete_storage(
         tracing::debug!("Deleting folder {:?}", store_path);
         fs::remove_dir_all(&store_path).await?;
     }
-    Ok(HttpResponse::Ok().finish())
+    Ok(empty_ok_response())
 }
 
 #[tracing::instrument]
@@ -179,10 +183,15 @@ async fn head_storage(
     .await;
 
     match check {
-        Ok(_) => HttpResponse::Ok().finish(),
+        Ok(_) => empty_ok_response(),
         Err(StorageError::NotAuthorized) => HttpResponse::Unauthorized().finish(),
         Err(_) => HttpResponse::NotFound().finish(),
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct PutStoragePayload {
+    pub files_written: u32,
 }
 
 #[put("/{store}/{path:.*}")]
@@ -191,7 +200,7 @@ async fn put_storage(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
     mut payload: Multipart,
-) -> Result<HttpResponse, StorageError> {
+) -> Result<web::Json<PutStoragePayload>, StorageError> {
     let (store, path) = params.as_ref();
     let mut store_path = get_authorized_path(&authorized, store)?;
     store_path.push(path);
@@ -207,7 +216,16 @@ async fn put_storage(
         }
     })?;
 
+    match write_files(&mut payload, &store_path).await {
+        Ok(files_written) => Ok(web::Json(PutStoragePayload { files_written })),
+        Err(err) => Err(err),
+    }
+}
+
+async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, StorageError> {
+    let mut files_written: u32 = 0;
     while let Some(mut field) = payload.try_next().await? {
+        files_written += 1;
         let content_disposition = field.content_disposition();
 
         let filename = content_disposition
@@ -222,8 +240,7 @@ async fn put_storage(
             file.write_all(&chunk).await?;
         }
     }
-
-    Ok(HttpResponse::Ok().finish())
+    Ok(files_written)
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -232,6 +249,7 @@ async fn put_storage(
 pub enum StorageAction {
     MakePathToken,
     Move { new_path: String },
+    CreateFolder,
 }
 
 #[post("/{store}/{path:.*}")]
@@ -253,8 +271,12 @@ async fn post_storage(
             let mut to_store_path = get_authorized_path(&authorized, to_store)?;
             to_store_path.push(to_path);
             fs::rename(store_path, to_store_path).await?;
-            Ok(HttpResponse::Ok().finish())
+            Ok(empty_ok_response())
         },
+        StorageAction::CreateFolder => {
+            tokio::fs::create_dir(&store_path).await?;
+            Ok(empty_ok_response())
+        }
     }
 }
 

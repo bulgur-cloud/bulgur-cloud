@@ -173,6 +173,20 @@ export function useClient() {
       await loadFolder(currentPath);
     }
   }
+  async function createFolder(path: string) {
+    const data: api.StorageAction = {
+      action: "CreateFolder"
+    };
+    const response = await Fetch.post({
+      url: joinURL(STORAGE, path),
+      authToken: token,
+      site,
+      data,
+    });
+    if (response?.response.ok) {
+      await loadFolder(currentPath);
+    }
+  }
 
   useEffect(() => {
     if (state === "uninitialized") {
@@ -215,5 +229,6 @@ export function useClient() {
     deletePath,
     rename,
     upload,
+    createFolder,
   };
 }
