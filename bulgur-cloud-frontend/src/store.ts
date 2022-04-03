@@ -92,6 +92,13 @@ export const storageSlice = createSlice({
     ) => {
       state.markedForMove[action.payload.name] = action.payload.path;
     },
+    unmarkForMove: (
+      state,
+      action: { payload: { name: string; path: string } },
+    ) => {
+      if (state.markedForMove[action.payload.name] === action.payload.path)
+        delete state.markedForMove[action.payload.name];
+    },
     clearMarksForMove: (state) => {
       state.markedForMove = {};
     },

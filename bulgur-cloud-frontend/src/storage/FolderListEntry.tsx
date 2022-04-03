@@ -67,7 +67,9 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
         opacity={isMarkedForMove ? 20 : 100}
         onPress={onPressHandler(item)}
       />
-      <Text onPress={onPressHandler(item)}>{item.name}</Text>
+      <Text opacity={isMarkedForMove ? 20 : 100} onPress={onPressHandler(item)}>
+        {item.name}
+      </Text>
       <FillSpacer />
       <Icon
         as={FontAwesome5}
@@ -85,12 +87,21 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
         height="100%"
         size={4}
         onPress={() => {
-          dispatch(
-            storageSlice.actions.markForMove({
-              name: item.name,
-              path: joinURL(currentPath, item.name),
-            }),
-          );
+          if (isMarkedForMove) {
+            dispatch(
+              storageSlice.actions.unmarkForMove({
+                name: item.name,
+                path: joinURL(currentPath, item.name),
+              }),
+            );
+          } else {
+            dispatch(
+              storageSlice.actions.markForMove({
+                name: item.name,
+                path: joinURL(currentPath, item.name),
+              }),
+            );
+          }
         }}
       />
       <Spacer flexGrow={0} />
