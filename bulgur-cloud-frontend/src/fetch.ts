@@ -36,7 +36,10 @@ export type Request = {
   pathToken?: string;
   authToken?: string;
 };
-export type RequestWithData<Data> = Request & { data?: Data; formData?: FormData };
+export type RequestWithData<Data> = Request & {
+  data?: Data;
+  formData?: FormData;
+};
 
 export class Fetch {
   private static async request<Data = unknown | undefined>({
@@ -76,7 +79,7 @@ export class Fetch {
       if (formData) {
         body = formData;
       }
-      
+
       const out = await fetch(url, {
         method,
         body,

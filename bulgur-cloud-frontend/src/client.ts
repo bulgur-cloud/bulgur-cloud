@@ -42,10 +42,6 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
   );
 }
 
-function isLoginResponse(data: any): data is api.LoginResponse {
-  return isString(data?.token) && Number.isInteger(data?.valid_for_seconds);
-}
-
 function isPathTokenResponse(data: any): data is api.PathTokenResponse {
   return isString(data?.token);
 }
