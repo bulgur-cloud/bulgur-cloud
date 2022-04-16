@@ -1,0 +1,35 @@
+html {
+  background-color: #FFF;
+  color: #111;
+}
+
+body {
+  max-width: 600px;
+  font-family: serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+footer {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  margin-top: 2rem;
+}
+
+.login input {
+  display: block;
+  margin: 1rem auto;
+}
+
+input.button {
+  background-color: #111;
+  color: #FFF;
+  border-radius: 10px;
+  padding: 0.2rem 1rem;
+}

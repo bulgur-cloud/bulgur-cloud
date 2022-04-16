@@ -6,6 +6,7 @@ pub mod auth_middleware;
 pub mod cli;
 pub mod error;
 pub mod folder;
+pub mod meta;
 pub mod state;
 pub mod storage;
-pub mod meta;
+pub mod pages;
