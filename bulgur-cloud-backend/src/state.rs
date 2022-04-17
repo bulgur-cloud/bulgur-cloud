@@ -32,6 +32,11 @@ impl Token {
     pub fn new() -> Token {
         Token(nanoid!())
     }
+
+    /// Drop the token, and reveal the secret inside.
+    pub fn reveal(self) -> String {
+        self.0
+    }
 }
 
 #[derive(Serialize)]
@@ -63,7 +68,6 @@ impl PathTokenCache {
     }
 }
 
-
 pub struct AppState {
     pub started_at: chrono::DateTime<chrono::Local>,
     /// Maps tokens to usernames
@@ -91,7 +95,6 @@ impl fmt::Debug for AppState {
             .finish()
     }
 }
-
 
 #[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]
 pub enum Authorized {

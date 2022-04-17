@@ -1,8 +1,21 @@
 {% extends "base.html" %} {% block main %}
-<header>{{ username }}</header>
+<header>
+  <span class="username">{{ username }}</span>
+  <form class="logout" name="logout" method="post" action="/logout">
+    <input type="submit" value="Logout" />
+  </form>
+</header>
 <main class="folder-list">
-  {% for item in folder_list %}
-  <p>{{ item }}</p>
-  {% endfor %}
+  <ul>
+    {% for item in folder_list %}
+    <li class="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}">
+      <img
+        aria-label="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}"
+        src="{%- if item.is_file -%} /assets/file.svg {%- else -%} /assets/folder.svg {%- endif -%}"
+      />
+      <a href="/page/{{- path -}}/{{- item.name -}}">{{- item.name -}}</a>
+    </li>
+    {% endfor %}
+  </ul>
 </main>
 {% endblock %}

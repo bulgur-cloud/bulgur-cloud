@@ -4,7 +4,10 @@ use bulgur_cloud::{
     cli::{cli_command, Opt},
     folder,
     meta::{get_stats, head_stats, is_bulgur_cloud},
-    pages::{assets_style, page_folder_list, page_login_get, page_login_post},
+    pages::{
+        assets_file_svg, assets_folder_svg, assets_style, page_folder_list, page_login_get,
+        page_login_post, page_logout,
+    },
     state::{AppState, PathTokenCache, TokenCache},
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
@@ -123,11 +126,18 @@ async fn main() -> anyhow::Result<()> {
                     .service(head_storage)
                     .service(post_storage)
                     .service(delete_storage);
+                // Basic HTML scopes are for the javascript-free basic interface.
+                let authenticated_basic_html_scope = web::scope("/page")
+                    .wrap(storage_guard)
+                    .service(page_folder_list);
                 let basic_html_scope = web::scope("")
                     .service(page_login_get)
                     .service(page_login_post)
-                    .service(page_folder_list)
-                    .service(assets_style);
+                    .service(page_logout)
+                    .service(authenticated_basic_html_scope)
+                    .service(assets_style)
+                    .service(assets_file_svg)
+                    .service(assets_folder_svg);
                 // Build the app with all these scopes, and add middleware for CORS and tracing
                 App::new()
                     .wrap(TracingLogger::default())
