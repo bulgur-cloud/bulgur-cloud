@@ -1,0 +1,71 @@
+html {
+  background-color: #FFF;
+  color: #111;
+}
+
+body {
+  max-width: 600px;
+  font-family: serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+footer {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  margin-top: 2rem;
+}
+
+.login input {
+  display: block;
+  margin: 1rem auto;
+}
+
+input.button {
+  background-color: #111;
+  color: #FFF;
+  border-radius: 10px;
+  padding: 0.2rem 1rem;
+}
+
+header {
+  border-bottom: 1px #111 solid;
+  padding-bottom: .5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.logout {
+  display: inline;
+}
+
+.logout input {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.folder-list {
+  align-self: flex-start;
+}
+
+.folder-list li {
+  margin: .5rem 0;
+  padding-left: 2rem;
+  list-style: none;
+}
+
+.folder-list li img {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 1rem;
+}

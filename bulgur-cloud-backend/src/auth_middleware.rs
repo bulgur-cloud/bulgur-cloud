@@ -61,7 +61,10 @@ where
         let (request, payload) = req.into_parts();
         let service = self.service.clone();
 
-        let user_token = get_token_from_header(&request);
+        // The user token could be either in the header or the cookie, we allow both.
+        let user_token =
+            get_token_from_header(&request).or_else(|| get_token_from_cookie(&request));
+        // Path tokens are part of the query path.
         let path_token = if self.allow_path_tokens {
             get_token_from_query(&request)
         } else {
@@ -96,7 +99,7 @@ enum AuthMiddlewareError {
 }
 type AuthMiddlewareResult<T> = std::result::Result<T, AuthMiddlewareError>;
 
-#[tracing::instrument(skip(state), level="trace")]
+#[tracing::instrument(skip(state), level = "trace")]
 /// If the user token is valid, returns the user. If user token is missing or is invalid, then tries the path token.
 /// If the path token is valid for the given path, then returns Either::Right.
 /// If the path token is missing or invalid too, then returns `AuthMiddlewareError.TokenMissing`.
@@ -125,8 +128,9 @@ async fn verify_auth(
         known_token.map(|known_token| known_token.eq(&path_token))
     } else {
         None
-    }).unwrap_or(false);
-    
+    })
+    .unwrap_or(false);
+
     if let Some(user) = user {
         if path_authorized {
             tracing::debug!("Authorized path and user");
@@ -151,6 +155,16 @@ fn get_token_from_header(request: &HttpRequest) -> Option<Token> {
         if let Ok(token) = token_str {
             return Some(Token::read(token));
         }
+    }
+    None
+}
+
+pub static AUTH_COOKIE_NAME: &'static str = "bulgur-cloud-auth";
+
+fn get_token_from_cookie(request: &HttpRequest) -> Option<Token> {
+    let header_token = request.cookie(AUTH_COOKIE_NAME);
+    if let Some(token) = header_token {
+        return Some(Token::read(token.value()));
     }
     None
 }
