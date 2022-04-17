@@ -3,7 +3,7 @@ name = "bulgur-cloud"
 description = "Simple and delicious cloud storage and sharing."
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
+license = "AGPL-3.0-or-later"
 default-run = "bulgur-cloud"
 
 [features]

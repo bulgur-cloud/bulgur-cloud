@@ -3,11 +3,13 @@ name = "bulgur-cloud-frontend"
 description = "Simple and delicious cloud storage and sharing."
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
+license = "agpl-3.0-or-later"
 
 [dependencies]
 typescript-type-def = "0.4.0"
-bulgur-cloud = { path = "../bulgur-cloud-backend", features = ["generate_types"] }
+bulgur-cloud = { path = "../bulgur-cloud-backend", features = [
+  "generate_types",
+] }
 
 [[bin]]
 name = "generate_types"
