@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Center, Text, Image, Link, VStack } from "native-base";
-import {
-  useAppSelector,
-} from "../store";
+import { useAppSelector } from "../store";
 import { runAsync, useClient } from "../client";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
@@ -23,14 +21,14 @@ export const PDF_EXTENSIONS: ReadonlySet<string> = new Set(["pdf"]);
 
 function supportedVideoExtensions() {
   switch (Platform.OS) {
-  case "web":
-    return ["mp4", "webm" ];
-  case "android":
-    return ["mp4", "ogg", "ogv", "m4a", "webm", "mkv", "flv"];
-  case "ios":
-    return ["mp4", "m4v", "mov"];
-  default:
-    return [];
+    case "web":
+      return ["mp4", "webm"];
+    case "android":
+      return ["mp4", "ogg", "ogv", "m4a", "webm", "mkv", "flv"];
+    case "ios":
+      return ["mp4", "m4v", "mov"];
+    default:
+      return [];
   }
 }
 
@@ -76,7 +74,15 @@ export function VideoPreview(opts: FilePreviewOpts) {
   const { fullPath } = opts;
 
   if (Platform.OS === "web") {
-    return <video controls muted={false} preload="metadata" src={fullPath} style={{width: "100%", height: "auto"}} />;
+    return (
+      <video
+        controls
+        muted={false}
+        preload="metadata"
+        src={fullPath}
+        style={{ width: "100%", height: "auto" }}
+      />
+    );
   }
 
   return <NoPreview />;
@@ -108,7 +114,7 @@ export function File() {
   useEffect(() => {
     if (pathToken === undefined) {
       runAsync(async () => {
-        const token = await api.getPathToken("/" + currentPath);
+        const token = await api.pathToken.run("/" + currentPath);
         setPathToken(token);
       });
     }

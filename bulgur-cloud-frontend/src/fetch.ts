@@ -36,10 +36,19 @@ export type Request = {
   pathToken?: string;
   authToken?: string;
 };
-export type RequestWithData<Data> = Request & { data?: Data; formData?: FormData };
+export type RequestWithData<Data> = Request & {
+  data?: Data;
+  formData?: FormData;
+};
+export type RequestBase<Data> = {
+  method: string;
+} & Request & { data?: Data; formData?: FormData };
+export type ResponseBase =
+  | { response: Response; json: () => unknown }
+  | undefined;
 
 export class Fetch {
-  private static async request<Data = unknown | undefined>({
+  public static async request<Data = unknown | undefined>({
     site,
     url,
     method,
@@ -47,9 +56,7 @@ export class Fetch {
     pathToken,
     data,
     formData,
-  }: {
-    method: string;
-  } & Request & { data?: Data; formData?: FormData }) {
+  }: RequestBase<Data>): Promise<ResponseBase> {
     const headers = new Headers();
     if (data) {
       headers.append("Content-Type", "application/json");
@@ -76,7 +83,7 @@ export class Fetch {
       if (formData) {
         body = formData;
       }
-      
+
       const out = await fetch(url, {
         method,
         body,

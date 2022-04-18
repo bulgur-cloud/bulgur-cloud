@@ -69,7 +69,7 @@ export function UploadButton() {
           }
           console.log(`Picked ${files.length} files`);
 
-          upload(currentPath, files);
+          upload.run(currentPath, files);
         });
       }}
     ></Fab>
@@ -131,7 +131,7 @@ export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
                   onPress={() => {
                     runAsync(async () => {
                       // An empty upload will just create the folder in the path
-                      await createFolder(joinURL(currentPath, newName));
+                      await createFolder.run(joinURL(currentPath, newName));
                       props.onClose();
                     });
                   }}
@@ -186,7 +186,7 @@ export function MoveItems() {
         }
         onPress={() => {
           runAsync(async () => {
-            rename(
+            rename.run(
               Object.entries(markedForMove).map(([name, from]) => {
                 return {
                   from,

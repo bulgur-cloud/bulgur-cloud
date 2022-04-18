@@ -49,7 +49,9 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
           }),
         );
       } else {
-        runAsync(async () => loadFolder(joinURL(currentPath, item.name)));
+        runAsync(async () => {
+          await loadFolder.run(joinURL(currentPath, item.name));
+        });
       }
     };
   }

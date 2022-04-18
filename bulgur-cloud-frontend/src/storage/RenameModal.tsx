@@ -41,7 +41,7 @@ export function RenameModal(
                   maxWidth={48}
                   onPress={() => {
                     runAsync(async () => {
-                      await rename([
+                      await rename.run([
                         {
                           from: joinURL(currentPath, props.itemName),
                           to: joinURL(currentPath, newName),

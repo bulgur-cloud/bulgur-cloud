@@ -4,7 +4,6 @@ import {
   authSlice,
   AuthState,
   errorSlice,
-  storageSlice,
   store,
   useAppDispatch,
   useAppSelector,
@@ -12,7 +11,15 @@ import {
 import { useEffect } from "react";
 import { Persist } from "./persist";
 import { isBoolean, isString } from "./typeUtils";
-import { Fetch, joinURL } from "./fetch";
+import { CreateFolder } from "./client/createFolder";
+import { DeletePath } from "./client/deletePath";
+import { LoadFolder } from "./client/loadFolder";
+import { Login } from "./client/login";
+import { Logout } from "./client/logout";
+import { PathToken } from "./client/pathToken";
+import { Rename } from "./client/rename";
+import { TokenCheck } from "./client/tokenCheck";
+import { Upload } from "./client/upload";
 
 export function runAsync(
   fn: () => Promise<void>,
@@ -42,10 +49,6 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
   );
 }
 
-function isLoginResponse(data: any): data is api.LoginResponse {
-  return isString(data?.token) && Number.isInteger(data?.valid_for_seconds);
-}
-
 function isPathTokenResponse(data: any): data is api.PathTokenResponse {
   return isString(data?.token);
 }
@@ -69,141 +72,18 @@ export function useClient() {
   const { state, username, token, site } = useAppSelector(
     (state) => state.auth,
   );
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
   const dispatch = useAppDispatch();
 
-  async function isTokenValid(token: string, site: string) {
-    const response = await Fetch.head({
-      url: "/api/stats",
-      site,
-      authToken: token,
-    });
-    return response?.response.ok;
-  }
-  async function login({
-    username,
-    password,
-    site,
-  }: {
-    username: string;
-    password: string;
-    site: string;
-  }) {
-    const out = await (
-      await Fetch.post({
-        url: "/auth/login",
-        site,
-        data: { username, password },
-      })
-    )?.json();
-    if (!isLoginResponse(out)) return;
-
-    const { token } = out;
-    await Persist.set(PERSIST_AUTH_KEY, { username, password, token, site });
-    dispatch(authSlice.actions.login({ username, password, token, site }));
-  }
-  async function logout() {
-    await Persist.delete(PERSIST_AUTH_KEY);
-    dispatch(authSlice.actions.logout());
-  }
-  async function loadFolder(path: string) {
-    const out = await (
-      await Fetch.get({
-        url: joinURL(STORAGE, path),
-        authToken: token,
-        site,
-      })
-    )?.json();
-    if (!isFolderResults(out)) return;
-    dispatch(
-      storageSlice.actions.loadFolder({
-        currentPath: path,
-        ...out,
-      }),
-    );
-  }
-  async function peekFolder(path: string) {
-    const out = await (
-      await Fetch.get({
-        url: joinURL(STORAGE, path),
-        authToken: token,
-        site,
-      })
-    )?.json();
-    if (!isFolderResults(out)) return;
-    return out;
-  }
-  async function getPathToken(path: string) {
-    const data: api.StorageAction = {
-      action: "MakePathToken",
-    };
-    const out = await (
-      await Fetch.post({
-        url: joinURL(STORAGE, path),
-        authToken: token,
-        site,
-        data,
-      })
-    )?.json();
-    if (!isPathTokenResponse(out)) return;
-    return out.token;
-  }
-  async function rename(moves: { from: string; to: string }[]) {
-    for (const { from, to } of moves) {
-      const data: api.StorageAction = {
-        action: "Move",
-        new_path: to,
-      };
-      const response = await Fetch.post({
-        url: joinURL(STORAGE, from),
-        authToken: token,
-        site,
-        data,
-      });
-      if (!response?.response.ok) throw await response?.json();
-    }
-    await loadFolder(currentPath);
-  }
-  async function deletePath(path: string) {
-    const response = await Fetch.delete({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-    });
-    if (response?.response.ok) {
-      await loadFolder(currentPath);
-    }
-  }
-  async function upload(path: string, files: File[]) {
-    const uploadForm = new FormData();
-    files.map((file) => {
-      uploadForm.append(file.name, file);
-    });
-
-    const response = await Fetch.put({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-      formData: uploadForm,
-    });
-    if (response?.response.ok) {
-      await loadFolder(currentPath);
-    }
-  }
-  async function createFolder(path: string) {
-    const data: api.StorageAction = {
-      action: "CreateFolder",
-    };
-    const response = await Fetch.post({
-      url: joinURL(STORAGE, path),
-      authToken: token,
-      site,
-      data,
-    });
-    if (response?.response.ok) {
-      await loadFolder(currentPath);
-    }
-  }
+  const opts = { site, token };
+  const createFolder = new CreateFolder(opts);
+  const deletePath = new DeletePath(opts);
+  const loadFolder = new LoadFolder(opts);
+  const login = new Login();
+  const logout = new Logout();
+  const pathToken = new PathToken(opts);
+  const rename = new Rename(opts);
+  const tokenCheck = new TokenCheck();
+  const upload = new Upload(opts);
 
   useEffect(() => {
     if (state === "uninitialized") {
@@ -213,7 +93,9 @@ export function useClient() {
         console.log("Found saved state", out);
         if (isAuthState(out)) {
           console.log("Saved state was valid");
-          if (await isTokenValid(out.token, out.site)) {
+          if (
+            await new TokenCheck().run({ site: out.site, token: out.token })
+          ) {
             // Saved token is still valid, so keep using it
             console.log("Saved token was good, resuming as logged in");
             dispatch(authSlice.actions.login(out));
@@ -223,11 +105,11 @@ export function useClient() {
             console.log(
               "Saved token was bad, using saved account into to log in again",
             );
-            await login(out);
+            await login.run(out);
           }
         } else {
           console.log("Saved state was bad or did not exist");
-          dispatch(authSlice.actions.logout());
+          await logout.run();
           Persist.delete(PERSIST_AUTH_KEY);
         }
       });
@@ -241,8 +123,8 @@ export function useClient() {
     site,
     username,
     loadFolder,
-    peekFolder,
-    getPathToken,
+    pathToken,
+    tokenCheck,
     deletePath,
     rename,
     upload,
