@@ -1,11 +1,11 @@
 import api from "../api";
 import { isString } from "../typeUtils";
 import { BError } from "../error";
-import { BaseClientCommand } from "./base";
 import { Persist } from "../persist";
 import { authSlice, store } from "../store";
+import { Fetch } from "../fetch";
 
-type LoginOpts = { username: string; password: string };
+type LoginOpts = { username: string; password: string; site: string };
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -13,11 +13,15 @@ function isLoginResponse(data: any): data is api.LoginResponse {
   return isString(data?.token) && Number.isInteger(data?.valid_for_seconds);
 }
 
-export class Login extends BaseClientCommand<void, [LoginOpts]> {
+export class Login {
   async run(data: LoginOpts) {
-    const response = await this.post({
+    const response = await Fetch.post({
       url: `/auth/login`,
-      data,
+      site: data.site,
+      data: {
+        username: data.username,
+        password: data.password,
+      },
     });
     const out = await response?.json();
     if (!isLoginResponse(out)) {
@@ -40,14 +44,16 @@ export class Login extends BaseClientCommand<void, [LoginOpts]> {
     }
 
     const { token } = out;
+
     console.debug("Persisting the auth token");
     const payload = {
       username: data.username,
       password: data.password,
       token,
-      site: this.site,
+      site: data.site,
     };
     await Persist.set(PERSIST_AUTH_KEY, payload);
     store.dispatch(authSlice.actions.login(payload));
+    return out;
   }
 }

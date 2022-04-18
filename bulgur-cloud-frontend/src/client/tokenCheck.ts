@@ -1,9 +1,12 @@
-import { BaseClientCommand } from "./base";
+import api from "../api";
+import { Fetch } from "../fetch";
 
-export class TokenCheck extends BaseClientCommand<boolean> {
-  async run() {
-    const response = await this.head({
+export class TokenCheck {
+  async run(opts: { site: string; token: api.Token }) {
+    const response = await Fetch.head({
       url: `/api/stats`,
+      site: opts.site,
+      authToken: opts.token,
     });
     return !!response?.response.ok;
   }

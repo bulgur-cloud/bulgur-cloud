@@ -7,12 +7,9 @@ import { Provider } from "react-redux";
 
 import {
   useFonts,
-  Bitter_200ExtraLight,
   Bitter_400Regular,
   Bitter_600SemiBold,
-  Bitter_200ExtraLight_Italic,
   Bitter_400Regular_Italic,
-  Bitter_600SemiBold_Italic,
 } from "@expo-google-fonts/bitter";
 
 import { registerRootComponent } from "expo";
@@ -42,17 +39,12 @@ function Base() {
     },
     fontConfig: {
       Bitter: {
-        200: {
-          normal: "Bitter_200ExtraLight",
-          italic: "Bitter_200ExtraLight_Italic",
-        },
         400: {
           normal: "Bitter_400Regular",
           italic: "Bitter_400Regular_Italic",
         },
         600: {
           normal: "Bitter_600SemiBold",
-          italic: "Bitter_600SemiBold_Italic",
         },
       },
     },
@@ -94,12 +86,9 @@ function Base() {
 
 function App() {
   const [fontsLoaded] = useFonts({
-    Bitter_200ExtraLight,
     Bitter_400Regular,
     Bitter_600SemiBold,
-    Bitter_200ExtraLight_Italic,
     Bitter_400Regular_Italic,
-    Bitter_600SemiBold_Italic,
   });
   const { state, username } = useClient();
 

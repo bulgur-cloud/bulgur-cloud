@@ -1,44 +1,64 @@
 import api from "../api";
-import { isString } from "../typeUtils";
+import { isBoolean, isString } from "../typeUtils";
 import { BError } from "../error";
 import { BaseClientCommand } from "./base";
-import { Persist } from "../persist";
-import { authSlice, store } from "../store";
+import { storageSlice, store } from "../store";
+import { joinURL } from "../fetch";
 
-export class LoadFolder extends BaseClientCommand<void, [string]> {
-  async run(path: string) {
+function isFolderEntry(data: any): data is api.FolderEntry {
+  return (
+    isBoolean(data?.is_file) &&
+    isString(data?.name) &&
+    Number.isInteger(data?.size)
+  );
+}
+
+function isFolderResults(data: any): data is api.FolderResults {
+  const entries = data?.entries;
+  if (!Array.isArray(entries)) return false;
+  return entries.every(isFolderEntry);
+}
+
+export const STORAGE = "/storage";
+
+export class LoadFolder extends BaseClientCommand<
+  api.FolderResults,
+  [string, boolean]
+> {
+  /**
+   *
+   * @param path The new path to load. Used to navigate to a new folder, or
+   * refresh the existing folder.
+   * @param peek If true, this function will return the contents of the folder
+   * without replacing the current folder.
+   *
+   * @returns The contents of the requested folder.
+   */
+  async run(path: string, peek?: boolean) {
     const response = await this.get({
-      url: `/auth/login`,
+      url: joinURL(STORAGE, path),
     });
     const out = await response?.json();
-    if (!isLoginResponse(out)) {
+    if (!isFolderResults(out)) {
       const status = response?.response.status;
       let reason: string = `${status}`;
-      if (status === undefined) reason = `There was an unknown error.`;
-      else if (500 <= status && status < 600)
-        reason = `There was an internal server error. (${status})`;
-      else if (status === 400) {
-        reason = "Incorrect username or password";
-      } else {
-        reason = `There was an unknown error. (${status})`;
-      }
 
       throw new BError({
-        code: "login_failed",
-        title: "Login failed",
-        description: `Unable to log in: ${reason}`,
+        code: "load_folder_failed",
+        title: "Failed to load folder",
+        description: `Unable to load ${path}: ${reason}`,
       });
     }
 
-    const { token } = out;
-    console.debug("Persisting the auth token");
-    const payload = {
-      username: data.username,
-      password: data.password,
-      token,
-      site: this.site,
-    };
-    await Persist.set(PERSIST_AUTH_KEY, payload);
-    store.dispatch(authSlice.actions.login(payload));
+    if (!peek) {
+      store.dispatch(
+        storageSlice.actions.loadFolder({
+          currentPath: path,
+          ...out,
+        }),
+      );
+    }
+
+    return out;
   }
 }

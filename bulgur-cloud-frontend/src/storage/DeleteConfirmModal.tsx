@@ -1,23 +1,17 @@
-import {
-  Button,
-  Center,
-  HStack,
-  Modal,
-  Text,
-  VStack,
-} from "native-base";
+import { Button, Center, HStack, Modal, Text, VStack } from "native-base";
 import React, { useEffect, useState } from "react";
 import { runAsync, useClient } from "../client";
 import { useAppSelector } from "../store";
 import { joinURL } from "../fetch";
 
-
 export function DeleteConfirmModal(
   props: Parameters<typeof Modal>[0] & { itemName: string; isFile: boolean },
 ) {
   const currentPath = useAppSelector((state) => state.storage.currentPath);
-  const { peekFolder, deletePath } = useClient();
-  const [folderContentsCount, setFolderContentsCount] = useState<undefined | null | number>();
+  const { loadFolder, deletePath } = useClient();
+  const [folderContentsCount, setFolderContentsCount] = useState<
+    undefined | null | number
+  >();
 
   let titleMessage: string;
   if (props.isFile) {
@@ -31,7 +25,10 @@ export function DeleteConfirmModal(
   useEffect(() => {
     if (!props.isFile && folderContentsCount === undefined) {
       runAsync(async () => {
-        const out = await peekFolder(joinURL(currentPath, props.itemName));
+        const out = await loadFolder.run(
+          joinURL(currentPath, props.itemName),
+          true,
+        );
         if (out) setFolderContentsCount(out.entries.length);
       });
     }
@@ -41,9 +38,7 @@ export function DeleteConfirmModal(
     <Modal {...props}>
       <Modal.Content maxWidth={96}>
         <Modal.Header>
-          <Text>
-            {titleMessage}
-          </Text>
+          <Text>{titleMessage}</Text>
         </Modal.Header>
         <Modal.Body>
           <VStack space={4}>
@@ -55,7 +50,9 @@ export function DeleteConfirmModal(
                   onPress={() => {
                     runAsync(async () => {
                       console.log(joinURL(currentPath, props.itemName));
-                      await deletePath(joinURL(currentPath, props.itemName));
+                      await deletePath.run(
+                        joinURL(currentPath, props.itemName),
+                      );
                       props.onClose();
                     });
                   }}

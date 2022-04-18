@@ -55,7 +55,7 @@ export function Login() {
             returnKeyType={"send"}
             onChangeText={setPassword}
             onSubmitEditing={() => {
-              login({ username, password, site });
+              login.run({ username, password, site });
             }}
           />
 
@@ -66,7 +66,7 @@ export function Login() {
               flexGrow={2}
               maxWidth={48}
               onPress={() => {
-                login({ username, password, site });
+                login.run({ username, password, site });
               }}
               bgColor={"primary.800"}
             >

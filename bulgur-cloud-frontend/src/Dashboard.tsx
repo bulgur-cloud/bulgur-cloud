@@ -55,7 +55,7 @@ function BackButton() {
         accessibilityLabel="Go back"
         onPress={() => {
           runAsync(async () => {
-            await loadFolder(urlUp1Level(currentPath));
+            await loadFolder.run(urlUp1Level(currentPath));
           });
         }}
       />
@@ -70,7 +70,7 @@ export function Dashboard() {
   useEffect(() => {
     if (authState === "done" && state === "uninitialized") {
       runAsync(async () => {
-        await loadFolder(`${username}/`);
+        await loadFolder.run(`${username}/`);
       });
     }
   }, [authState, state]);
