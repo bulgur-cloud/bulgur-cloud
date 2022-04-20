@@ -74,6 +74,7 @@ impl actix_web::error::ResponseError for StorageError {
 pub fn get_authorized_path(
     authorized: &Option<ReqData<Authorized>>,
     store: &str,
+    path: Option<&str>,
 ) -> Result<PathBuf, StorageError> {
     match authorized {
         Some(authorized) => {
@@ -84,7 +85,32 @@ pub fn get_authorized_path(
             };
             if is_authorized {
                 tracing::debug!("User or path token is authorized");
-                Ok(PathBuf::from(folder::STORAGE).join(store))
+                let path_base = PathBuf::from(folder::STORAGE).join(store);
+
+                match path {
+                    Some(path) => {
+                        let path_full = path_base.clone().join(path);
+                        // Make sure to avoid someone using ".." to escape their
+                        // authorized store. This may be unnecessary in some
+                        // cases because actix cleans relative paths when
+                        // parsing the URL, but keeping this for safety unless
+                        // it becomes a performance bottleneck.
+                        let relative_path = pathdiff::diff_paths(path_base, &path_full);
+                        match relative_path {
+                            Some(relative_path) => {
+                                if relative_path.starts_with("../")
+                                    || relative_path.eq(&PathBuf::from(""))
+                                {
+                                    return Ok(path_full);
+                                }
+                            }
+                            None => {}
+                        }
+                        tracing::info!("Tried to access path {:?}", path);
+                        Err(StorageError::NotAuthorized)
+                    }
+                    None => Ok(path_base),
+                }
             } else {
                 tracing::debug!("Not authorized");
                 Err(StorageError::NotAuthorized)
@@ -117,8 +143,7 @@ pub async fn get_storage_internal(
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
     let (store, path) = params.as_ref();
 
-    let mut store_path = get_authorized_path(authorized, store)?;
-    store_path.push(path);
+    let store_path = get_authorized_path(authorized, store, Some(path))?;
     tracing::debug!("Requested path {}", store_path.to_string_lossy());
     if fs::metadata(&store_path).await?.is_file() {
         tracing::debug!("Path is a file");
@@ -162,9 +187,7 @@ async fn delete_storage(
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
 
-    let mut store_path = get_authorized_path(&authorized, store)?;
-    store_path.push(path);
-    // TODO: What if path is `../`? Should handle that with some middleware
+    let store_path = get_authorized_path(&authorized, store, Some(path))?;
     if fs::metadata(&store_path).await?.is_file() {
         tracing::debug!("Deleting file {:?}", store_path);
         fs::remove_file(&store_path).await?;
@@ -184,8 +207,7 @@ async fn head_storage(
     let (store, path) = params.as_ref();
 
     let check = async {
-        let mut store_path = get_authorized_path(&authorized, store)?;
-        store_path.push(path);
+        let store_path = get_authorized_path(&authorized, store, Some(path))?;
         tracing::debug!("Requested path {}", store_path.to_string_lossy());
 
         let meta = fs::metadata(store_path).await?;
@@ -217,8 +239,7 @@ async fn put_storage(
     mut payload: Multipart,
 ) -> Result<web::Json<PutStoragePayload>, StorageError> {
     let (store, path) = params.as_ref();
-    let mut store_path = get_authorized_path(&authorized, store)?;
-    store_path.push(path);
+    let store_path = get_authorized_path(&authorized, store, Some(path))?;
 
     tokio::fs::create_dir(&store_path).await.or_else(|err| {
         tracing::debug!("Error: {:?}", err);
@@ -275,14 +296,12 @@ async fn post_storage(
     authorized: Option<ReqData<Authorized>>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
-    let mut store_path = get_authorized_path(&authorized, store)?;
-    store_path.push(path);
+    let store_path = get_authorized_path(&authorized, store, Some(path))?;
     match action.deref() {
         StorageAction::MakePathToken => Ok(make_path_token(&state, &store_path).await),
         StorageAction::Move { new_path } => {
             let (to_store, to_path) = parse_store_path(new_path).ok_or(StorageError::BadPath)?;
-            let mut to_store_path = get_authorized_path(&authorized, to_store)?;
-            to_store_path.push(to_path);
+            let to_store_path = get_authorized_path(&authorized, to_store, Some(&to_path))?;
             fs::rename(store_path, to_store_path).await?;
             Ok(empty_ok_response())
         }
