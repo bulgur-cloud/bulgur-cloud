@@ -3,11 +3,9 @@ use std::{ops::Deref, path::PathBuf};
 use actix_files::NamedFile;
 use actix_web::{
     cookie::Cookie,
-    get,
-    http::header::ContentType,
-    post,
+    get, post,
     web::{self, ReqData},
-    Either, HttpResponse, Responder,
+    Either, HttpResponse,
 };
 
 use askama_actix::Template;
@@ -19,7 +17,7 @@ use crate::{
     auth::{verify_pass, Password},
     auth_middleware::AUTH_COOKIE_NAME,
     state::{self, AppState, Authorized, Token},
-    storage::{get_authorized_path, get_storage, get_storage_internal, FolderEntry, StorageError},
+    storage::{get_storage_internal, FolderEntry, StorageError},
 };
 
 #[derive(Template)]
