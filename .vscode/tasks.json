@@ -1,61 +1,71 @@
 {
   "version": "2.0.0",
   "tasks": [
-		{
-			"type": "cargo",
-			"command": "build",
-			"problemMatcher": [
-				"$rustc"
-			],
-			"group": "build",
-			"label": "rust: cargo build"
-		},
-		{
-			"label": "Run server with bunyan",
-			"type": "shell",
-			"command": "cargo run | bunyan",
-			"options": {
-				"cwd": "${workspaceFolder}",
-				"env": {
-					"RUST_LOG": "debug"
-				}
-			},
-			"isBackground": true,
-			"problemMatcher": []
-		},
-		{
-			"label": "Run web frontend",
-			"type": "npm",
-			"script": "web",
-			"path": "bulgur-cloud-frontend/",
-			"problemMatcher": [],
-			"isBackground": true
-		},
-		{
-			"label": "Run android frontend",
-			"type": "npm",
-			"script": "android",
-			"path": "bulgur-cloud-frontend/",
-			"problemMatcher": [],
-			"isBackground": true
-		},
-		{
-			"label": "Run backend and web frontend",
-			"dependsOn": [
-				"Run server with bunyan",
-				"Run web frontend"
-			],
-			"isBackground": true,
-			"problemMatcher": []
-		},
-		{
-			"label": "Re-generate API type definitions",
-			"type": "shell",
-			"command": "cargo run",
-			"options": {
-				"cwd": "${workspaceFolder}/bulgur-cloud-frontend"
-			},
-			"problemMatcher": []
-		}
-	]
+    {
+      "type": "cargo",
+      "command": "build",
+      "problemMatcher": ["$rustc"],
+      "group": "build",
+      "label": "rust: cargo build"
+    },
+    {
+      "label": "Run backend",
+      "type": "shell",
+      "command": "cargo run | bunyan",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "RUST_LOG": "debug"
+        }
+      },
+      "detail": "Runs the backend server without bunyan. Logs may be hard to read.",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run backend with bunyan",
+      "type": "shell",
+      "command": "cargo run | bunyan",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "RUST_LOG": "debug"
+        }
+      },
+      "detail": "Runs the backend server with bunyan, which makes logs easier to read.",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run web frontend",
+      "type": "npm",
+      "script": "web",
+      "path": "bulgur-cloud-frontend/",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Run android frontend",
+      "type": "npm",
+      "script": "android",
+      "path": "bulgur-cloud-frontend/",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Run backend and web frontend",
+      "dependsOn": ["Run backend with bunyan", "Run web frontend"],
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Re-generate API type definitions",
+      "type": "shell",
+      "command": "cargo run",
+      "options": {
+        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+      },
+      "problemMatcher": []
+    }
+  ]
 }
