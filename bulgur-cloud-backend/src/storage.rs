@@ -1,4 +1,5 @@
 use std::{
+    io,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -54,7 +55,11 @@ impl actix_web::error::ResponseError for StorageError {
         match self {
             StorageError::NotAuthorized => StatusCode::UNAUTHORIZED,
             StorageError::TokenMissing => StatusCode::BAD_REQUEST,
-            StorageError::IOError(_) => StatusCode::NOT_FOUND, // TODO: This should be set based on what the error is
+            StorageError::IOError(err) => match err.kind() {
+                io::ErrorKind::NotFound => StatusCode::NOT_FOUND,
+                io::ErrorKind::AlreadyExists => StatusCode::BAD_REQUEST,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            },
             StorageError::UploadError(_) => StatusCode::BAD_REQUEST,
             StorageError::BadPath => StatusCode::BAD_REQUEST,
         }
