@@ -6,7 +6,7 @@ use structopt::StructOpt;
 use tokio::fs;
 
 use crate::{
-    auth::{UserType, create_user},
+    auth::{create_user, UserType},
     folder::USERS_DIR,
 };
 
@@ -52,9 +52,8 @@ pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
     match command {
         Commands::User(user) => match user {
             User::UserAdd(add) => {
-                // TODO should warn against overwriting existing users, require --force flag
                 let password = prompt_password("Enter the password for this user: ")?;
-                create_user(&password, &add.username, add.user_type.unwrap_or_default()).await?;
+                create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
                 Ok(())
             }
             User::UserRemove(remove) => {
@@ -67,4 +66,3 @@ pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
         },
     }
 }
-

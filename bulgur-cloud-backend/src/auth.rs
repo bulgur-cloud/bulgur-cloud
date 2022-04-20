@@ -17,7 +17,7 @@ use scrypt::{
 use typescript_type_def::TypeDef;
 
 use serde::{Deserialize, Serialize};
-use tokio::fs;
+use tokio::{fs, io::AsyncWriteExt};
 use tracing::instrument;
 
 #[derive(Serialize, Deserialize)]
@@ -77,7 +77,15 @@ pub(crate) async fn create_user(
 ) -> anyhow::Result<()> {
     let user_path = path_user_file(username);
     let data = create_user_string(username, password, user_type).await?;
-    fs::write(user_path, data).await?;
+
+    let mut file = fs::OpenOptions::new()
+        .write(true)
+        // Make sure to not overwrite an existing user
+        .create_new(true)
+        .open(user_path)
+        .await?;
+    file.write_all(data.as_bytes()).await?;
+
     Ok(())
 }
 
@@ -133,8 +141,9 @@ pub(crate) async fn verify_pass(username: &str, password_input: &Password) -> Re
     web::block(move || -> anyhow::Result<()> {
         let password_in_file = PasswordHash::new(&user.password_hash)?;
         Ok(Scrypt.verify_password(password_input_clone.as_bytes(), &password_in_file)?)
-    }).await??;
-    
+    })
+    .await??;
+
     Ok(())
 }
 
