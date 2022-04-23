@@ -1,6 +1,7 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "./api";
+import { BError } from "./error";
 
 type LoadState = "done" | "loading" | "uninitialized";
 
@@ -106,7 +107,7 @@ export const storageSlice = createSlice({
 });
 
 type ErrorState = {
-  errors: { [key: string]: any };
+  errors: { [key: string]: BError };
 };
 
 const initialErrorsState: ErrorState = {
@@ -117,8 +118,20 @@ export const errorSlice = createSlice({
   name: "error",
   initialState: initialErrorsState,
   reducers: {
-    addError: (state, action: { payload: { key: string; error: any } }) => {
-      state.errors[action.payload.key] = action.payload.error;
+    addError: (state, action: { payload: { key: string; error: unknown } }) => {
+      let error: BError;
+      if (action.payload.error instanceof BError) {
+        error = action.payload.error;
+      } else {
+        error = new BError({
+          code: "unknown_error",
+          description: `Please send a bug report with the following message: ${JSON.stringify(
+            action.payload.error,
+          )}`,
+          title: "An unexpected error occured",
+        });
+      }
+      state.errors[action.payload.key] = error;
     },
     clearError: (state, action: { payload: string }) => {
       delete state.errors[action.payload];

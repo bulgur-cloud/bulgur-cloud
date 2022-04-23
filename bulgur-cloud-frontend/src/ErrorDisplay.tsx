@@ -8,6 +8,7 @@ import {
   CloseIcon,
   Box,
   Stack,
+  Spacer,
 } from "native-base";
 import React from "react";
 import { errorSlice, useAppDispatch, useAppSelector } from "./store";
@@ -18,27 +19,26 @@ export function ErrorDisplay() {
 
   return (
     <Center>
-      <Stack
-        space={3}
-        width="90%"
-        maxWidth="400"
-        top={8}
-        position="fixed"
-      >
+      <Stack space={3} width="90%" maxWidth="400" top={8} position="fixed">
         {Object.entries(errors).map(([key, error]) => {
           return (
             <Alert
               w="100%"
               status="error"
               backgroundColor="primary.800"
+              color="lightText"
               key={key}
             >
               <VStack space={2} flexShrink={1} w="100%">
                 <HStack flexShrink={1} space={2} justifyContent="space-between">
                   <HStack space={2} flexShrink={1}>
-                    <Alert.Icon mt="1" color="lightText" accessibilityLabel="error" />
+                    <Alert.Icon
+                      mt="1"
+                      color="lightText"
+                      accessibilityLabel="error"
+                    />
                     <Text fontSize="md" color="lightText">
-                      {error}
+                      {error.title}
                     </Text>
                   </HStack>
 
@@ -51,6 +51,15 @@ export function ErrorDisplay() {
                     icon={<CloseIcon size="3" color="lightText" />}
                   />
                 </HStack>
+                <Spacer size={4} />
+                <Text color="lightText">{error.description}</Text>
+                <Spacer />
+                <Text color="lightText">
+                  error code:{" "}
+                  <Text fontFamily="monospace" fontSize="xs" color="lightText">
+                    {error.code}
+                  </Text>
+                </Text>
               </VStack>
             </Alert>
           );
