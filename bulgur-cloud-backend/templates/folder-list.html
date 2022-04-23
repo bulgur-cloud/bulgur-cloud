@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block main %}
 <header>
   <span class="username">{{ username }}</span>
-  <form class="logout" name="logout" method="post" action="/logout">
+  <form class="logout" name="logout" method="post" action="/basic/logout">
     <input type="submit" value="Logout" />
   </form>
 </header>
@@ -13,7 +13,7 @@
         aria-label="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}"
         src="{%- if item.is_file -%} /assets/file.svg {%- else -%} /assets/folder.svg {%- endif -%}"
       />
-      <a href="/page/{{- path -}}/{{- item.name -}}">{{- item.name -}}</a>
+      <a href="/basic/{{- path -}}/{{- item.name -}}">{{- item.name -}}</a>
     </li>
     {% endfor %}
   </ul>

@@ -9,9 +9,7 @@ use actix_web::{
 };
 
 use askama_actix::Template;
-use rust_embed::RustEmbed;
 use serde::Deserialize;
-use tracing_unwrap::OptionExt;
 
 use crate::{
     auth::{verify_pass, Password},
@@ -24,7 +22,7 @@ use crate::{
 #[template(path = "login.html")]
 pub struct LoginPage {}
 
-#[get("/")]
+#[get("/basic/")]
 pub async fn page_login_get() -> LoginPage {
     LoginPage {}
 }
@@ -35,7 +33,7 @@ pub struct LoginFormData {
     password: Password,
 }
 
-#[post("/")]
+#[post("/basic/")]
 pub async fn page_login_post(
     form: web::Form<LoginFormData>,
     state: web::Data<AppState>,
@@ -50,14 +48,14 @@ pub async fn page_login_post(
 
         HttpResponse::SeeOther()
             .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
-            .append_header(("Location", format!("/page/{}/", form.username)))
+            .append_header(("Location", format!("/basic/{}/", form.username)))
             .finish()
     } else {
         HttpResponse::Unauthorized().finish()
     }
 }
 
-#[post("/logout")]
+#[post("/basic/logout")]
 pub async fn page_logout() -> HttpResponse {
     let mut remove_cookie = Cookie::named(AUTH_COOKIE_NAME);
     remove_cookie.make_removal();
@@ -76,7 +74,7 @@ pub struct FolderListPage {
     folder_list: Vec<FolderEntry>,
 }
 
-#[get("/{store}/{path:.*}")]
+#[get("/basic/{store}/{path:.*}")]
 pub async fn page_folder_list(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
@@ -113,36 +111,4 @@ pub async fn page_folder_list(
             }))
         }
     }
-}
-
-#[derive(RustEmbed)]
-#[folder = "assets/"]
-struct Asset;
-
-#[get("/assets/style.css")]
-pub async fn assets_style() -> HttpResponse {
-    let style = Asset::get("style.css").unwrap_or_log();
-    HttpResponse::Ok()
-        .content_type("text/css")
-        // TODO: Pretty ugly solution
-        .body(style.data.to_vec())
-}
-
-// TODO Ugh, the ones below are even uglier. Should start actually looking up if
-// the file exists and dynamically setting content type from the extension.
-
-#[get("/assets/file.svg")]
-pub async fn assets_file_svg() -> HttpResponse {
-    let style = Asset::get("file.svg").unwrap_or_log();
-    HttpResponse::Ok()
-        .content_type("image/svg+xml")
-        .body(style.data.to_vec())
-}
-
-#[get("/assets/folder.svg")]
-pub async fn assets_folder_svg() -> HttpResponse {
-    let style = Asset::get("folder.svg").unwrap_or_log();
-    HttpResponse::Ok()
-        .content_type("image/svg+xml")
-        .body(style.data.to_vec())
 }
