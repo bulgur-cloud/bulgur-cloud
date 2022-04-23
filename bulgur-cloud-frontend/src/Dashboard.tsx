@@ -12,7 +12,12 @@ import React, { useEffect } from "react";
 import { runAsync, useClient } from "./client";
 import { FullPageLoading } from "./Loading";
 import { File } from "./storage/File";
-import { storageSlice, useAppDispatch, useAppSelector } from "./store";
+import {
+  authSlice,
+  storageSlice,
+  useAppDispatch,
+  useAppSelector,
+} from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
@@ -66,6 +71,7 @@ function BackButton() {
 export function Dashboard() {
   const { username, state: authState, loadFolder } = useClient();
   const state = useAppSelector((state) => state.storage.state);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (authState === "done" && state === "uninitialized") {
@@ -97,7 +103,17 @@ export function Dashboard() {
         >
           <BackButton />
           <MiddleSection />
-          <Text>{username}</Text>
+          <HStack space={2}>
+            <Text>{username}</Text>
+            <Text
+              color="primary.400"
+              onPress={() => {
+                dispatch(authSlice.actions.logout());
+              }}
+            >
+              (Logout)
+            </Text>
+          </HStack>
         </HStack>
         <StorageItem />
       </VStack>
