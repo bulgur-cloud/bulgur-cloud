@@ -11,11 +11,12 @@
     {
       "label": "Run backend",
       "type": "shell",
-      "command": "cargo run | bunyan",
+      "command": "cargo run",
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "RUST_LOG": "debug"
+          "RUST_LOG": "debug",
+          "RUST_BACKTRACE": "1"
         }
       },
       "detail": "Runs the backend server without bunyan. Logs may be hard to read.",
@@ -29,7 +30,8 @@
       "options": {
         "cwd": "${workspaceFolder}",
         "env": {
-          "RUST_LOG": "debug"
+          "RUST_LOG": "debug",
+          "RUST_BACKTRACE": "1"
         }
       },
       "detail": "Runs the backend server with bunyan, which makes logs easier to read.",
