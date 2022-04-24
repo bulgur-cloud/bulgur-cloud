@@ -43,6 +43,21 @@
       "type": "npm",
       "script": "web",
       "path": "bulgur-cloud-frontend/",
+      "options": {
+        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+      },
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "Export web frontend",
+      "detail": "Use this to build the web frontend for a release.",
+      "type": "npm",
+      "script": "build:web",
+      "path": "bulgur-cloud-frontend/",
+      "options": {
+        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+      },
       "problemMatcher": [],
       "isBackground": true
     },
@@ -51,11 +66,15 @@
       "type": "npm",
       "script": "android",
       "path": "bulgur-cloud-frontend/",
+      "options": {
+        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+      },
       "problemMatcher": [],
       "isBackground": true
     },
     {
-      "label": "Run backend and web frontend",
+      "label": "Run backend (bunyan) and web frontend",
+      "detail": "Runs the backend with bunyan, and runs the web frontend. Use this task for development.",
       "dependsOn": ["Run backend with bunyan", "Run web frontend"],
       "isBackground": true,
       "problemMatcher": []
