@@ -87,10 +87,15 @@ async fn main() -> anyhow::Result<()> {
 
             HttpServer::new(move || {
                 let cors = Cors::default()
-                    .allowed_origin_fn(|origin, _req_head| {
-                        origin.as_bytes().starts_with(b"http://localhost")
-                    })
-                    .allowed_methods(vec!["GET", "POST", "PUT", "HEAD", "DELETE"])
+                    .allow_any_origin()
+                    .allowed_methods(vec![
+                        http::Method::OPTIONS,
+                        http::Method::GET,
+                        http::Method::POST,
+                        http::Method::PUT,
+                        http::Method::HEAD,
+                        http::Method::DELETE,
+                    ])
                     .allowed_headers(vec![
                         http::header::AUTHORIZATION,
                         http::header::ACCEPT,
