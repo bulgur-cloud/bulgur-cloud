@@ -5,11 +5,18 @@ host. It depends on no databases or services, and uses little resources.
 
 ![Login scren](https://bgenc.net/img/2022-03-29-00-17-38.png)
 
+## Demo
+
+A read-only demo instance is now available at [bulgur-cloud.bgenc.net](https://bulgur-cloud.bgenc.net).
+
+Enter the username `test` and password `test` to log in. This is set to be read only, so you will get an error if you try to upload, rename, or delete anything.
+
 ## Getting Started
 
-Bulgur Cloud is too early in development, and does not have any releases.
+Bulgur Cloud is too early in development, and does not have a release available to use yet.
 
-You can see [my blog post](https://bgenc.net/bulgur-cloud-intro/) to get a sense of what it looks like at the moment.
+Please see the demo linked above to get a sense of what it looks like.
+You can see [my blog post](https://bgenc.net/bulgur-cloud-intro/) for details.
 
 ## Development
 
