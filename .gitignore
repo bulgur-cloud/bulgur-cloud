@@ -1,3 +1,7 @@
 /target
 /users
 /storage
+*.zip
+*.gz
+*.xz
+Docker
