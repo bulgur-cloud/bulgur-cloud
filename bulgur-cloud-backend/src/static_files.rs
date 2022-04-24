@@ -46,6 +46,12 @@ async fn get_by_path<T: RustEmbed>(path: &str) -> HttpResponse {
 struct UI;
 
 #[tracing::instrument]
+#[get("/")]
+pub async fn get_ui_index() -> HttpResponse {
+    get_by_path::<UI>("index.html").await
+}
+
+#[tracing::instrument]
 #[get("/{path:.*}")]
 pub async fn get_ui(params: web::Path<String>) -> HttpResponse {
     if params.len() == 0 {

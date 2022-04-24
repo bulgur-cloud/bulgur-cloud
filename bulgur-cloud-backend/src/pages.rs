@@ -87,7 +87,7 @@ pub struct FolderListPage {
 }
 
 #[tracing::instrument]
-#[get("/basic/{store}/{path:.*}")]
+#[get("/{store}/{path:.*}")]
 pub async fn page_folder_list(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
