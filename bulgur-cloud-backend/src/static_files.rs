@@ -54,11 +54,7 @@ pub async fn get_ui_index() -> HttpResponse {
 #[tracing::instrument]
 #[get("/{path:.*}")]
 pub async fn get_ui(params: web::Path<String>) -> HttpResponse {
-    if params.len() == 0 {
-        get_by_path::<UI>("index.html").await
-    } else {
-        get_by_path::<UI>(params.as_str()).await
-    }
+    get_by_path::<UI>(params.as_str()).await
 }
 
 /// Serves the static assets required for the basic web UI.
