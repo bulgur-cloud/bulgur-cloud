@@ -11,7 +11,7 @@
     <li class="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}">
       <img
         aria-label="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}"
-        src="{%- if item.is_file -%} /assets/file.svg {%- else -%} /assets/folder.svg {%- endif -%}"
+        src="{%- if item.is_file -%} /basic/assets/file.svg {%- else -%} /basic/assets/folder.svg {%- endif -%}"
       />
       <a href="/basic/{{- path -}}/{{- item.name -}}">{{- item.name -}}</a>
     </li>

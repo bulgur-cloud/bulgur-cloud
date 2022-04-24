@@ -4,9 +4,9 @@ use bulgur_cloud::{
     cli::{cli_command, Opt},
     folder,
     meta::{get_stats, head_stats, is_bulgur_cloud},
-    pages::{page_folder_list, page_login_get, page_login_post, page_logout},
+    pages::{not_found, page_folder_list, page_login_get, page_login_post, page_logout},
     state::{AppState, PathTokenCache, TokenCache},
-    static_files::{get_basic, get_ui},
+    static_files::{get_basic_assets, get_ui},
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
 
@@ -14,7 +14,7 @@ use std::path::PathBuf;
 
 use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
-use actix_web::{http, web, App, HttpServer};
+use actix_web::{http, middleware, web, App, HttpServer};
 
 use structopt::StructOpt;
 use tokio::fs;
@@ -125,19 +125,25 @@ async fn main() -> anyhow::Result<()> {
                     .service(post_storage)
                     .service(delete_storage);
                 // Basic HTML scopes are for the javascript-free basic interface.
-                let authenticated_basic_html_scope = web::scope("/page")
-                    .wrap(storage_guard)
-                    .service(page_folder_list);
+                let authenticated_basic_html_scope =
+                    web::scope("").wrap(storage_guard).service(page_folder_list);
                 let basic_html_scope = web::scope("")
                     .service(page_login_get)
                     .service(page_login_post)
                     .service(page_logout)
+                    .service(get_basic_assets)
                     .service(authenticated_basic_html_scope)
-                    .service(get_basic)
                     .service(get_ui);
                 // Build the app with all these scopes, and add middleware for CORS and tracing
                 App::new()
                     .wrap(TracingLogger::default())
+                    // Fix redundant slashes
+                    .wrap(middleware::NormalizePath::new(
+                        middleware::TrailingSlash::MergeOnly,
+                    ))
+                    // Negotiate and do compression
+                    .wrap(middleware::Compress::default())
+                    // Allow CORS access.
                     .wrap(cors)
                     .app_data(state.clone())
                     .service(login_scope)
@@ -145,6 +151,7 @@ async fn main() -> anyhow::Result<()> {
                     .service(storage_scope)
                     .service(is_bulgur_cloud)
                     .service(basic_html_scope)
+                    .default_service(web::to(not_found))
             })
             .bind("0.0.0.0:8000")?
             .run()

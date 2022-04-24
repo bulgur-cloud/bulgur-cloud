@@ -22,9 +22,19 @@ use crate::{
 #[template(path = "login.html")]
 pub struct LoginPage {}
 
+#[tracing::instrument]
 #[get("/basic/")]
 pub async fn page_login_get() -> LoginPage {
     LoginPage {}
+}
+
+#[derive(Template)]
+#[template(path = "not-found.html")]
+pub struct NotFoundPage {}
+
+#[tracing::instrument]
+pub async fn not_found() -> NotFoundPage {
+    NotFoundPage {}
 }
 
 #[derive(Deserialize)]
@@ -33,6 +43,7 @@ pub struct LoginFormData {
     password: Password,
 }
 
+#[tracing::instrument(skip(form))]
 #[post("/basic/")]
 pub async fn page_login_post(
     form: web::Form<LoginFormData>,
@@ -55,6 +66,7 @@ pub async fn page_login_post(
     }
 }
 
+#[tracing::instrument]
 #[post("/basic/logout")]
 pub async fn page_logout() -> HttpResponse {
     let mut remove_cookie = Cookie::named(AUTH_COOKIE_NAME);
@@ -74,6 +86,7 @@ pub struct FolderListPage {
     folder_list: Vec<FolderEntry>,
 }
 
+#[tracing::instrument]
 #[get("/basic/{store}/{path:.*}")]
 pub async fn page_folder_list(
     params: web::Path<(String, String)>,

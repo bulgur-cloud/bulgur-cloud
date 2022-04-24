@@ -1,8 +1,7 @@
-use std::{ops::Deref, path::PathBuf};
+use std::path::PathBuf;
 
 use actix_web::{get, web, HttpResponse};
 use rust_embed::RustEmbed;
-use tracing_unwrap::OptionExt;
 
 fn extension_to_content_type(path: &str) -> Option<&'static str> {
     let path = PathBuf::from(path);
@@ -63,6 +62,6 @@ struct Basic;
 
 #[tracing::instrument]
 #[get("/basic/assets/{path:.*}")]
-pub async fn get_basic(params: web::Path<String>) -> HttpResponse {
+pub async fn get_basic_assets(params: web::Path<String>) -> HttpResponse {
     get_by_path::<Basic>(params.as_str()).await
 }
