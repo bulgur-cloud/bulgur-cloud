@@ -1,12 +1,4 @@
-import {
-  Modal,
-  Text,
-  VStack,
-  Input,
-  Center,
-  HStack,
-  Button,
-} from "native-base";
+import { Modal, Text, Input, Center, HStack, Button } from "native-base";
 import React, { useState } from "react";
 import { runAsync, useClient } from "../client";
 import { joinURL } from "../fetch";
@@ -26,52 +18,54 @@ export function RenameModal(
           <Text>Rename {props.itemName}</Text>
         </Modal.Header>
         <Modal.Body>
-          <VStack space={4}>
-            <Input
-              variant="underlined"
-              placeholder="New name"
-              returnKeyType="send"
-              autoFocus={true}
-              onChangeText={setNewName}
-            />
-            <Center>
-              <HStack space={4}>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
-                    runAsync(async () => {
-                      await rename.run([
-                        {
-                          from: joinURL(currentPath, props.itemName),
-                          to: joinURL(currentPath, newName),
-                        },
-                      ]);
-                      props.onClose();
-                    });
-                  }}
-                  bgColor={"primary.800"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Rename
-                  </Text>
-                </Button>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
-                    props.onClose();
-                  }}
-                  bgColor={"primary.600"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Cancel
-                  </Text>
-                </Button>
-              </HStack>
-            </Center>
-          </VStack>
+          <Input
+            variant="underlined"
+            placeholder="New name"
+            returnKeyType="send"
+            autoFocus={true}
+            onChangeText={setNewName}
+            defaultValue={props.itemName}
+            selectTextOnFocus={true}
+          />
         </Modal.Body>
+        <Modal.Footer>
+          <Center>
+            <HStack space={4}>
+              <Button
+                flexGrow={2}
+                maxWidth={48}
+                onPress={() => {
+                  runAsync(async () => {
+                    await rename.run([
+                      {
+                        from: joinURL(currentPath, props.itemName),
+                        to: joinURL(currentPath, newName),
+                      },
+                    ]);
+                    props.onClose();
+                  });
+                }}
+                bgColor={"primary.800"}
+              >
+                <Text color={"lightText"} fontWeight={"semibold"}>
+                  Rename
+                </Text>
+              </Button>
+              <Button
+                flexGrow={2}
+                maxWidth={48}
+                onPress={() => {
+                  props.onClose();
+                }}
+                bgColor={"primary.600"}
+              >
+                <Text color={"lightText"} fontWeight={"semibold"}>
+                  Cancel
+                </Text>
+              </Button>
+            </HStack>
+          </Center>
+        </Modal.Footer>
       </Modal.Content>
     </Modal>
   );
