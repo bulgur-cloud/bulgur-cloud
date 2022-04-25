@@ -13,10 +13,51 @@ Enter the username `test` and password `test` to log in. This is set to be read 
 
 ## Getting Started
 
-Bulgur Cloud is too early in development, and does not have a release available to use yet.
+See the demo above, and [my blog post](https://bgenc.net/bulgur-cloud-intro/) to get a sense of what Bulgur Cloud looks like.
 
-Please see the demo linked above to get a sense of what it looks like.
-You can see [my blog post](https://bgenc.net/bulgur-cloud-intro/) for details.
+If you like it, Bulgur Cloud has an experimental 0.1 release out now! Check the
+[releases page](https://github.com/SeriousBug/bulgur-cloud/releases) to download
+it as a self-contained binary which includes everything needed, or use the
+[seriousbug/bulgur-cloud](https://hub.docker.com/repository/docker/seriousbug/bulgur-cloud)
+docker image. Releases are available for Linux on x86_64, aarch64, armv7, and
+arm; and for Windows on x86_64 only.
+
+The releases are self contained, you don't need to set up a database or install
+anything extra. The user interface is built into the released binary, so no
+extra setup is needed.
+
+### Binary
+
+Download the binary that matches your system from the [releases page](https://github.com/SeriousBug/bulgur-cloud/releases), and extract it from the archive.
+You can run this binary as a CLI command to add and remove users, or run it without commands to launch the server.
+
+```bash
+# Add users for the service, repeat for however many users you'd like to add
+./bulgur-cloud user add --username name-for-user
+mkdir -p storage/name-for-user/
+# Start the service
+./bulgur-cloud
+```
+
+The server will launch on port 8000 and will accept connections from all
+addresses. This will be made configurable soon.
+
+### Docker
+
+Pull the [seriousbug/bulgur-cloud](https://hub.docker.com/repository/docker/seriousbug/bulgur-cloud)
+image from DockerHub.
+
+```bash
+# Pull the docker image
+docker pull seriousbug/bulgur-cloud:latest
+# Create folders to store the data
+mkdir -p users storage
+# Add users for the service, repeat for however many users you'd like to add
+docker run --rm -it -p 8000:8000 -v "$(pwd)/users":/users:rw -v "$(pwd)/storage":/storage:rw seriousbug/bulgur-cloud:latest user add --username name-for-user
+mkdir -p storage/name-for-user
+# Start the service
+docker run --rm -it -p 8000:8000 -v "$(pwd)/users":/users:rw -v "$(pwd)/storage":/storage:rw seriousbug/bulgur-cloud:latest
+```
 
 ## Development
 
