@@ -2,7 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import React from "react";
-import { NativeBaseProvider, extendTheme } from "native-base";
+import { NativeBaseProvider, extendTheme, View } from "native-base";
 import { Provider } from "react-redux";
 
 import {
@@ -74,11 +74,13 @@ function Base() {
   return (
     <SafeAreaProvider>
       <NativeBaseProvider theme={theme}>
-        <Provider store={store}>
-          <App />
-          <StatusBar style="auto" />
-          <ErrorDisplay />
-        </Provider>
+        <View paddingX={8} paddingY={4}>
+          <Provider store={store}>
+            <App />
+            <StatusBar style="auto" />
+            <ErrorDisplay />
+          </Provider>
+        </View>
       </NativeBaseProvider>
     </SafeAreaProvider>
   );
