@@ -44,7 +44,7 @@ addresses. This will be made configurable soon.
 
 ### Docker
 
-Pull the [seriousbug/bulgur-cloud](https://hub.docker.com/repository/docker/seriousbug/bulgur-cloud)
+Pull the [seriousbug/bulgur-cloud](https://hub.docker.com/r/seriousbug/bulgur-cloud)
 image from DockerHub.
 
 ```bash
