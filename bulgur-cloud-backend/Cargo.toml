@@ -6,6 +6,10 @@ edition = "2021"
 license = "AGPL-3.0-only"
 default-run = "bulgur-cloud"
 
+[profile.release]
+strip = "symbols"
+lto = true
+
 [features]
 # Enabled only to generate types for the frontend
 generate_types = []
