@@ -1,6 +1,6 @@
 use crate::{
     error::{CLIError, ServerError},
-    folder::USERS_DIR,
+    folder::{STORAGE, USERS_DIR},
     state::{self, AppState, Token},
 };
 use std::{path::PathBuf, str::FromStr};
@@ -85,6 +85,13 @@ pub(crate) async fn create_user(
         .open(user_path)
         .await?;
     file.write_all(data.as_bytes()).await?;
+
+    Ok(())
+}
+
+pub(crate) async fn create_user_folder(username: &str) -> anyhow::Result<()> {
+    let path = PathBuf::from(STORAGE).join(username);
+    fs::create_dir_all(path).await?;
 
     Ok(())
 }

@@ -6,8 +6,8 @@ use structopt::StructOpt;
 use tokio::fs;
 
 use crate::{
-    auth::{create_user, UserType},
-    folder::USERS_DIR,
+    auth::{create_user, create_user_folder, UserType},
+    folder::{STORAGE, USERS_DIR},
 };
 
 #[derive(StructOpt)]
@@ -25,6 +25,9 @@ pub struct UserAdd {
 pub struct UserRemove {
     #[structopt(short, long)]
     username: String,
+    #[structopt(name = "delete-files", long)]
+    /// Delete the store for this user. Files will be removed, and may be irrecoverable.
+    delete_files: bool,
 }
 
 #[derive(StructOpt)]
@@ -54,13 +57,16 @@ pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
             User::UserAdd(add) => {
                 let password = prompt_password("Enter the password for this user: ")?;
                 create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
+                create_user_folder(&add.username).await?;
                 Ok(())
             }
             User::UserRemove(remove) => {
-                let mut path = PathBuf::from(USERS_DIR);
-                fs::create_dir_all(&path).await?;
-                path.push(format!("{}.json", &remove.username));
+                let path = PathBuf::from(USERS_DIR).join(format!("{}.toml", &remove.username));
                 fs::remove_file(path).await?;
+                if remove.delete_files {
+                    let store = PathBuf::from(STORAGE).join(&remove.username);
+                    fs::remove_dir_all(store).await?;
+                }
                 Ok(())
             }
         },
