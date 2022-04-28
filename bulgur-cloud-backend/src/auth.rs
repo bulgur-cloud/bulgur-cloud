@@ -70,11 +70,34 @@ const NOBODY_USER_COMMENT: &'static str = "#
 ";
 const USER_NOBODY: &'static str = "nobody";
 
+#[derive(thiserror::Error, Debug)]
+enum BadUsername {
+    #[error("Using '{not_allowed}' as a username is not allowed.")]
+    UsernameNotAllowed { not_allowed: &'static str },
+    #[error("Usernames can not contain '{forbidden_character}' in them.")]
+    CharacterNotAllowed { forbidden_character: &'static str },
+}
+
+fn validate_username(username: &str) -> Result<(), BadUsername> {
+    if username == "." {
+        Err(BadUsername::UsernameNotAllowed { not_allowed: "." })
+    } else if username == ".." {
+        Err(BadUsername::UsernameNotAllowed { not_allowed: ".." })
+    } else if username.contains("/") {
+        Err(BadUsername::CharacterNotAllowed {
+            forbidden_character: "/",
+        })
+    } else {
+        Ok(())
+    }
+}
+
 pub(crate) async fn create_user(
     username: &str,
     password: &str,
     user_type: UserType,
 ) -> anyhow::Result<()> {
+    validate_username(username)?;
     let user_path = path_user_file(username);
     let data = create_user_string(username, password, user_type).await?;
 

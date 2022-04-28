@@ -64,7 +64,8 @@ workspace:
     enableEditorDecorations: true
     maxPreviewsCached: 10
     maxNoteLength: 204800
-    dendronVersion: 0.83.4
+    dendronVersion: 0.92.0
+    enableFullHierarchyNoteTitle: false
 preview:
     enableFMTitle: true
     enableNoteTitleForLink: true
