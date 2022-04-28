@@ -740,7 +740,7 @@ dependencies = [
 
 [[package]]
 name = "bulgur-cloud"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -773,15 +773,15 @@ dependencies = [
  "tracing-bunyan-formatter",
  "tracing-subscriber",
  "tracing-unwrap",
- "typescript-type-def",
+ "typescript-type-def 0.4.1",
 ]
 
 [[package]]
 name = "bulgur-cloud-frontend"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bulgur-cloud",
- "typescript-type-def",
+ "typescript-type-def 0.5.2",
 ]
 
 [[package]]
@@ -2444,7 +2444,7 @@ dependencies = [
 
 [[package]]
 name = "simple-secrecy"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2984,7 +2984,16 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72d41dcd8691bbb923b6c601885b1969fb59ada068f09053ab5a4446589ce03b"
 dependencies = [
- "typescript-type-def-derive",
+ "typescript-type-def-derive 0.4.1",
+]
+
+[[package]]
+name = "typescript-type-def"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d455799911099a3fe97fc55f65144f705ef635258a36b5bde4562aee93d6f4e7"
+dependencies = [
+ "typescript-type-def-derive 0.5.2",
 ]
 
 [[package]]
@@ -2992,6 +3001,20 @@ name = "typescript-type-def-derive"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "31ef9b3de4f996891da1e0e8e32ce3ecb84ee2feeb2c53d98b90f2bfc9b4ec30"
+dependencies = [
+ "darling",
+ "ident_case",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "typescript-type-def-derive"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f5a80aa1dd9ff286881e9439bd4486912c6f8f849ea35174a75042b7d1b57ade"
 dependencies = [
  "darling",
  "ident_case",

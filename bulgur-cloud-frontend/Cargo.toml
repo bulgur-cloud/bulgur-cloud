@@ -1,12 +1,12 @@
 [package]
 name = "bulgur-cloud-frontend"
 description = "Simple and delicious cloud storage and sharing."
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "AGPL-3.0-only"
 
 [dependencies]
-typescript-type-def = "0.4.0"
+typescript-type-def = "0.5.1"
 bulgur-cloud = { path = "../bulgur-cloud-backend", features = [
   "generate_types",
 ] }

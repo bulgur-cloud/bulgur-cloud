@@ -1,6 +1,6 @@
 {
   "name": "bulgur-cloud-frontend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "AGPL-3.0-only",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
