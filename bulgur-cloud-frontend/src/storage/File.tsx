@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Center, Text, Image, Link, VStack } from "native-base";
+import {
+  Center,
+  Text,
+  Image,
+  Link,
+  VStack,
+  Heading,
+  Box,
+  Button,
+} from "native-base";
 import { useAppSelector } from "../store";
 import { runAsync, useClient } from "../client";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
+import FileSystem from "expo-file-system";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -104,6 +114,54 @@ export function Preview(opts: FilePreviewOpts) {
   return <NoPreview />;
 }
 
+function DownloadButton({
+  filename,
+  downloadUrl,
+}: {
+  filename: string;
+  downloadUrl: string;
+}) {
+  if (Platform.OS === "web") {
+    return (
+      <a
+        style={{ maxWidth: 120, textAlign: "center" }}
+        download={filename}
+        href={downloadUrl}
+      >
+        <Box
+          px="3"
+          py="2"
+          bg="primary.800"
+          rounded="sm"
+          _text={{
+            color: "lightText",
+            fontWeight: "medium",
+          }}
+        >
+          Download
+        </Box>
+      </a>
+    );
+  } else {
+    <Button
+      onPress={() => {
+        runAsync(async () => {
+          // TODO see `createDownloadResumable` for a progress bar later
+          await FileSystem.downloadAsync(
+            downloadUrl,
+            FileSystem.documentDirectory + filename,
+          );
+        });
+      }}
+      bgColor={"primary.800"}
+    >
+      <Text color={"lightText"} fontWeight={"medium"}>
+        Download
+      </Text>
+    </Button>;
+  }
+}
+
 export function File() {
   const currentPath = useAppSelector((state) => state.storage.currentPath);
   const filename = urlFileName(currentPath);
@@ -139,13 +197,13 @@ export function File() {
   return (
     <Center>
       <VStack space={4}>
-        <Text>{filename}</Text>
+        <Heading>{filename}</Heading>
         <Preview
           extension={extension}
           filename={filename}
           fullPath={fullPath}
         />
-        <Link href={fullPath}>Download this file</Link>
+        <DownloadButton filename={filename} downloadUrl={fullPath} />
       </VStack>
     </Center>
   );
