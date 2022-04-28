@@ -34,7 +34,6 @@ You can run this binary as a CLI command to add and remove users, or run it with
 ```bash
 # Add users for the service, repeat for however many users you'd like to add
 ./bulgur-cloud user add --username name-for-user
-mkdir -p storage/name-for-user/
 # Start the service
 ./bulgur-cloud
 ```
@@ -54,7 +53,6 @@ docker pull seriousbug/bulgur-cloud:latest
 mkdir -p users storage
 # Add users for the service, repeat for however many users you'd like to add
 docker run --rm -it -p 8000:8000 -v "$(pwd)/users":/users:rw -v "$(pwd)/storage":/storage:rw seriousbug/bulgur-cloud:latest user add --username name-for-user
-mkdir -p storage/name-for-user
 # Start the service
 docker run --rm -it -p 8000:8000 -v "$(pwd)/users":/users:rw -v "$(pwd)/storage":/storage:rw seriousbug/bulgur-cloud:latest
 ```
