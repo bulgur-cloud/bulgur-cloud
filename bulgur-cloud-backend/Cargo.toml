@@ -56,4 +56,4 @@ rpassword = "6.0"
 thiserror = "1.0"
 anyhow = "1.0"
 # Can we limit this to only if `generate_types` is set?
-typescript-type-def = "0.4"
+typescript-type-def = "0.5.2"
