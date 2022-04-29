@@ -43,8 +43,19 @@ declare -A DOCKER_TARGETS=(
   ['arm-unknown-linux-musleabihf']='linux/arm/v6'
 )
 
+prompt_confirm() {
+  while true; do
+    read -r -n 1 -p "${1} [y/N]: " REPLY
+    case $REPLY in
+    [yY] | [Yy][Ee][Ss]) return 0 ;;
+    *) exit 1 ;;
+    esac
+  done
+}
+
 # Get the version number
 VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' Cargo.toml)
+prompt_confirm "Releasing version ${VERSION}, please make sure all Cargo.toml and package.json files are updated."
 
 # Build the UI
 pushd bulgur-cloud-frontend
