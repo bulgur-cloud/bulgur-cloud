@@ -14,7 +14,7 @@ import { runAsync, useClient } from "../client";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
-import FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -143,22 +143,24 @@ function DownloadButton({
       </a>
     );
   } else {
-    <Button
-      onPress={() => {
-        runAsync(async () => {
-          // TODO see `createDownloadResumable` for a progress bar later
-          await FileSystem.downloadAsync(
-            downloadUrl,
-            FileSystem.documentDirectory + filename,
-          );
-        });
-      }}
-      bgColor={"primary.800"}
-    >
-      <Text color={"lightText"} fontWeight={"medium"}>
-        Download
-      </Text>
-    </Button>;
+    return (
+      <Button
+        onPress={() => {
+          runAsync(async () => {
+            // TODO see `createDownloadResumable` for a progress bar later
+            await FileSystem.downloadAsync(
+              downloadUrl,
+              FileSystem.documentDirectory + filename,
+            );
+          });
+        }}
+        bgColor={"primary.800"}
+      >
+        <Text color={"lightText"} fontWeight={"medium"}>
+          Download
+        </Text>
+      </Button>
+    );
   }
 }
 
