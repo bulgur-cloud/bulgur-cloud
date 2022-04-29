@@ -46,6 +46,11 @@ declare -A DOCKER_TARGETS=(
 # Get the version number
 VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' Cargo.toml)
 
+# Build the UI
+pushd bulgur-cloud-frontend
+yarn build:web
+popd
+
 # Make the builds
 for target in "${!TARGETS[@]}"; do
   echo Building "${target}"
@@ -64,7 +69,7 @@ fi
 
 # Copy files into place so Docker can get them easily
 mkdir -p Docker
-cd Docker
+pushd Docker
 echo Building Docker images
 mkdir -p binaries
 for target in "${!DOCKER_TARGETS[@]}"; do
@@ -78,3 +83,4 @@ ${DOCKER} buildx build . \
   --tag "seriousbug/bulgur-cloud:latest" \
   --tag "seriousbug/bulgur-cloud:${VERSION}" \
   --push
+popd
