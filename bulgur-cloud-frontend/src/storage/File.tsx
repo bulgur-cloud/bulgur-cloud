@@ -83,6 +83,8 @@ export function PDFPreview(opts: FilePreviewOpts) {
 export function VideoPreview(opts: FilePreviewOpts) {
   const { fullPath } = opts;
 
+  console.log(fullPath);
+
   if (Platform.OS === "web") {
     return (
       <video
@@ -193,7 +195,9 @@ export function File() {
   }
 
   const fullPath =
-    api.site + joinURL("/storage", currentPath) + `?token=${pathToken}`;
+    api.site +
+    encodeURI(joinURL("/storage", currentPath) + `?token=${pathToken}`);
+  console.log(fullPath);
   const extension = urlFileExtension(filename) || "";
 
   return (

@@ -72,6 +72,7 @@ export abstract class BaseClientCommand<
         authToken: this._token,
         site: this._site,
         ...opts,
+        url: encodeURI(opts.url),
       });
       if (out?.response.ok) return out;
 

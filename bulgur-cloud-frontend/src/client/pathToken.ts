@@ -21,7 +21,7 @@ export class PathToken extends BaseClientCommand<api.Token, [string]> {
    */
   async run(path: string): Promise<api.Token> {
     const out = await this.post<api.StorageAction>({
-      url: joinURL(STORAGE, path),
+      url: encodeURI(joinURL(STORAGE, path)),
       data: {
         action: "MakePathToken",
       },
