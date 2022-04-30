@@ -18,8 +18,10 @@ import { Login } from "./Login";
 import { store } from "./store";
 import { FullPageLoading } from "./Loading";
 import { useClient } from "./client";
-import { isString } from "./typeUtils";
 import { ErrorDisplay } from "./ErrorDisplay";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { RoutingStackParams } from "./routes";
 
 function Base() {
   const theme = extendTheme({
@@ -86,23 +88,37 @@ function Base() {
   );
 }
 
+const Stack: any = createNativeStackNavigator<RoutingStackParams>();
+const linking = {
+  prefixes: ["bulgur-cloud://"],
+  config: {
+    screens: {
+      Login: "",
+      Dashboard: "storage",
+    },
+  },
+};
+
 function App() {
   const [fontsLoaded] = useFonts({
     Bitter_400Regular,
     Bitter_600SemiBold,
     Bitter_400Regular_Italic,
   });
-  const { state, username } = useClient();
+  const { state } = useClient();
 
   if (!fontsLoaded || state === "loading" || state === "uninitialized") {
     return <FullPageLoading />;
   }
 
-  if (isString(username)) {
-    return <Dashboard />;
-  } else {
-    return <Login />;
-  }
+  return (
+    <NavigationContainer linking={linking} fallback={FullPageLoading}>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Dashboard" component={Dashboard} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
 
 registerRootComponent(Base);

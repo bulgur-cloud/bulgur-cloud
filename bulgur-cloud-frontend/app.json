@@ -1,8 +1,9 @@
 {
   "expo": {
     "entryPoint": "./src/App.tsx",
-    "name": "bulgur-cloud-frontend",
-    "slug": "bulgur-cloud-frontend",
+    "name": "Bulgur Cloud",
+    "slug": "bulgur-cloud",
+    "scheme": "bulgur-cloud",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

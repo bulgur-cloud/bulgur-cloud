@@ -22,6 +22,8 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
+import { RoutingStackParams } from "./routes";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 function StorageItem() {
   const isFolder = useAppSelector((state) => state.storage.is_folder);
@@ -68,7 +70,9 @@ function BackButton() {
   }
 }
 
-export function Dashboard() {
+type DashboardParams = NativeStackScreenProps<RoutingStackParams, "Dashboard">;
+
+export function Dashboard({ navigation }: DashboardParams) {
   const { username, state: authState, loadFolder, logout } = useClient();
   const state = useAppSelector((state) => state.storage.state);
 
@@ -108,6 +112,7 @@ export function Dashboard() {
               color="primary.400"
               onPress={() => {
                 logout.run();
+                navigation.navigate("Login");
               }}
             >
               (Logout)
