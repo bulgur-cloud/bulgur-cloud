@@ -69,9 +69,8 @@ function BackButton() {
 }
 
 export function Dashboard() {
-  const { username, state: authState, loadFolder } = useClient();
+  const { username, state: authState, loadFolder, logout } = useClient();
   const state = useAppSelector((state) => state.storage.state);
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (authState === "done" && state === "uninitialized") {
@@ -108,7 +107,7 @@ export function Dashboard() {
             <Text
               color="primary.400"
               onPress={() => {
-                dispatch(authSlice.actions.logout());
+                logout.run();
               }}
             >
               (Logout)
