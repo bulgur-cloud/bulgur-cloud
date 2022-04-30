@@ -11,6 +11,18 @@ export function RenameModal(
   const currentPath = useAppSelector((state) => state.storage.currentPath);
   const { rename } = useClient();
 
+  function doRename() {
+    runAsync(async () => {
+      await rename.run([
+        {
+          from: joinURL(currentPath, props.itemName),
+          to: joinURL(currentPath, newName),
+        },
+      ]);
+      props.onClose();
+    });
+  }
+
   return (
     <Modal {...props}>
       <Modal.Content maxWidth={96}>
@@ -26,6 +38,7 @@ export function RenameModal(
             onChangeText={setNewName}
             defaultValue={props.itemName}
             selectTextOnFocus={true}
+            onSubmitEditing={doRename}
           />
         </Modal.Body>
         <Modal.Footer>
@@ -34,17 +47,7 @@ export function RenameModal(
               <Button
                 flexGrow={2}
                 maxWidth={48}
-                onPress={() => {
-                  runAsync(async () => {
-                    await rename.run([
-                      {
-                        from: joinURL(currentPath, props.itemName),
-                        to: joinURL(currentPath, newName),
-                      },
-                    ]);
-                    props.onClose();
-                  });
-                }}
+                onPress={doRename}
                 bgColor={"primary.800"}
               >
                 <Text color={"lightText"} fontWeight={"semibold"}>

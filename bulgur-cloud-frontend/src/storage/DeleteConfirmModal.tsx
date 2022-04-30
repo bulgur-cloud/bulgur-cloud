@@ -40,44 +40,40 @@ export function DeleteConfirmModal(
         <Modal.Header>
           <Text>{titleMessage}</Text>
         </Modal.Header>
-        <Modal.Body>
-          <VStack space={4}>
-            <Center>
-              <HStack space={4}>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
-                    runAsync(async () => {
-                      console.log(joinURL(currentPath, props.itemName));
-                      await deletePath.run(
-                        joinURL(currentPath, props.itemName),
-                      );
-                      props.onClose();
-                    });
-                  }}
-                  bgColor={"primary.800"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Delete
-                  </Text>
-                </Button>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
+        <Modal.Footer>
+          <Center>
+            <HStack space={4}>
+              <Button
+                flexGrow={2}
+                maxWidth={48}
+                onPress={() => {
+                  runAsync(async () => {
+                    console.log(joinURL(currentPath, props.itemName));
+                    await deletePath.run(joinURL(currentPath, props.itemName));
                     props.onClose();
-                  }}
-                  bgColor={"primary.600"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Cancel
-                  </Text>
-                </Button>
-              </HStack>
-            </Center>
-          </VStack>
-        </Modal.Body>
+                  });
+                }}
+                bgColor={"primary.800"}
+              >
+                <Text color={"lightText"} fontWeight={"semibold"}>
+                  Delete
+                </Text>
+              </Button>
+              <Button
+                flexGrow={2}
+                maxWidth={48}
+                onPress={() => {
+                  props.onClose();
+                }}
+                bgColor={"primary.600"}
+              >
+                <Text color={"lightText"} fontWeight={"semibold"}>
+                  Cancel
+                </Text>
+              </Button>
+            </HStack>
+          </Center>
+        </Modal.Footer>
       </Modal.Content>
     </Modal>
   );
