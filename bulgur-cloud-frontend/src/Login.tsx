@@ -30,7 +30,7 @@ export function Login({ navigation }: LoginParams) {
   useEffect(() => {
     console.log("checking at login", loggedInUsername);
     if (loggedInUsername !== undefined && loggedInUsername?.length > 0) {
-      navigation.navigate("Dashboard");
+      navigation.replace("Dashboard", { store: loggedInUsername });
     }
   }, [loggedInUsername]);
 
@@ -41,7 +41,7 @@ export function Login({ navigation }: LoginParams) {
   const onLogin = () => {
     runAsync(async () => {
       await login.run({ username, password, site });
-      navigation.replace("Dashboard");
+      navigation.replace("Dashboard", { store: username });
     });
   };
 

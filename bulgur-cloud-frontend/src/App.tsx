@@ -94,7 +94,7 @@ const linking = {
   config: {
     screens: {
       Login: "",
-      Dashboard: "storage",
+      Dashboard: "s/:store/",
     },
   },
 };

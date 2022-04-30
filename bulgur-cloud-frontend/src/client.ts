@@ -129,5 +129,6 @@ export function useClient() {
     rename,
     upload,
     createFolder,
+    isAuthenticated: !!(state && username),
   };
 }

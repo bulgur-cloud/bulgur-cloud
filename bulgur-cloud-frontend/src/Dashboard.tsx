@@ -72,21 +72,24 @@ function BackButton() {
 
 type DashboardParams = NativeStackScreenProps<RoutingStackParams, "Dashboard">;
 
-export function Dashboard({ navigation }: DashboardParams) {
-  const { username, state: authState, loadFolder, logout } = useClient();
+export function Dashboard({ navigation, route }: DashboardParams) {
+  const { username, isAuthenticated, loadFolder, logout } = useClient();
   const state = useAppSelector((state) => state.storage.state);
+  const { store } = route.params;
 
   useEffect(() => {
-    if (authState === "done" && state === "uninitialized") {
+    if (isAuthenticated && state === "uninitialized") {
       runAsync(async () => {
-        await loadFolder.run(`${username}/`);
+        await loadFolder.run(`${store}/`);
       });
     }
-  }, [authState, state]);
+  }, [isAuthenticated, state]);
 
-  if (authState !== "done") {
-    return <FullPageLoading />;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace("Login");
+    }
+  }, [isAuthenticated]);
 
   return (
     <Center paddingTop={16}>
@@ -112,7 +115,7 @@ export function Dashboard({ navigation }: DashboardParams) {
               color="primary.400"
               onPress={() => {
                 logout.run();
-                navigation.navigate("Login");
+                navigation.replace("Login");
               }}
             >
               (Logout)

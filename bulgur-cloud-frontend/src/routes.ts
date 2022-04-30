@@ -1,4 +1,6 @@
 export type RoutingStackParams = {
   Login: undefined;
-  Dashboard: undefined;
+  Dashboard: {
+    store: string;
+  };
 };
