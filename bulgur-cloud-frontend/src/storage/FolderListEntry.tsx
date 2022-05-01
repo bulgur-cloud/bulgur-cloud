@@ -59,6 +59,7 @@ export function FolderListEntry(
           params: {
             store,
             path: path === "" ? item.name : joinURL(path, item.name),
+            isFile: item.is_file,
           },
         }}
       >

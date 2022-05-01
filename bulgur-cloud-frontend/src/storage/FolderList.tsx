@@ -2,7 +2,6 @@ import { Center, Text, View, VStack } from "native-base";
 import React from "react";
 import useSWR from "swr";
 import { useClient } from "../client";
-import { FullPageLoading } from "../Loading";
 import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";

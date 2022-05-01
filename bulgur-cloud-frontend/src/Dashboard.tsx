@@ -9,11 +9,11 @@ import {
   VStack,
 } from "native-base";
 import React, { useEffect } from "react";
-import { runAsync, useClient } from "./client";
+import { useClient } from "./client";
 import { File } from "./storage/File";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { joinURL, urlUp1Level } from "./fetch";
+import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
@@ -21,11 +21,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useSWRConfig } from "swr";
 
 function StorageItem(params: DashboardParams) {
-  const isFolder = true; // TODO
-  if (isFolder) {
-    return <FolderList {...params} />;
+  if (params.route.params.isFile) {
+    return <File {...params} />;
   } else {
-    return <File />;
+    return <FolderList {...params} />;
   }
 }
 
@@ -56,6 +55,7 @@ function BackButton(params: DashboardParams) {
           navigation.navigate("Dashboard", {
             store,
             path: urlUp1Level(path),
+            isFile: false,
           });
         }}
       />

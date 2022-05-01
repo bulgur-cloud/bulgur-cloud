@@ -15,6 +15,7 @@ import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
 import * as FileSystem from "expo-file-system";
+import { DashboardParams } from "../routes";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -166,9 +167,9 @@ function DownloadButton({
   }
 }
 
-export function File() {
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
-  const filename = urlFileName(currentPath);
+export function File(params: DashboardParams) {
+  const { path, store } = params.route.params;
+  const filename = urlFileName(path);
 
   const api = useClient();
   const [pathToken, setPathToken] = useState<undefined | null | string>();
@@ -176,11 +177,11 @@ export function File() {
   useEffect(() => {
     if (pathToken === undefined) {
       runAsync(async () => {
-        const token = await api.pathToken.run("/" + currentPath);
+        const token = await api.pathToken.run(joinURL(store, path));
         setPathToken(token);
       });
     }
-  }, [pathToken, currentPath]);
+  }, [pathToken, store, path]);
 
   if (pathToken === undefined) {
     return <Loading />;
@@ -196,7 +197,7 @@ export function File() {
 
   const fullPath =
     api.site +
-    encodeURI(joinURL("/storage", currentPath) + `?token=${pathToken}`);
+    encodeURI(joinURL("/storage", store, path) + `?token=${pathToken}`);
   console.log(fullPath);
   const extension = urlFileExtension(filename) || "";
 

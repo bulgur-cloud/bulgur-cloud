@@ -26,9 +26,9 @@ export function urlFileExtension(url: string): string | undefined {
 }
 
 export function urlFileName(url: string): string | undefined {
-  const extensionMatch = /[/]([^/]+)$/.exec(url);
-  const extension = extensionMatch ? extensionMatch[1] : undefined;
-  return extension;
+  const fileNameMatch = /[/]([^/]+)$/.exec(url);
+  const fileName = fileNameMatch ? fileNameMatch[1] : undefined;
+  return fileName;
 }
 
 export type Request = {
