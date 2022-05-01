@@ -10,25 +10,18 @@ import {
 } from "native-base";
 import React, { useEffect } from "react";
 import { runAsync, useClient } from "./client";
-import { FullPageLoading } from "./Loading";
 import { File } from "./storage/File";
-import {
-  authSlice,
-  storageSlice,
-  useAppDispatch,
-  useAppSelector,
-} from "./store";
+import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { urlUp1Level } from "./fetch";
+import { joinURL, urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
-import { RoutingStackParams } from "./routes";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { DashboardParams } from "./routes";
 
-function StorageItem() {
+function StorageItem(params: DashboardParams) {
   const isFolder = useAppSelector((state) => state.storage.is_folder);
   if (isFolder) {
-    return <FolderList />;
+    return <FolderList {...params} />;
   } else {
     return <File />;
   }
@@ -70,24 +63,20 @@ function BackButton() {
   }
 }
 
-type DashboardParams = NativeStackScreenProps<RoutingStackParams, "Dashboard">;
-
-export function Dashboard({ navigation, route }: DashboardParams) {
+export function Dashboard(params: DashboardParams) {
   const { username, isAuthenticated, loadFolder, logout } = useClient();
   const state = useAppSelector((state) => state.storage.state);
-  const { store } = route.params;
+  const { store, path } = params.route.params;
 
   useEffect(() => {
-    if (isAuthenticated && state === "uninitialized") {
-      runAsync(async () => {
-        await loadFolder.run(`${store}/`);
-      });
-    }
-  }, [isAuthenticated, state]);
+    runAsync(async () => {
+      await loadFolder.run(joinURL(store, path));
+    });
+  }, [isAuthenticated, state, path]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigation.replace("Login");
+      params.navigation.replace("Login");
     }
   }, [isAuthenticated]);
 
@@ -115,14 +104,14 @@ export function Dashboard({ navigation, route }: DashboardParams) {
               color="primary.400"
               onPress={() => {
                 logout.run();
-                navigation.replace("Login");
+                params.navigation.replace("Login");
               }}
             >
               (Logout)
             </Text>
           </HStack>
         </HStack>
-        <StorageItem />
+        <StorageItem {...params} />
       </VStack>
     </Center>
   );

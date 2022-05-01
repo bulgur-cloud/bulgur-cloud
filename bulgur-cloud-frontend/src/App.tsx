@@ -21,7 +21,7 @@ import { useClient } from "./client";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { RoutingStackParams } from "./routes";
+import { LINKING, RoutingStackParams, Stack } from "./routes";
 
 function Base() {
   const theme = extendTheme({
@@ -88,17 +88,6 @@ function Base() {
   );
 }
 
-const Stack: any = createNativeStackNavigator<RoutingStackParams>();
-const linking = {
-  prefixes: ["bulgur-cloud://"],
-  config: {
-    screens: {
-      Login: "",
-      Dashboard: "s/:store/",
-    },
-  },
-};
-
 function App() {
   const [fontsLoaded] = useFonts({
     Bitter_400Regular,
@@ -112,7 +101,7 @@ function App() {
   }
 
   return (
-    <NavigationContainer linking={linking} fallback={FullPageLoading}>
+    <NavigationContainer linking={LINKING} fallback={FullPageLoading}>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Dashboard" component={Dashboard} />

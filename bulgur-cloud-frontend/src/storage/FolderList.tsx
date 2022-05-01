@@ -1,10 +1,11 @@
 import { Center, Text, View, VStack } from "native-base";
 import React from "react";
+import { DashboardParams } from "../routes";
 import { useAppSelector } from "../store";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
-export function FolderList() {
+export function FolderList(params: DashboardParams) {
   const contents = useAppSelector((state) => state.storage.contents);
 
   if (contents.length === 0) {
@@ -19,7 +20,7 @@ export function FolderList() {
   return (
     <VStack space={3}>
       {contents.map((item, index) => (
-        <FolderListEntry item={item} key={index} />
+        <FolderListEntry {...params} item={item} key={index} />
       ))}
       <FABs />
     </VStack>

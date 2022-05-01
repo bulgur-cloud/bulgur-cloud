@@ -9,6 +9,8 @@ import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { RenameModal } from "./RenameModal";
 import api from "../api";
+import { Link } from "@react-navigation/native";
+import { DashboardParams } from "../routes";
 
 function itemIconType({
   isFile,
@@ -27,9 +29,11 @@ function itemIconType({
   return "file";
 }
 
-export function FolderListEntry({ item }: { item: api.FolderEntry }) {
+export function FolderListEntry({
+  item,
+  route,
+}: { item: api.FolderEntry } & DashboardParams) {
   const dispatch = useAppDispatch();
-  const { loadFolder } = useClient();
   const currentPath = useAppSelector((state) => state.storage.currentPath);
   const isMarkedForMove = useAppSelector(
     (state) =>
@@ -37,24 +41,7 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
       state.storage.markedForMove[item.name] ===
         joinURL(currentPath, item.name),
   );
-
-  function onPressHandler(item: api.FolderEntry) {
-    return () => {
-      dispatch(storageSlice.actions.markLoading());
-      if (item.is_file) {
-        dispatch(
-          storageSlice.actions.loadFile({
-            ...item,
-            currentPath: joinURL(currentPath, item.name),
-          }),
-        );
-      } else {
-        runAsync(async () => {
-          await loadFolder.run(joinURL(currentPath, item.name));
-        });
-      }
-    };
-  }
+  const { store, path } = route.params;
 
   const [isRenameModalOpen, setRenameModelOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setDeleteModelOpen] = useState<boolean>(false);
@@ -67,11 +54,18 @@ export function FolderListEntry({ item }: { item: api.FolderEntry }) {
         name={itemIconType({ isFile: item.is_file, itemName: item.name })}
         color="darkText"
         opacity={isMarkedForMove ? 20 : 100}
-        onPress={onPressHandler(item)}
       />
-      <Text opacity={isMarkedForMove ? 20 : 100} onPress={onPressHandler(item)}>
-        {item.name}
-      </Text>
+      <Link
+        to={{
+          screen: "Dashboard",
+          params: {
+            store,
+            path: path === "" ? item.name : joinURL(path, item.name),
+          },
+        }}
+      >
+        <Text opacity={isMarkedForMove ? 20 : 100}>{item.name}</Text>
+      </Link>
       <FillSpacer />
       <Icon
         as={FontAwesome5}
