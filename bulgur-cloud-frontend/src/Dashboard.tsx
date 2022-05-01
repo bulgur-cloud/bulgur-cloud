@@ -18,7 +18,7 @@ import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
 import { useNavigation } from "@react-navigation/native";
-import useSWR, { useSWRConfig } from "swr";
+import { useSWRConfig } from "swr";
 
 function StorageItem(params: DashboardParams) {
   const isFolder = true; // TODO

@@ -9,13 +9,14 @@ export function joinURL(...args: string[]) {
 }
 
 export function urlUp1Level(url: string) {
-  return (
+  const upUrl =
     normalizeURL(url)
       .replace(/\/$/, "")
       .split("/")
       .slice(undefined, -1)
-      .join("/") + "/"
-  );
+      .join("/") + "/";
+  if (upUrl === "/") return "";
+  return upUrl;
 }
 
 export function urlFileExtension(url: string): string | undefined {
