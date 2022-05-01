@@ -1,14 +1,20 @@
 import { Center, Text, View, VStack } from "native-base";
 import React from "react";
+import useSWR from "swr";
+import { useClient } from "../client";
+import { FullPageLoading } from "../Loading";
 import { DashboardParams } from "../routes";
-import { useAppSelector } from "../store";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
 export function FolderList(params: DashboardParams) {
-  const contents = useAppSelector((state) => state.storage.contents);
+  const { fetchFolder } = useClient();
+  const { store, path } = params.route.params;
+  const { data } = useSWR([store, path], fetchFolder);
 
-  if (contents.length === 0) {
+  const contents = data?.entries;
+
+  if (!contents || contents.length === 0) {
     return (
       <Center>
         <Text color="darkText">This folder is empty.</Text>

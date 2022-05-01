@@ -2,7 +2,6 @@ import api from "../api";
 import { isBoolean, isString } from "../typeUtils";
 import { BError } from "../error";
 import { BaseClientCommand } from "./base";
-import { storageSlice, store } from "../store";
 import { joinURL } from "../fetch";
 
 function isFolderEntry(data: any): data is api.FolderEntry {
@@ -29,12 +28,10 @@ export class LoadFolder extends BaseClientCommand<
    *
    * @param path The new path to load. Used to navigate to a new folder, or
    * refresh the existing folder.
-   * @param peek If true, this function will return the contents of the folder
-   * without replacing the current folder.
    *
    * @returns The contents of the requested folder.
    */
-  async run(path: string, peek?: boolean) {
+  async run(path: string) {
     const response = await this.get({
       url: joinURL(STORAGE, path),
     });
@@ -48,15 +45,6 @@ export class LoadFolder extends BaseClientCommand<
         title: "Failed to load folder",
         description: `Unable to load ${path}: ${reason}`,
       });
-    }
-
-    if (!peek) {
-      store.dispatch(
-        storageSlice.actions.loadFolder({
-          currentPath: path,
-          ...out,
-        }),
-      );
     }
 
     return out;

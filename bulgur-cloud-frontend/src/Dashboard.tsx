@@ -17,9 +17,11 @@ import { joinURL, urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
+import { useNavigation } from "@react-navigation/native";
+import useSWR, { useSWRConfig } from "swr";
 
 function StorageItem(params: DashboardParams) {
-  const isFolder = useAppSelector((state) => state.storage.is_folder);
+  const isFolder = true; // TODO
   if (isFolder) {
     return <FolderList {...params} />;
   } else {
@@ -27,14 +29,11 @@ function StorageItem(params: DashboardParams) {
   }
 }
 
-function BackButton() {
-  const { username, loadFolder } = useClient();
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
+function BackButton(params: DashboardParams) {
+  const navigation = useNavigation();
+  const { store, path } = params.route.params;
 
-  console.log(username);
-  console.log(currentPath);
-
-  if (`${username}/` === currentPath) {
+  if (path === "") {
     // Nothing to back out to
     return (
       <Icon
@@ -54,8 +53,9 @@ function BackButton() {
         size="md"
         accessibilityLabel="Go back"
         onPress={() => {
-          runAsync(async () => {
-            await loadFolder.run(urlUp1Level(currentPath));
+          navigation.navigate("Dashboard", {
+            store,
+            path: urlUp1Level(path),
           });
         }}
       />
@@ -64,19 +64,20 @@ function BackButton() {
 }
 
 export function Dashboard(params: DashboardParams) {
-  const { username, isAuthenticated, loadFolder, logout } = useClient();
-  const state = useAppSelector((state) => state.storage.state);
-  const { store, path } = params.route.params;
+  const { username, isAuthenticated, logout } = useClient();
+  const { cache } = useSWRConfig();
 
-  useEffect(() => {
-    runAsync(async () => {
-      await loadFolder.run(joinURL(store, path));
-    });
-  }, [isAuthenticated, state, path]);
+  const doLogout = () => {
+    logout.run();
+    // Type mismatch, function is available: https://github.com/vercel/swr/issues/1887
+    // @ts-ignore
+    cache.clear();
+    params.navigation.replace("Login");
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
-      params.navigation.replace("Login");
+      doLogout();
     }
   }, [isAuthenticated]);
 
@@ -96,17 +97,11 @@ export function Dashboard(params: DashboardParams) {
           borderBottomColor="primary.900"
           borderBottomWidth={2}
         >
-          <BackButton />
+          <BackButton {...params} />
           <MiddleSection />
           <HStack space={2}>
             <Text>{username}</Text>
-            <Text
-              color="primary.400"
-              onPress={() => {
-                logout.run();
-                params.navigation.replace("Login");
-              }}
-            >
+            <Text color="primary.400" onPress={doLogout}>
               (Logout)
             </Text>
           </HStack>

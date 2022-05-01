@@ -1,6 +1,5 @@
 import { Text, HStack, Icon, Spacer } from "native-base";
 import React, { useState } from "react";
-import { runAsync, useClient } from "../client";
 import { joinURL } from "../fetch";
 import { FillSpacer } from "../FillSpacer";
 import { storageSlice, useAppDispatch, useAppSelector } from "../store";
@@ -29,17 +28,16 @@ function itemIconType({
   return "file";
 }
 
-export function FolderListEntry({
-  item,
-  route,
-}: { item: api.FolderEntry } & DashboardParams) {
+export function FolderListEntry(
+  params: { item: api.FolderEntry } & DashboardParams,
+) {
+  const { item, route } = params;
   const dispatch = useAppDispatch();
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
   const isMarkedForMove = useAppSelector(
     (state) =>
       state.storage.markedForMove[item.name] !== undefined &&
       state.storage.markedForMove[item.name] ===
-        joinURL(currentPath, item.name),
+        joinURL(route.params.store, route.params.path, item.name),
   );
   const { store, path } = route.params;
 
@@ -87,14 +85,14 @@ export function FolderListEntry({
             dispatch(
               storageSlice.actions.unmarkForMove({
                 name: item.name,
-                path: joinURL(currentPath, item.name),
+                path: joinURL(route.params.store, route.params.path, item.name),
               }),
             );
           } else {
             dispatch(
               storageSlice.actions.markForMove({
                 name: item.name,
-                path: joinURL(currentPath, item.name),
+                path: joinURL(route.params.store, route.params.path, item.name),
               }),
             );
           }
@@ -120,6 +118,7 @@ export function FolderListEntry({
         isFile={item.is_file}
         isOpen={isDeleteModalOpen}
         onClose={() => setDeleteModelOpen(false)}
+        {...params}
       />
     </HStack>
   );
