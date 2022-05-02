@@ -113,6 +113,7 @@ export function FolderListEntry(
         itemName={item.name}
         isOpen={isRenameModalOpen}
         onClose={() => setRenameModelOpen(false)}
+        {...params}
       />
       <DeleteConfirmModal
         itemName={item.name}

@@ -1,12 +1,19 @@
+import { mutate } from "swr";
 import api from "../api";
 import { joinURL } from "../fetch";
-import { store } from "../store";
 import { BaseClientCommand } from "./base";
-import { LoadFolder, STORAGE } from "./loadFolder";
+import { STORAGE } from "./loadFolder";
 
-type RenameOpts = { from: string; to: string };
+type CreateFolderParams = {
+  store: string;
+  path: string;
+  name: string;
+};
 
-export class CreateFolder extends BaseClientCommand<void, [string]> {
+export class CreateFolder extends BaseClientCommand<
+  void,
+  [CreateFolderParams]
+> {
   /**
    *
    * @param path The new path to load. Used to navigate to a new folder, or
@@ -16,14 +23,15 @@ export class CreateFolder extends BaseClientCommand<void, [string]> {
    *
    * @returns The contents of the requested folder.
    */
-  async run(path: string) {
+  async run({ store, path, name }: CreateFolderParams) {
     const data: api.StorageAction = {
       action: "CreateFolder",
     };
     await this.post({
-      url: joinURL(STORAGE, path),
+      url: joinURL(STORAGE, store, path, name),
       data,
     });
-    await new LoadFolder(this).run(store.getState().storage.currentPath);
+    console.log(store, path);
+    mutate([store, path]);
   }
 }

@@ -15,8 +15,9 @@ import { Platform } from "react-native";
 import { runAsync, useClient } from "./client";
 import { ERR_NOT_IMPLEMENTED } from "./error";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { storageSlice, useAppDispatch, useAppSelector } from "./store";
+import { storageSlice, store, useAppDispatch, useAppSelector } from "./store";
 import { joinURL } from "./fetch";
+import { DashboardParams } from "./routes";
 
 function selectFiles(): Promise<null | File[]> {
   if (Platform.OS === "web") {
@@ -43,9 +44,9 @@ function selectFiles(): Promise<null | File[]> {
   }
 }
 
-export function UploadButton() {
+export function UploadButton(props: DashboardParams) {
   const { upload } = useClient();
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
+  const params = props.route.params;
 
   return (
     <Fab
@@ -69,14 +70,14 @@ export function UploadButton() {
           }
           console.log(`Picked ${files.length} files`);
 
-          upload.run(currentPath, files);
+          upload.run(params.store, params.path, files);
         });
       }}
     ></Fab>
   );
 }
 
-export function CreateNewDirectory() {
+export function CreateNewDirectory(props: DashboardParams) {
   const [showCreateNewFolderModal, setCreateNewFolderModal] = useState(false);
 
   return (
@@ -98,15 +99,18 @@ export function CreateNewDirectory() {
         onClose={() => {
           setCreateNewFolderModal(false);
         }}
+        {...props}
       />
     </View>
   );
 }
 
-export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
+export function CreateNewFolderModal(
+  props: Parameters<typeof Modal>[0] & DashboardParams,
+) {
   const [newName, setNewName] = useState("");
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
   const { createFolder } = useClient();
+  const params = props.route.params;
 
   return (
     <Modal {...props}>
@@ -131,7 +135,11 @@ export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
                   onPress={() => {
                     runAsync(async () => {
                       // An empty upload will just create the folder in the path
-                      await createFolder.run(joinURL(currentPath, newName));
+                      await createFolder.run({
+                        store: params.store,
+                        path: params.path,
+                        name: newName,
+                      });
                       props.onClose();
                     });
                   }}
@@ -162,11 +170,11 @@ export function CreateNewFolderModal(props: Parameters<typeof Modal>[0]) {
   );
 }
 
-export function MoveItems() {
+export function MoveItems(props: DashboardParams) {
   const dispatch = useAppDispatch();
   const markedForMove = useAppSelector((state) => state.storage.markedForMove);
-  const currentPath = useAppSelector((store) => store.storage.currentPath);
   const { rename } = useClient();
+  const params = props.route.params;
 
   if (Object.keys(markedForMove).length === 0) return <View />;
 
@@ -187,10 +195,18 @@ export function MoveItems() {
         onPress={() => {
           runAsync(async () => {
             rename.run(
-              Object.entries(markedForMove).map(([name, from]) => {
+              Object.values(markedForMove).map(({ store, path, name }) => {
                 return {
-                  from,
-                  to: joinURL(currentPath, name),
+                  from: {
+                    store,
+                    path,
+                    name,
+                  },
+                  to: {
+                    store: params.store,
+                    path: params.path,
+                    name,
+                  },
                 };
               }),
             );

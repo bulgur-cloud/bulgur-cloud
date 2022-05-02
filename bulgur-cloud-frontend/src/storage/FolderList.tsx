@@ -17,7 +17,7 @@ export function FolderList(params: DashboardParams) {
     return (
       <Center>
         <Text color="darkText">This folder is empty.</Text>
-        <FABs />
+        <FABs {...params} />
       </Center>
     );
   }
@@ -27,17 +27,17 @@ export function FolderList(params: DashboardParams) {
       {contents.map((item, index) => (
         <FolderListEntry {...params} item={item} key={index} />
       ))}
-      <FABs />
+      <FABs {...params} />
     </VStack>
   );
 }
 
-function FABs() {
+function FABs(params: DashboardParams) {
   return (
     <View>
-      <UploadButton />
-      <CreateNewDirectory />
-      <MoveItems />
+      <UploadButton {...params} />
+      <CreateNewDirectory {...params} />
+      <MoveItems {...params} />
     </View>
   );
 }

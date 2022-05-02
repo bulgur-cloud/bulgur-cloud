@@ -1,9 +1,15 @@
+import { mutate } from "swr";
 import { joinURL } from "../fetch";
-import { store } from "../store";
 import { BaseClientCommand } from "./base";
-import { LoadFolder, STORAGE } from "./loadFolder";
+import { STORAGE } from "./loadFolder";
 
-export class DeletePath extends BaseClientCommand<void, [string]> {
+type DeletePathParams = {
+  store: string;
+  path: string;
+  name: string;
+};
+
+export class DeletePath extends BaseClientCommand<void, [DeletePathParams]> {
   /**
    *
    * @param path The new path to load. Used to navigate to a new folder, or
@@ -13,10 +19,10 @@ export class DeletePath extends BaseClientCommand<void, [string]> {
    *
    * @returns The contents of the requested folder.
    */
-  async run(path: string) {
+  async run({ store, path, name }: DeletePathParams) {
     await this.delete({
-      url: joinURL(STORAGE, path),
+      url: joinURL(STORAGE, store, path, name),
     });
-    await new LoadFolder(this).run(store.getState().storage.currentPath);
+    mutate([store, path]);
   }
 }

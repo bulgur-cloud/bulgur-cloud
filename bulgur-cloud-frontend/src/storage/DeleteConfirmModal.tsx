@@ -12,6 +12,7 @@ export function DeleteConfirmModal(
   } & DashboardParams,
 ) {
   const { deletePath } = useClient();
+  const params = props.route.params;
 
   let titleMessage: string;
   if (props.isFile) {
@@ -34,13 +35,11 @@ export function DeleteConfirmModal(
                 maxWidth={48}
                 onPress={() => {
                   runAsync(async () => {
-                    await deletePath.run(
-                      joinURL(
-                        props.route.params.store,
-                        props.route.params.path,
-                        props.itemName,
-                      ),
-                    );
+                    await deletePath.run({
+                      store: params.store,
+                      path: params.path,
+                      name: props.itemName,
+                    });
                     props.onClose();
                   });
                 }}

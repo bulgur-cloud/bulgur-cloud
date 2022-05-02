@@ -2,6 +2,7 @@ import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "./api";
 import { BError } from "./error";
+import { joinURL } from "./fetch";
 
 type LoadState = "done" | "loading" | "uninitialized";
 
@@ -50,7 +51,13 @@ export const authSlice = createSlice({
 
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
-  markedForMove: { [name: string]: string }; // TODO what about files in different folders with same name? This should be just a set
+  markedForMove: {
+    [fullpath: string]: {
+      store: string;
+      path: string;
+      name: string;
+    };
+  };
 };
 
 const initialStorageState: StorageState = {
@@ -66,16 +73,23 @@ export const storageSlice = createSlice({
   reducers: {
     markForMove: (
       state,
-      action: { payload: { name: string; path: string } },
+      action: { payload: { store: string; path: string; name: string } },
     ) => {
-      state.markedForMove[action.payload.name] = action.payload.path;
+      const { store, path, name } = action.payload;
+      const fullPath = joinURL(store, path);
+      state.markedForMove[fullPath] = {
+        store,
+        path,
+        name,
+      };
     },
     unmarkForMove: (
       state,
-      action: { payload: { name: string; path: string } },
+      action: { payload: { store: string; path: string } },
     ) => {
-      if (state.markedForMove[action.payload.name] === action.payload.path)
-        delete state.markedForMove[action.payload.name];
+      const { store, path } = action.payload;
+      const fullPath = joinURL(store, path);
+      if (state.markedForMove[fullPath]) delete state.markedForMove[fullPath];
     },
     clearMarksForMove: (state) => {
       state.markedForMove = {};
