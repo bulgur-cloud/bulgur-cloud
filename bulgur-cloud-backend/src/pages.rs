@@ -10,6 +10,7 @@ use actix_web::{
 
 use askama_actix::Template;
 use serde::Deserialize;
+use tracing_unwrap::ResultExt;
 
 use crate::{
     auth::{verify_pass, Password},
@@ -33,8 +34,9 @@ pub async fn page_login_get() -> LoginPage {
 pub struct NotFoundPage {}
 
 #[tracing::instrument]
-pub async fn not_found() -> NotFoundPage {
-    NotFoundPage {}
+pub async fn not_found() -> HttpResponse {
+    let page = (NotFoundPage {}).render().unwrap_or_log();
+    HttpResponse::NotFound().body(page)
 }
 
 #[derive(Deserialize)]
