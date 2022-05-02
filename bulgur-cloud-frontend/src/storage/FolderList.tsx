@@ -1,17 +1,23 @@
 import { Center, Text, View, VStack } from "native-base";
 import React from "react";
-import { useAppSelector } from "../store";
+import useSWR from "swr";
+import { useClient } from "../client";
+import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
-export function FolderList() {
-  const contents = useAppSelector((state) => state.storage.contents);
+export function FolderList(params: DashboardParams) {
+  const { fetchFolder } = useClient();
+  const { store, path } = params.route.params;
+  const { data } = useSWR([store, path], fetchFolder);
 
-  if (contents.length === 0) {
+  const contents = data?.entries;
+
+  if (!contents || contents.length === 0) {
     return (
       <Center>
         <Text color="darkText">This folder is empty.</Text>
-        <FABs />
+        <FABs {...params} />
       </Center>
     );
   }
@@ -19,19 +25,19 @@ export function FolderList() {
   return (
     <VStack space={3}>
       {contents.map((item, index) => (
-        <FolderListEntry item={item} key={index} />
+        <FolderListEntry {...params} item={item} key={index} />
       ))}
-      <FABs />
+      <FABs {...params} />
     </VStack>
   );
 }
 
-function FABs() {
+function FABs(params: DashboardParams) {
   return (
     <View>
-      <UploadButton />
-      <CreateNewDirectory />
-      <MoveItems />
+      <UploadButton {...params} />
+      <CreateNewDirectory {...params} />
+      <MoveItems {...params} />
     </View>
   );
 }

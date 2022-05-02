@@ -3,36 +3,23 @@ import React, { useEffect, useState } from "react";
 import { runAsync, useClient } from "../client";
 import { useAppSelector } from "../store";
 import { joinURL } from "../fetch";
+import { DashboardParams } from "../routes";
 
 export function DeleteConfirmModal(
-  props: Parameters<typeof Modal>[0] & { itemName: string; isFile: boolean },
+  props: Parameters<typeof Modal>[0] & {
+    itemName: string;
+    isFile: boolean;
+  } & DashboardParams,
 ) {
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
-  const { loadFolder, deletePath } = useClient();
-  const [folderContentsCount, setFolderContentsCount] = useState<
-    undefined | null | number
-  >();
+  const { deletePath } = useClient();
+  const params = props.route.params;
 
   let titleMessage: string;
   if (props.isFile) {
     titleMessage = `Delete file ${props.itemName}`;
   } else {
     titleMessage = `Delete folder ${props.itemName}`;
-    if (folderContentsCount) {
-      titleMessage = `${titleMessage}, which has ${folderContentsCount} items inside`;
-    }
   }
-  useEffect(() => {
-    if (!props.isFile && folderContentsCount === undefined) {
-      runAsync(async () => {
-        const out = await loadFolder.run(
-          joinURL(currentPath, props.itemName),
-          true,
-        );
-        if (out) setFolderContentsCount(out.entries.length);
-      });
-    }
-  }, [props.itemName, props.isFile]);
 
   return (
     <Modal {...props}>
@@ -48,8 +35,11 @@ export function DeleteConfirmModal(
                 maxWidth={48}
                 onPress={() => {
                   runAsync(async () => {
-                    console.log(joinURL(currentPath, props.itemName));
-                    await deletePath.run(joinURL(currentPath, props.itemName));
+                    await deletePath.run({
+                      store: params.store,
+                      path: params.path,
+                      name: props.itemName,
+                    });
                     props.onClose();
                   });
                 }}

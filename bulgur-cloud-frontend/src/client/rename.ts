@@ -1,10 +1,21 @@
+import { mutate } from "swr";
 import api from "../api";
 import { joinURL } from "../fetch";
-import { store } from "../store";
 import { BaseClientCommand } from "./base";
-import { LoadFolder, STORAGE } from "./loadFolder";
+import { STORAGE } from "./loadFolder";
 
-type RenameOpts = { from: string; to: string };
+type RenameOpts = {
+  from: {
+    store: string;
+    path: string;
+    name: string;
+  };
+  to: {
+    store: string;
+    path: string;
+    name: string;
+  };
+};
 
 export class Rename extends BaseClientCommand<void, [RenameOpts[]]> {
   /**
@@ -17,16 +28,21 @@ export class Rename extends BaseClientCommand<void, [RenameOpts[]]> {
    * @returns The contents of the requested folder.
    */
   async run(moves: RenameOpts[]) {
-    for (const { from, to } of moves) {
-      const data: api.StorageAction = {
-        action: "Move",
-        new_path: to,
-      };
-      await this.post({
-        url: joinURL(STORAGE, from),
-        data,
-      });
-    }
-    await new LoadFolder(this).run(store.getState().storage.currentPath);
+    await Promise.all(
+      moves.map(async ({ from, to }) => {
+        console.log("rename", from, to);
+        const data: api.StorageAction = {
+          action: "Move",
+          new_path: joinURL(to.store, to.path, to.name),
+        };
+        await this.post({
+          url: joinURL(STORAGE, from.store, from.path, from.name),
+          data,
+        });
+        console.log("rename", from, to);
+        mutate([from.store, from.path]);
+        mutate([to.store, to.path]);
+      }),
+    );
   }
 }

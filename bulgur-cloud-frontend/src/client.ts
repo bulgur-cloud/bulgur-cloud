@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { api } from "./api";
 import {
   authSlice,
   AuthState,
@@ -20,6 +19,7 @@ import { PathToken } from "./client/pathToken";
 import { Rename } from "./client/rename";
 import { TokenCheck } from "./client/tokenCheck";
 import { Upload } from "./client/upload";
+import { joinURL } from "./fetch";
 
 export function runAsync(
   fn: () => Promise<void>,
@@ -37,8 +37,6 @@ export function runAsync(
   });
 }
 
-const STORAGE = "/storage";
-
 const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
 function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
@@ -47,24 +45,6 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
     isString(data?.password) &&
     isString(data?.token)
   );
-}
-
-function isPathTokenResponse(data: any): data is api.PathTokenResponse {
-  return isString(data?.token);
-}
-
-function isFolderEntry(data: any): data is api.FolderEntry {
-  return (
-    isBoolean(data?.is_file) &&
-    isString(data?.name) &&
-    Number.isInteger(data?.size)
-  );
-}
-
-function isFolderResults(data: any): data is api.FolderResults {
-  const entries = data?.entries;
-  if (!Array.isArray(entries)) return false;
-  return entries.every(isFolderEntry);
 }
 
 /** Allows interacting with the API, and accessing API state like the username. */
@@ -78,6 +58,9 @@ export function useClient() {
   const createFolder = new CreateFolder(opts);
   const deletePath = new DeletePath(opts);
   const loadFolder = new LoadFolder(opts);
+  const fetchFolder = (store: string, path: string) => {
+    return loadFolder.run(joinURL(store, path));
+  };
   const login = new Login();
   const logout = new Logout();
   const pathToken = new PathToken(opts);
@@ -122,12 +105,13 @@ export function useClient() {
     state,
     site,
     username,
-    loadFolder,
+    fetchFolder,
     pathToken,
     tokenCheck,
     deletePath,
     rename,
     upload,
     createFolder,
+    isAuthenticated: !!(state && username),
   };
 }

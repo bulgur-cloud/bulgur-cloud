@@ -2,21 +2,30 @@ import { Modal, Text, Input, Center, HStack, Button } from "native-base";
 import React, { useState } from "react";
 import { runAsync, useClient } from "../client";
 import { joinURL } from "../fetch";
+import { DashboardParams } from "../routes";
 import { useAppSelector } from "../store";
 
 export function RenameModal(
-  props: Parameters<typeof Modal>[0] & { itemName: string },
+  props: Parameters<typeof Modal>[0] & { itemName: string } & DashboardParams,
 ) {
   const [newName, setNewName] = useState("");
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
   const { rename } = useClient();
+  const { path, store } = props.route.params;
 
   function doRename() {
     runAsync(async () => {
       await rename.run([
         {
-          from: joinURL(currentPath, props.itemName),
-          to: joinURL(currentPath, newName),
+          from: {
+            store,
+            path,
+            name: props.itemName,
+          },
+          to: {
+            store,
+            path,
+            name: newName,
+          },
         },
       ]);
       props.onClose();

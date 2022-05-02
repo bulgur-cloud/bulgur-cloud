@@ -9,37 +9,30 @@ import {
   VStack,
 } from "native-base";
 import React, { useEffect } from "react";
-import { runAsync, useClient } from "./client";
-import { FullPageLoading } from "./Loading";
+import { useClient } from "./client";
 import { File } from "./storage/File";
-import {
-  authSlice,
-  storageSlice,
-  useAppDispatch,
-  useAppSelector,
-} from "./store";
+import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
+import { DashboardParams } from "./routes";
+import { useNavigation } from "@react-navigation/native";
+import { useSWRConfig } from "swr";
 
-function StorageItem() {
-  const isFolder = useAppSelector((state) => state.storage.is_folder);
-  if (isFolder) {
-    return <FolderList />;
+function StorageItem(params: DashboardParams) {
+  if (params.route.params.isFile) {
+    return <File {...params} />;
   } else {
-    return <File />;
+    return <FolderList {...params} />;
   }
 }
 
-function BackButton() {
-  const { username, loadFolder } = useClient();
-  const currentPath = useAppSelector((state) => state.storage.currentPath);
+function BackButton(params: DashboardParams) {
+  const navigation = useNavigation();
+  const { store, path } = params.route.params;
 
-  console.log(username);
-  console.log(currentPath);
-
-  if (`${username}/` === currentPath) {
+  if (path === "") {
     // Nothing to back out to
     return (
       <Icon
@@ -59,8 +52,10 @@ function BackButton() {
         size="md"
         accessibilityLabel="Go back"
         onPress={() => {
-          runAsync(async () => {
-            await loadFolder.run(urlUp1Level(currentPath));
+          navigation.navigate("Dashboard", {
+            store,
+            path: urlUp1Level(path),
+            isFile: false,
           });
         }}
       />
@@ -68,21 +63,23 @@ function BackButton() {
   }
 }
 
-export function Dashboard() {
-  const { username, state: authState, loadFolder, logout } = useClient();
-  const state = useAppSelector((state) => state.storage.state);
+export function Dashboard(params: DashboardParams) {
+  const { username, isAuthenticated, logout } = useClient();
+  const { cache } = useSWRConfig();
+
+  const doLogout = () => {
+    logout.run();
+    // Type mismatch, function is available: https://github.com/vercel/swr/issues/1887
+    // @ts-ignore
+    cache.clear();
+    params.navigation.replace("Login");
+  };
 
   useEffect(() => {
-    if (authState === "done" && state === "uninitialized") {
-      runAsync(async () => {
-        await loadFolder.run(`${username}/`);
-      });
+    if (!isAuthenticated) {
+      doLogout();
     }
-  }, [authState, state]);
-
-  if (authState !== "done") {
-    return <FullPageLoading />;
-  }
+  }, [isAuthenticated]);
 
   return (
     <Center paddingTop={16}>
@@ -100,21 +97,16 @@ export function Dashboard() {
           borderBottomColor="primary.900"
           borderBottomWidth={2}
         >
-          <BackButton />
+          <BackButton {...params} />
           <MiddleSection />
           <HStack space={2}>
             <Text>{username}</Text>
-            <Text
-              color="primary.400"
-              onPress={() => {
-                logout.run();
-              }}
-            >
+            <Text color="primary.400" onPress={doLogout}>
               (Logout)
             </Text>
           </HStack>
         </HStack>
-        <StorageItem />
+        <StorageItem {...params} />
       </VStack>
     </Center>
   );

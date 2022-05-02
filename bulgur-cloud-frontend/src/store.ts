@@ -2,6 +2,7 @@ import { configureStore, createSlice } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "./api";
 import { BError } from "./error";
+import { joinURL } from "./fetch";
 
 type LoadState = "done" | "loading" | "uninitialized";
 
@@ -49,56 +50,46 @@ export const authSlice = createSlice({
 });
 
 export type StorageState = {
-  currentPath: string;
-  contents: api.FolderEntry[];
-  is_folder: boolean;
-  state: LoadState;
   /** Maps item names to full paths, for items that have been marked to be moved. */
-  markedForMove: { [name: string]: string };
+  markedForMove: {
+    [fullpath: string]: {
+      store: string;
+      path: string;
+      name: string;
+    };
+  };
 };
 
 const initialStorageState: StorageState = {
-  currentPath: "/",
-  contents: [],
-  is_folder: true,
-  state: "uninitialized",
   markedForMove: {},
 };
 
-export type LoadFolderPayload = api.FolderResults & { currentPath: string };
-export type LoadFilePayload = api.FolderEntry & { currentPath: string };
+export type LoadFolderPayload = api.FolderResults;
+export type LoadFilePayload = api.FolderEntry;
 
 export const storageSlice = createSlice({
   name: "storage",
   initialState: initialStorageState,
   reducers: {
-    loadFolder: (state, action: { payload: LoadFolderPayload }) => {
-      state.contents = action.payload.entries;
-      state.currentPath = action.payload.currentPath;
-      state.is_folder = true;
-      state.state = "done";
-    },
-    loadFile: (state, action: { payload: LoadFilePayload }) => {
-      state.contents = [];
-      state.currentPath = action.payload.currentPath;
-      state.is_folder = false;
-      state.state = "done";
-    },
-    markLoading: (state) => {
-      state.state = "loading";
-    },
     markForMove: (
       state,
-      action: { payload: { name: string; path: string } },
+      action: { payload: { store: string; path: string; name: string } },
     ) => {
-      state.markedForMove[action.payload.name] = action.payload.path;
+      const { store, path, name } = action.payload;
+      const fullPath = joinURL(store, path, name);
+      state.markedForMove[fullPath] = {
+        store,
+        path,
+        name,
+      };
     },
     unmarkForMove: (
       state,
-      action: { payload: { name: string; path: string } },
+      action: { payload: { store: string; path: string; name: string } },
     ) => {
-      if (state.markedForMove[action.payload.name] === action.payload.path)
-        delete state.markedForMove[action.payload.name];
+      const { store, path, name } = action.payload;
+      const fullPath = joinURL(store, path, name);
+      if (state.markedForMove[fullPath]) delete state.markedForMove[fullPath];
     },
     clearMarksForMove: (state) => {
       state.markedForMove = {};

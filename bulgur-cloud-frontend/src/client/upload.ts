@@ -1,9 +1,9 @@
+import { mutate } from "swr";
 import { joinURL } from "../fetch";
-import { store } from "../store";
 import { BaseClientCommand } from "./base";
-import { LoadFolder, STORAGE } from "./loadFolder";
+import { STORAGE } from "./loadFolder";
 
-export class Upload extends BaseClientCommand<void, [string, File[]]> {
+export class Upload extends BaseClientCommand<void, [string, string, File[]]> {
   /**
    *
    * @param path The new path to load. Used to navigate to a new folder, or
@@ -13,17 +13,16 @@ export class Upload extends BaseClientCommand<void, [string, File[]]> {
    *
    * @returns The contents of the requested folder.
    */
-  async run(path: string, files: File[]) {
+  async run(store: string, path: string, files: File[]) {
     const uploadForm = new FormData();
     files.forEach((file) => {
       uploadForm.append(file.name, file);
     });
 
     await this.put({
-      url: joinURL(STORAGE, path),
+      url: joinURL(STORAGE, store, path),
       formData: uploadForm,
     });
-
-    await new LoadFolder(this).run(store.getState().storage.currentPath);
+    mutate([store, path]);
   }
 }

@@ -1,12 +1,16 @@
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Center, Input, Spacer, VStack, Button, Text } from "native-base";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useClient } from "./client";
+import { runAsync, useClient } from "./client";
 import { FullPageLoading } from "./Loading";
+import { RoutingStackParams } from "./routes";
 
-export function Login() {
-  const { login } = useClient();
+type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
+
+export function Login({ navigation }: LoginParams) {
+  const { login, username: loggedInUsername } = useClient();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [site, setSite] = useState<string | undefined>(undefined);
@@ -23,18 +27,38 @@ export function Login() {
     }
   }, []);
 
+  useEffect(() => {
+    console.log("checking at login", loggedInUsername);
+    if (loggedInUsername !== undefined && loggedInUsername?.length > 0) {
+      navigation.replace("Dashboard", {
+        store: loggedInUsername,
+        path: "",
+        isFile: false,
+      });
+    }
+  }, [loggedInUsername]);
+
   if (!site) {
     return <FullPageLoading />;
   }
-  
+
+  const onLogin = () => {
+    runAsync(async () => {
+      await login.run({ username, password, site });
+      navigation.replace("Dashboard", {
+        store: username,
+        path: "",
+        isFile: false,
+      });
+    });
+  };
+
   return (
     <Center justifyContent="center" flexGrow={1}>
       <SafeAreaView>
         <VStack space={3}>
           <Text fontSize="7xl">Bulgur Cloud</Text>
-          <Text>
-            Simple and delicious cloud storage and sharing.
-          </Text>
+          <Text>Simple and delicious cloud storage and sharing.</Text>
           <Spacer />
           <Input
             variant="underlined"
@@ -54,9 +78,7 @@ export function Login() {
             }
             returnKeyType={"send"}
             onChangeText={setPassword}
-            onSubmitEditing={() => {
-              login.run({ username, password, site });
-            }}
+            onSubmitEditing={onLogin}
           />
 
           <Spacer />
@@ -65,9 +87,7 @@ export function Login() {
             <Button
               flexGrow={2}
               maxWidth={48}
-              onPress={() => {
-                login.run({ username, password, site });
-              }}
+              onPress={onLogin}
               bgColor={"primary.800"}
             >
               <Text color={"lightText"} fontWeight={"semibold"}>
