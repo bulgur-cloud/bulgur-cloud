@@ -194,7 +194,7 @@ export function MoveItems(props: DashboardParams) {
         }
         onPress={() => {
           runAsync(async () => {
-            rename.run(
+            await rename.run(
               Object.values(markedForMove).map(({ store, path, name }) => {
                 return {
                   from: {

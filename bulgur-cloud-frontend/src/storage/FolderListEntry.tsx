@@ -35,10 +35,11 @@ export function FolderListEntry(
   const dispatch = useAppDispatch();
   const isMarkedForMove = useAppSelector(
     (state) =>
-      state.storage.markedForMove[item.name] !== undefined &&
-      state.storage.markedForMove[item.name] ===
-        joinURL(route.params.store, route.params.path, item.name),
+      state.storage.markedForMove[
+        joinURL(route.params.store, route.params.path, item.name)
+      ] !== undefined,
   );
+
   const { store, path } = route.params;
 
   const [isRenameModalOpen, setRenameModelOpen] = useState<boolean>(false);
@@ -82,20 +83,15 @@ export function FolderListEntry(
         height="100%"
         size={4}
         onPress={() => {
+          const params = {
+            store: route.params.store,
+            path: route.params.path,
+            name: item.name,
+          };
           if (isMarkedForMove) {
-            dispatch(
-              storageSlice.actions.unmarkForMove({
-                name: item.name,
-                path: joinURL(route.params.store, route.params.path, item.name),
-              }),
-            );
+            dispatch(storageSlice.actions.unmarkForMove(params));
           } else {
-            dispatch(
-              storageSlice.actions.markForMove({
-                name: item.name,
-                path: joinURL(route.params.store, route.params.path, item.name),
-              }),
-            );
+            dispatch(storageSlice.actions.markForMove(params));
           }
         }}
       />

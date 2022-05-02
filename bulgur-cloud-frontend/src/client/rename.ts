@@ -30,6 +30,7 @@ export class Rename extends BaseClientCommand<void, [RenameOpts[]]> {
   async run(moves: RenameOpts[]) {
     await Promise.all(
       moves.map(async ({ from, to }) => {
+        console.log("rename", from, to);
         const data: api.StorageAction = {
           action: "Move",
           new_path: joinURL(to.store, to.path, to.name),

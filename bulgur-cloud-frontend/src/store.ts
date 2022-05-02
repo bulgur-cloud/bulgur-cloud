@@ -76,7 +76,7 @@ export const storageSlice = createSlice({
       action: { payload: { store: string; path: string; name: string } },
     ) => {
       const { store, path, name } = action.payload;
-      const fullPath = joinURL(store, path);
+      const fullPath = joinURL(store, path, name);
       state.markedForMove[fullPath] = {
         store,
         path,
@@ -85,10 +85,10 @@ export const storageSlice = createSlice({
     },
     unmarkForMove: (
       state,
-      action: { payload: { store: string; path: string } },
+      action: { payload: { store: string; path: string; name: string } },
     ) => {
-      const { store, path } = action.payload;
-      const fullPath = joinURL(store, path);
+      const { store, path, name } = action.payload;
+      const fullPath = joinURL(store, path, name);
       if (state.markedForMove[fullPath]) delete state.markedForMove[fullPath];
     },
     clearMarksForMove: (state) => {
