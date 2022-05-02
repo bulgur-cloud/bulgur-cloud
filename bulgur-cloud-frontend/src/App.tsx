@@ -20,8 +20,8 @@ import { FullPageLoading } from "./Loading";
 import { useClient } from "./client";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { LINKING, RoutingStackParams, Stack } from "./routes";
+import { isDashboardRoute, LINKING, Stack } from "./routes";
+import { urlFileName } from "./fetch";
 
 function Base() {
   const theme = extendTheme({
@@ -101,7 +101,30 @@ function App() {
   }
 
   return (
-    <NavigationContainer linking={LINKING} fallback={FullPageLoading}>
+    <NavigationContainer
+      linking={LINKING}
+      fallback={FullPageLoading}
+      documentTitle={{
+        formatter: (options, route) => {
+          console.log("formatter", route);
+          let name: string | undefined = options?.title;
+          if (isDashboardRoute(route)) {
+            let path: string | undefined = route.params?.path;
+            if (path !== undefined && path !== "") {
+              name = urlFileName(path);
+            } else {
+              name = route.params?.store;
+            }
+          }
+          if (name === undefined) {
+            name = "";
+          } else {
+            name = `${name} - `;
+          }
+          return `${name}Bulgur Cloud`;
+        },
+      }}
+    >
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Dashboard" component={Dashboard} />

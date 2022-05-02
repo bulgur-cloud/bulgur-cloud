@@ -1,4 +1,8 @@
-import { getStateFromPath, getPathFromState } from "@react-navigation/native";
+import {
+  getStateFromPath,
+  getPathFromState,
+  Route,
+} from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackScreenProps,
@@ -25,7 +29,7 @@ export const LINKING = {
   getStateFromPath: (path: string, config: any) => {
     if (path.startsWith("/s/")) {
       const matches =
-        /^[/]s[/](?<store>[^/]+)[/](?<path>.*)(?<trailingSlash>[/]?)$/.exec(
+        /^[/]s[/](?<store>[^/]+)[/](?<path>.*?)(?<trailingSlash>[/]?)$/.exec(
           path,
         );
       const out = {
@@ -36,7 +40,9 @@ export const LINKING = {
             params: {
               store: matches?.groups?.store,
               path: matches?.groups?.path,
-              isFile: matches?.groups?.trailingSlash === "",
+              isFile:
+                matches?.groups?.trailingSlash === "" &&
+                matches?.groups?.path !== "",
             },
           },
         ],
@@ -65,6 +71,16 @@ export type DashboardParams = NativeStackScreenProps<
   RoutingStackParams,
   "Dashboard"
 >;
+export type DashboardRoute = Route<
+  "Dashboard",
+  RoutingStackParams["Dashboard"]
+>;
+
+export function isDashboardRoute(
+  route?: Route<string, any>,
+): route is DashboardRoute {
+  return route?.name === "Dashboard";
+}
 
 declare global {
   namespace ReactNavigation {
