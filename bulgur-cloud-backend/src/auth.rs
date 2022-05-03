@@ -9,10 +9,13 @@ use actix_web::{http, post, web, HttpResponse, HttpResponseBuilder};
 use anyhow::Result;
 use nanoid::nanoid;
 use scrypt::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Scrypt,
+    password_hash::{
+        rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, Salt, SaltString,
+    },
+    Params, Scrypt,
 };
 
+use tracing_unwrap::ResultExt;
 #[cfg(feature = "generate_types")]
 use typescript_type_def::TypeDef;
 
@@ -34,6 +37,21 @@ pub(crate) fn path_user_file(username: &str) -> PathBuf {
         .with_extension("toml")
 }
 
+fn scrypt_params() -> Params {
+    // During debugging, use insecure parameters to speed up logins. Because
+    // without optimizations logins can take 3+ seconds each.
+    #[cfg(debug_assertions)]
+    {
+        Params::new(5, 2, 1).unwrap_or_log()
+    }
+    // During release, follow the recommended parameters to sufficiently slow
+    // down logins.
+    #[cfg(not(debug_assertions))]
+    {
+        Params::default()
+    }
+}
+
 async fn create_user_string(
     username: &str,
     password: &str,
@@ -41,7 +59,13 @@ async fn create_user_string(
 ) -> anyhow::Result<String> {
     let salt = SaltString::generate(&mut OsRng);
     let password_hash = Scrypt
-        .hash_password(password.as_bytes(), &salt)?
+        .hash_password_customized(
+            password.as_bytes(),
+            None,
+            None,
+            scrypt_params(),
+            Salt::try_from(&salt)?,
+        )?
         .to_string();
     let dir_path = PathBuf::from(USERS_DIR);
     fs::create_dir_all(&dir_path).await?;
