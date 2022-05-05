@@ -11,6 +11,14 @@ strip = "symbols"
 lto = true
 
 [features]
+default = ["telemetry_opentelemetry"]
+# OpenTelemtry support
+telemetry_opentelemetry = [
+  "opentelemetry",
+  "opentelemetry-otlp",
+  "tonic",
+  "tracing-opentelemetry",
+]
 # Enabled only to generate types for the frontend
 generate_types = []
 
@@ -57,3 +65,16 @@ thiserror = "1.0"
 anyhow = "1.0"
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5.2"
+
+# Tracing
+opentelemetry = { version = "0.17.0", features = [
+  "rt-tokio",
+  "metrics",
+], optional = true }
+opentelemetry-otlp = { version = "0.10.0", features = [
+  "tonic",
+  "tls",
+  "tls-roots",
+], optional = true }
+tonic = { version = "0.6.2", optional = true }
+tracing-opentelemetry = { version = "0.17.2", optional = true }

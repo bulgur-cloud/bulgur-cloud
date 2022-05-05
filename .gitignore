@@ -5,3 +5,4 @@
 *.gz
 *.xz
 Docker
+.envrc
