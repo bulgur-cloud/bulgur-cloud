@@ -10,6 +10,8 @@ use bulgur_cloud::{
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
 
+use clap::StructOpt;
+
 #[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
 #[cfg(feature = "telemetry_opentelemetry")]
@@ -21,7 +23,6 @@ use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{http, middleware, web, App, HttpServer};
 
-use structopt::StructOpt;
 use tokio::fs;
 use tracing::subscriber::set_global_default;
 use tracing_actix_web::TracingLogger;
@@ -103,7 +104,7 @@ const MAX_PATH_TOKEN_CACHE: usize = 100000;
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    let opts = Opt::from_args();
+    let opts = Opt::parse();
     match opts.command {
         Some(command) => {
             // Running a CLI command
@@ -187,6 +188,7 @@ async fn main() -> anyhow::Result<()> {
                     .service(authenticated_basic_html_scope)
                     .service(get_ui_index)
                     .service(get_ui);
+
                 // Build the app with all these scopes, and add middleware for CORS and tracing
                 App::new()
                     .wrap(TracingLogger::default())
@@ -206,7 +208,8 @@ async fn main() -> anyhow::Result<()> {
                     .service(basic_html_scope)
                     .default_service(web::to(not_found))
             })
-            .bind("0.0.0.0:8000")?
+            .bind(opts.bind)?
+            .workers(opts.workers)
             .run()
             .await?;
             Ok(())

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use rpassword::prompt_password;
 
-use structopt::StructOpt;
+use clap::{Parser, Subcommand};
 use tokio::fs;
 
 use crate::{
@@ -10,45 +10,58 @@ use crate::{
     folder::{STORAGE, USERS_DIR},
 };
 
-#[derive(StructOpt)]
+#[derive(Parser, Debug)]
 /// Add a new user to the server. Users can edit surveys and view survey results. Surveyees don't need to be users.
 pub struct UserAdd {
-    #[structopt(short, long)]
+    #[clap(short, long)]
     username: String,
 
-    #[structopt(long, name = "type")]
+    #[clap(long, name = "type")]
     user_type: Option<UserType>,
 }
 
-#[derive(StructOpt)]
+#[derive(Parser, Debug)]
 /// Remove a user.
 pub struct UserRemove {
-    #[structopt(short, long)]
+    #[clap(short, long)]
     username: String,
-    #[structopt(name = "delete-files", long)]
+    #[clap(name = "delete-files", long)]
     /// Delete the store for this user. Files will be removed, and may be irrecoverable.
     delete_files: bool,
 }
 
-#[derive(StructOpt)]
+#[derive(Subcommand, Debug)]
 /// Manage users, who can edit the survey and view results.
 pub enum User {
-    #[structopt(name = "add")]
+    #[clap(name = "add")]
     UserAdd(UserAdd),
-    #[structopt(name = "remove")]
+    #[clap(name = "remove")]
     UserRemove(UserRemove),
 }
 
-#[derive(StructOpt)]
+#[derive(Subcommand, Debug)]
 pub enum Commands {
+    #[clap(subcommand)]
     User(User),
 }
 
-#[derive(StructOpt)]
+#[derive(Parser)]
+#[clap(name = "bulgur-cloud", author, version, about)]
 /// The CLI options for the image-survey backend.
 pub struct Opt {
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Option<Commands>,
+
+    #[clap(long, default_value = "0.0.0.0:8000")]
+    /// The IP address and port to bind to, in the form of `IP:port`.
+    /// By default this is set to `0.0.0.0:8000` which will bind to all interfaces on port 8000.
+    pub bind: String,
+
+    #[clap(long, default_value_t = num_cpus::get())]
+    /// The number of workers to launch, must be larger than 0. By default this
+    /// is set to the number of CPU threads. The actual number of threads
+    /// launched may be greater than this.
+    pub workers: usize,
 }
 
 pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
