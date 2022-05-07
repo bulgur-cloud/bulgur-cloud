@@ -35,7 +35,7 @@ function supportedVideoExtensions() {
     case "web":
       return ["mp4", "webm"];
     case "android":
-      return ["mp4", "ogg", "ogv", "m4a", "webm", "mkv", "flv"];
+      return ["mp4", "ogv", "m4a", "webm", "mkv", "flv"];
     case "ios":
       return ["mp4", "m4v", "mov"];
     default:
@@ -43,8 +43,25 @@ function supportedVideoExtensions() {
   }
 }
 
+function supportedAudioExtensions() {
+  switch (Platform.OS) {
+    case "web":
+      return ["wav", "mp3", "opus", "ogg", "flac"];
+    case "android":
+      return [];
+    case "ios":
+      return [];
+    default:
+      return [];
+  }
+}
+
 export const VIDEO_EXTENSIONS: ReadonlySet<string> = new Set(
   supportedVideoExtensions(),
+);
+
+export const AUDIO_EXTENSIONS: ReadonlySet<string> = new Set(
+  supportedAudioExtensions(),
 );
 
 type FilePreviewOpts = {
@@ -100,6 +117,27 @@ export function VideoPreview(opts: FilePreviewOpts) {
 
   return <NoPreview />;
 }
+export function AudioPreview(opts: FilePreviewOpts) {
+  const { fullPath } = opts;
+
+  console.log(fullPath);
+
+  if (Platform.OS === "web") {
+    return (
+      <audio
+        controls
+        muted={false}
+        preload="metadata"
+        src={fullPath}
+        style={{ width: "100%", height: "auto" }}
+      >
+        <NoPreview />
+      </audio>
+    );
+  }
+
+  return <NoPreview />;
+}
 
 export function Preview(opts: FilePreviewOpts) {
   if (IMAGE_EXTENSIONS.has(opts.extension)) {
@@ -108,6 +146,10 @@ export function Preview(opts: FilePreviewOpts) {
 
   if (PDF_EXTENSIONS.has(opts.extension)) {
     return <PDFPreview {...opts} />;
+  }
+
+  if (AUDIO_EXTENSIONS.has(opts.extension)) {
+    return <AudioPreview {...opts} />;
   }
 
   if (VIDEO_EXTENSIONS.has(opts.extension)) {
