@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use actix_web::{get, web, HttpResponse};
 use rust_embed::RustEmbed;
 
+use crate::pages::not_found;
+
 fn extension_to_content_type(path: &str) -> Option<&'static str> {
     let path = PathBuf::from(path);
     let extension = path.extension().and_then(|extension| extension.to_str());
@@ -36,7 +38,7 @@ async fn get_by_path<T: RustEmbed>(path: &str) -> HttpResponse {
             // TODO: should cache the file vectors
             response.body(file.data.to_vec())
         }
-        None => HttpResponse::NotFound().finish(),
+        None => not_found().await,
     }
 }
 
@@ -54,7 +56,11 @@ pub async fn get_ui_index() -> HttpResponse {
 #[tracing::instrument]
 #[get("/{path:.*}")]
 pub async fn get_ui(params: web::Path<String>) -> HttpResponse {
-    get_by_path::<UI>(params.as_str()).await
+    if params.starts_with("/s/") {
+        get_by_path::<UI>("index.html").await
+    } else {
+        get_by_path::<UI>(params.as_str()).await
+    }
 }
 
 /// Serves the static assets required for the basic web UI.

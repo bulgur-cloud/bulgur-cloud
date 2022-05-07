@@ -22,6 +22,7 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { NavigationContainer } from "@react-navigation/native";
 import { isDashboardRoute, LINKING, Stack } from "./routes";
 import { urlFileName } from "./fetch";
+import { NotFound } from "./NotFound";
 
 function Base() {
   const theme = extendTheme({
@@ -128,6 +129,7 @@ function App() {
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="NotFound" component={NotFound} />
       </Stack.Navigator>
     </NavigationContainer>
   );

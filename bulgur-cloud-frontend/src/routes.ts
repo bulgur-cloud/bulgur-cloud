@@ -15,6 +15,7 @@ export type RoutingStackParams = {
     path: string;
     isFile: boolean;
   };
+  NotFound: undefined;
 };
 
 export const Stack: any = createNativeStackNavigator<RoutingStackParams>();
@@ -24,6 +25,7 @@ export const LINKING = {
     screens: {
       Login: "",
       Dashboard: "s/:store/",
+      NotFound: "*",
     },
   },
   getStateFromPath: (path: string, config: any) => {
@@ -70,6 +72,10 @@ export const LINKING = {
 export type DashboardParams = NativeStackScreenProps<
   RoutingStackParams,
   "Dashboard"
+>;
+export type NotFoundParams = NativeStackScreenProps<
+  RoutingStackParams,
+  "NotFound"
 >;
 export type DashboardRoute = Route<
   "Dashboard",
