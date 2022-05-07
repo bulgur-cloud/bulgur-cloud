@@ -18,7 +18,7 @@ See the demo above, and [my blog post](https://bgenc.net/bulgur-cloud-intro/) to
 If you like it, Bulgur Cloud has an experimental 0.1 release out now! Check the
 [releases page](https://github.com/SeriousBug/bulgur-cloud/releases) to download
 it as a self-contained binary which includes everything needed, or use the
-[seriousbug/bulgur-cloud](https://hub.docker.com/repository/docker/seriousbug/bulgur-cloud)
+[seriousbug/bulgur-cloud](https://hub.docker.com/r/seriousbug/bulgur-cloud)
 docker image. Releases are available for Linux on x86_64, aarch64, armv7, and
 arm; and for Windows on x86_64 only.
 
