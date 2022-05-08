@@ -8,6 +8,7 @@ use std::{path::PathBuf, str::FromStr};
 use actix_web::{http, post, web, HttpResponse, HttpResponseBuilder};
 use anyhow::Result;
 use nanoid::nanoid;
+use sanitize_filename::is_sanitized_with_options;
 use scrypt::{
     password_hash::{
         rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, Salt, SaltString,
@@ -95,24 +96,18 @@ const NOBODY_USER_COMMENT: &'static str = "#
 const USER_NOBODY: &'static str = "nobody";
 
 #[derive(thiserror::Error, Debug)]
-enum BadUsername {
-    #[error("Using '{not_allowed}' as a username is not allowed.")]
-    UsernameNotAllowed { not_allowed: &'static str },
-    #[error("Usernames can not contain '{forbidden_character}' in them.")]
-    CharacterNotAllowed { forbidden_character: &'static str },
+pub(crate) enum BadUsername {
+    #[error("You can't use {username} as a username. Try to avoid special characters.")]
+    UsernameNotAllowed { username: String },
 }
 
-fn validate_username(username: &str) -> Result<(), BadUsername> {
-    if username == "." {
-        Err(BadUsername::UsernameNotAllowed { not_allowed: "." })
-    } else if username == ".." {
-        Err(BadUsername::UsernameNotAllowed { not_allowed: ".." })
-    } else if username.contains("/") {
-        Err(BadUsername::CharacterNotAllowed {
-            forbidden_character: "/",
-        })
-    } else {
+pub(crate) fn validate_username(username: &str) -> Result<(), BadUsername> {
+    if is_sanitized_with_options(username, Default::default()) {
         Ok(())
+    } else {
+        Err(BadUsername::UsernameNotAllowed {
+            username: username.to_string(),
+        })
     }
 }
 

@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use tokio::fs;
 
 use crate::{
-    auth::{create_user, create_user_folder, UserType},
+    auth::{create_user, create_user_folder, validate_username, UserType},
     folder::{STORAGE, USERS_DIR},
 };
 
@@ -68,6 +68,7 @@ pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
     match command {
         Commands::User(user) => match user {
             User::UserAdd(add) => {
+                validate_username(&add.username)?;
                 let password = prompt_password("Enter the password for this user: ")?;
                 create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
                 create_user_folder(&add.username).await?;
