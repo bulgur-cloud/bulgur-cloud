@@ -10,7 +10,7 @@ import { FolderListEntry } from "./FolderListEntry";
 export function FolderList(params: DashboardParams) {
   const { fetchFolder } = useClient();
   const { store, path } = params.route.params;
-  const { data, error } = useSWR([store, path], fetchFolder);
+  const { data, error } = useSWR([store, path, "fetchFolder"], fetchFolder);
 
   const contents = data?.entries;
 

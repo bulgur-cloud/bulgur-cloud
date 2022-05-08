@@ -65,6 +65,9 @@ export function useClient() {
   const login = new Login();
   const logout = new Logout();
   const pathToken = new PathToken(opts);
+  const fetchPathToken = (store: string, path: string) => {
+    return pathToken.run(joinURL(store, path));
+  };
   const rename = new Rename(opts);
   const tokenCheck = new TokenCheck();
   const pathExists = new PathExists(opts);
@@ -112,6 +115,7 @@ export function useClient() {
     username,
     fetchFolder,
     pathToken,
+    fetchPathToken,
     tokenCheck,
     deletePath,
     rename,

@@ -8,6 +8,7 @@ import * as FileSystem from "expo-file-system";
 import { DashboardParams } from "../routes";
 import useSWR from "swr";
 import { NotFound } from "../NotFound";
+import { STORAGE } from "../client/loadFolder";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -187,17 +188,15 @@ export function File(params: DashboardParams) {
   const filename = urlFileName(path);
 
   const api = useClient();
-  const [pathToken, setPathToken] = useState<undefined | null | string>();
-  const { data: pathExists } = useSWR([store, path], api.fetchPathExists);
-
-  useEffect(() => {
-    if (pathToken === undefined) {
-      runAsync(async () => {
-        const token = await api.pathToken.run(joinURL(store, path));
-        setPathToken(token);
-      });
-    }
-  }, [pathToken, store, path]);
+  const { data: pathExists } = useSWR(
+    [store, path, "fetchPathExists"],
+    api.fetchPathExists,
+  );
+  const { data: pathToken } = useSWR(
+    [store, path, "fetchPathToken"],
+    api.fetchPathToken,
+  );
+  console.log(pathToken, pathExists);
 
   if (pathToken === undefined) {
     return <Loading />;
@@ -216,8 +215,7 @@ export function File(params: DashboardParams) {
   }
 
   const fullPath =
-    api.site +
-    encodeURI(joinURL("/storage", store, path) + `?token=${pathToken}`);
+    api.site + encodeURI(joinURL(STORAGE, store, path) + `?token=${pathToken}`);
   console.log(fullPath);
   const extension = urlFileExtension(filename) || "";
 
