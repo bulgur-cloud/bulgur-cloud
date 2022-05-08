@@ -72,9 +72,16 @@ function NoPreview() {
 }
 
 export function ImagePreview(opts: FilePreviewOpts) {
-  const { fullPath, filename } = opts;
+  const { fullPath } = opts;
 
-  return <Image src={fullPath} alt={`Image file ${filename}`} size={600} />;
+  return (
+    <Image
+      resizeMethod="scale"
+      resizeMode="contain"
+      src={fullPath}
+      size={600}
+    />
+  );
 }
 export function VideoPreview(opts: FilePreviewOpts) {
   const { fullPath } = opts;
