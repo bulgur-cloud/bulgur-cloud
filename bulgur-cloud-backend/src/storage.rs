@@ -71,6 +71,7 @@ impl actix_web::error::ResponseError for StorageError {
 }
 
 /// Gets the path, but only if the user is authorized for it.
+#[tracing::instrument]
 pub fn get_authorized_path(
     authorized: &Option<ReqData<Authorized>>,
     store: &str,
@@ -231,8 +232,8 @@ pub struct PutStoragePayload {
     pub files_written: u32,
 }
 
-#[put("/{store}/{path:.*}")]
 #[tracing::instrument(skip(payload))]
+#[put("/{store}/{path:.*}")]
 async fn put_storage(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
@@ -258,6 +259,7 @@ async fn put_storage(
     }
 }
 
+#[tracing::instrument(skip(payload))]
 async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, StorageError> {
     let mut files_written: u32 = 0;
     while let Some(mut field) = payload.try_next().await? {
@@ -288,6 +290,7 @@ pub enum StorageAction {
     CreateFolder,
 }
 
+#[tracing::instrument]
 #[post("/{store}/{path:.*}")]
 async fn post_storage(
     state: web::Data<AppState>,
@@ -312,6 +315,7 @@ async fn post_storage(
     }
 }
 
+#[tracing::instrument]
 async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpResponse {
     let token = Token::new();
     let full_path = format!("/{}", path.to_string_lossy());
@@ -322,6 +326,7 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
     HttpResponse::Ok().json(PathTokenResponse { token })
 }
 
+#[tracing::instrument]
 fn parse_store_path(path: &str) -> Option<(&str, String)> {
     let mut segments = path.split('/').filter(|segment| segment.len() > 0);
     let store = segments.next();

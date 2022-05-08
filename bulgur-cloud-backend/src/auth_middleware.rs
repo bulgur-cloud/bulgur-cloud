@@ -99,7 +99,7 @@ enum AuthMiddlewareError {
 }
 type AuthMiddlewareResult<T> = std::result::Result<T, AuthMiddlewareError>;
 
-#[tracing::instrument(skip(state), level = "trace")]
+#[tracing::instrument(skip(state))]
 /// If the user token is valid, returns the user. If user token is missing or is invalid, then tries the path token.
 /// If the path token is valid for the given path, then returns Either::Right.
 /// If the path token is missing or invalid too, then returns `AuthMiddlewareError.TokenMissing`.
