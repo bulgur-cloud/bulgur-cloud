@@ -2,6 +2,7 @@ import { Center, Text, View, VStack } from "native-base";
 import React from "react";
 import useSWR from "swr";
 import { useClient } from "../client";
+import { NotFound } from "../NotFound";
 import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
@@ -9,9 +10,22 @@ import { FolderListEntry } from "./FolderListEntry";
 export function FolderList(params: DashboardParams) {
   const { fetchFolder } = useClient();
   const { store, path } = params.route.params;
-  const { data } = useSWR([store, path], fetchFolder);
+  const { data, error } = useSWR([store, path], fetchFolder);
 
   const contents = data?.entries;
+
+  if (data?.notFound) {
+    return <NotFound />;
+  }
+
+  if (error) {
+    console.log(error);
+    return (
+      <Center>
+        <Text>Can't display this folder due to an error.</Text>
+      </Center>
+    );
+  }
 
   if (!contents || contents.length === 0) {
     return (

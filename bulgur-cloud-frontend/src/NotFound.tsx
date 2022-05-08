@@ -1,7 +1,9 @@
+import { useNavigation } from "@react-navigation/native";
 import { Button, Center, Spacer, Text, VStack } from "native-base";
-import { NotFoundParams } from "./routes";
 
-export function NotFound(params: NotFoundParams) {
+export function NotFound() {
+  const navigation = useNavigation();
+
   return (
     <Center>
       <VStack space={4}>
@@ -9,10 +11,10 @@ export function NotFound(params: NotFoundParams) {
           What you are looking for no longer exists, or maybe never existed.
         </Text>
         <Spacer />
-        {params.navigation.canGoBack() ? (
+        {navigation.canGoBack() ? (
           <Button
             onPress={() => {
-              params.navigation.goBack();
+              navigation.goBack();
             }}
           >
             Go back

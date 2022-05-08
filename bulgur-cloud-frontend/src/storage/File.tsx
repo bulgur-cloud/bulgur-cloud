@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  Center,
-  Text,
-  Image,
-  Link,
-  VStack,
-  Heading,
-  Box,
-  Button,
-} from "native-base";
-import { useAppSelector } from "../store";
+import { Center, Text, Image, VStack, Heading, Box, Button } from "native-base";
 import { runAsync, useClient } from "../client";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
 import * as FileSystem from "expo-file-system";
 import { DashboardParams } from "../routes";
+import useSWR from "swr";
+import { NotFound } from "../NotFound";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -215,6 +207,7 @@ export function File(params: DashboardParams) {
 
   const api = useClient();
   const [pathToken, setPathToken] = useState<undefined | null | string>();
+  const { data: pathExists } = useSWR([store, path], api.fetchPathExists);
 
   useEffect(() => {
     if (pathToken === undefined) {
@@ -227,6 +220,10 @@ export function File(params: DashboardParams) {
 
   if (pathToken === undefined) {
     return <Loading />;
+  }
+
+  if (!pathExists) {
+    return <NotFound />;
   }
 
   if (pathToken === null || api.site === undefined || !filename) {

@@ -2,7 +2,7 @@ import api from "../api";
 import { isBoolean, isString } from "../typeUtils";
 import { BError } from "../error";
 import { BaseClientCommand } from "./base";
-import { joinURL } from "../fetch";
+import { joinURL, ResponseBase } from "../fetch";
 
 function isFolderEntry(data: any): data is api.FolderEntry {
   return (
@@ -20,10 +20,11 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export const STORAGE = "/storage";
 
-export class LoadFolder extends BaseClientCommand<
-  api.FolderResults,
-  [string, boolean]
-> {
+export type FolderResults = api.FolderResults & {
+  notFound?: boolean;
+};
+
+export class LoadFolder extends BaseClientCommand<FolderResults, [string]> {
   /**
    *
    * @param path The new path to load. Used to navigate to a new folder, or
@@ -31,10 +32,19 @@ export class LoadFolder extends BaseClientCommand<
    *
    * @returns The contents of the requested folder.
    */
-  async run(path: string) {
+  async run(path: string): Promise<FolderResults> {
     const response = await this.get({
       url: joinURL(STORAGE, path),
     });
+
+    console.log("loadFolder", response);
+    if (response?.response.status === 404) {
+      return {
+        entries: [],
+        notFound: true,
+      };
+    }
+
     const out = await response?.json();
     if (!isFolderResults(out)) {
       const status = response?.response.status;
@@ -48,5 +58,13 @@ export class LoadFolder extends BaseClientCommand<
     }
 
     return out;
+  }
+
+  protected async handleError(
+    response: ResponseBase,
+  ): Promise<"done" | "continue"> {
+    console.log("handleError", response);
+    if (response?.response.status === 404) return "done";
+    return "continue";
   }
 }

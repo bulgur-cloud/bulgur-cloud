@@ -111,7 +111,7 @@ export abstract class BaseClientCommand<
 
     const status = out?.response.status;
 
-    if ((await this.handleError(out)) === "done") return;
+    if ((await this.handleError(out)) === "done") return out;
 
     if (status === undefined)
       throw new BError({

@@ -20,6 +20,7 @@ import { Rename } from "./client/rename";
 import { TokenCheck } from "./client/tokenCheck";
 import { Upload } from "./client/upload";
 import { joinURL } from "./fetch";
+import { PathExists } from "./client/pathExists";
 
 export function runAsync(
   fn: () => Promise<void>,
@@ -66,6 +67,10 @@ export function useClient() {
   const pathToken = new PathToken(opts);
   const rename = new Rename(opts);
   const tokenCheck = new TokenCheck();
+  const pathExists = new PathExists(opts);
+  const fetchPathExists = (store: string, path: string) => {
+    return pathExists.run(joinURL(store, path));
+  };
   const upload = new Upload(opts);
 
   useEffect(() => {
@@ -112,6 +117,7 @@ export function useClient() {
     rename,
     upload,
     createFolder,
+    fetchPathExists,
     isAuthenticated: !!(state && username),
   };
 }

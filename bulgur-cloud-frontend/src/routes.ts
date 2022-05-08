@@ -73,10 +73,6 @@ export type DashboardParams = NativeStackScreenProps<
   RoutingStackParams,
   "Dashboard"
 >;
-export type NotFoundParams = NativeStackScreenProps<
-  RoutingStackParams,
-  "NotFound"
->;
 export type DashboardRoute = Route<
   "Dashboard",
   RoutingStackParams["Dashboard"]
