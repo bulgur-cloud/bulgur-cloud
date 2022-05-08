@@ -75,21 +75,6 @@ export function ImagePreview(opts: FilePreviewOpts) {
 
   return <Image src={fullPath} alt={`Image file ${filename}`} size={600} />;
 }
-export function PDFPreview(opts: FilePreviewOpts) {
-  if (Platform.OS === "web") {
-    return (
-      <object
-        width={600}
-        height={800}
-        title={`PDF preview for ${opts.filename}`}
-        data={opts.fullPath}
-        type="application/pdf"
-      />
-    );
-  }
-
-  return <NoPreview />;
-}
 export function VideoPreview(opts: FilePreviewOpts) {
   const { fullPath } = opts;
 
@@ -134,10 +119,6 @@ export function AudioPreview(opts: FilePreviewOpts) {
 export function Preview(opts: FilePreviewOpts) {
   if (IMAGE_EXTENSIONS.has(opts.extension)) {
     return <ImagePreview {...opts} />;
-  }
-
-  if (PDF_EXTENSIONS.has(opts.extension)) {
-    return <PDFPreview {...opts} />;
   }
 
   if (AUDIO_EXTENSIONS.has(opts.extension)) {
