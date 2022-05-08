@@ -56,7 +56,8 @@ pub async fn get_ui_index() -> HttpResponse {
 #[tracing::instrument]
 #[get("/{path:.*}")]
 pub async fn get_ui(params: web::Path<String>) -> HttpResponse {
-    if params.starts_with("/s/") {
+    tracing::debug!("{:?}", params);
+    if params.starts_with("s/") {
         get_by_path::<UI>("index.html").await
     } else {
         get_by_path::<UI>(params.as_str()).await
