@@ -15,8 +15,7 @@ import { Platform } from "react-native";
 import { runAsync, useClient } from "./client";
 import { ERR_NOT_IMPLEMENTED } from "./error";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { storageSlice, store, useAppDispatch, useAppSelector } from "./store";
-import { joinURL } from "./fetch";
+import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { DashboardParams } from "./routes";
 
 function selectFiles(): Promise<null | File[]> {
@@ -51,7 +50,8 @@ export function UploadButton(props: DashboardParams) {
   return (
     <Fab
       placement="bottom-right"
-      accessibilityLabel="upload"
+      label="Upload"
+      position="fixed"
       icon={
         <Icon
           as={FontAwesome5}
@@ -84,8 +84,9 @@ export function CreateNewDirectory(props: DashboardParams) {
     <View>
       <Fab
         placement="bottom-right"
-        right={24}
-        accessibilityLabel="upload"
+        right="140px"
+        label="New folder"
+        position="fixed"
         icon={
           <Icon as={FontAwesome5} name="folder-plus" height="100%" size={4} />
         }
@@ -179,41 +180,40 @@ export function MoveItems(props: DashboardParams) {
   if (Object.keys(markedForMove).length === 0) return <View />;
 
   return (
-    <View>
-      <Fab
-        placement="bottom-right"
-        right={48}
-        accessibilityLabel="move here"
-        icon={
-          <Icon
-            as={MaterialCommunityIcons}
-            name="select-place"
-            height="100%"
-            size={4}
-          />
-        }
-        onPress={() => {
-          runAsync(async () => {
-            await rename.run(
-              Object.values(markedForMove).map(({ store, path, name }) => {
-                return {
-                  from: {
-                    store,
-                    path,
-                    name,
-                  },
-                  to: {
-                    store: params.store,
-                    path: params.path,
-                    name,
-                  },
-                };
-              }),
-            );
-            dispatch(storageSlice.actions.clearMarksForMove());
-          });
-        }}
-      ></Fab>
-    </View>
+    <Fab
+      placement="bottom-right"
+      right="290px"
+      label="Move here"
+      position="fixed"
+      icon={
+        <Icon
+          as={MaterialCommunityIcons}
+          name="select-place"
+          height="100%"
+          size={4}
+        />
+      }
+      onPress={() => {
+        runAsync(async () => {
+          await rename.run(
+            Object.values(markedForMove).map(({ store, path, name }) => {
+              return {
+                from: {
+                  store,
+                  path,
+                  name,
+                },
+                to: {
+                  store: params.store,
+                  path: params.path,
+                  name,
+                },
+              };
+            }),
+          );
+          dispatch(storageSlice.actions.clearMarksForMove());
+        });
+      }}
+    ></Fab>
   );
 }

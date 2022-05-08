@@ -48,7 +48,7 @@ export function FolderList(params: DashboardParams) {
 
 function FABs(params: DashboardParams) {
   return (
-    <View>
+    <View height={32}>
       <UploadButton {...params} />
       <CreateNewDirectory {...params} />
       <MoveItems {...params} />

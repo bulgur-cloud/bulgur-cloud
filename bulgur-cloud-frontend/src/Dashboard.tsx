@@ -131,7 +131,7 @@ function MiddleSection() {
           <Spacer />
           <IconButton
             variant="unstyled"
-            accessibilityLabel="Dismiss error"
+            accessibilityLabel="Cancel move"
             onPress={() => {
               dispatch(storageSlice.actions.clearMarksForMove());
             }}
