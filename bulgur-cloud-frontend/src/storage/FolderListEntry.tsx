@@ -8,8 +8,9 @@ import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { RenameModal } from "./RenameModal";
 import api from "../api";
-import { Link } from "@react-navigation/native";
+import { Link, StackActions } from "@react-navigation/native";
 import { DashboardParams } from "../routes";
+import { BLink } from "../BLink";
 
 function itemIconType({
   isFile,
@@ -54,18 +55,16 @@ export function FolderListEntry(
         color="darkText"
         opacity={isMarkedForMove ? 20 : 100}
       />
-      <Link
-        to={{
-          screen: "Dashboard",
-          params: {
-            store,
-            path: path === "" ? item.name : joinURL(path, item.name),
-            isFile: item.is_file,
-          },
+      <BLink
+        screen="Dashboard"
+        params={{
+          store,
+          path: path === "" ? item.name : joinURL(path, item.name),
+          isFile: item.is_file,
         }}
       >
         <Text opacity={isMarkedForMove ? 20 : 100}>{item.name}</Text>
-      </Link>
+      </BLink>
       <FillSpacer />
       <Icon
         as={FontAwesome5}
