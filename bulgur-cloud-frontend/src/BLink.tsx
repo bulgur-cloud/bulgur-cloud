@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Link, StackActions, useLinkTo } from "@react-navigation/native";
+import React from "react";
+import { Link, StackActions } from "@react-navigation/native";
 import { TextProps } from "react-native";
 import { RoutingStackParams } from "./routes";
 

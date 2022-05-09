@@ -32,7 +32,7 @@ export const LINKING = {
     if (path.startsWith("/s/")) {
       const matches =
         /^[/]s[/](?<store>[^/]+)[/](?<path>.*?)(?<trailingSlash>[/]?)$/.exec(
-          path,
+          decodeURI(path),
         );
       const out = {
         routes: [
@@ -55,9 +55,9 @@ export const LINKING = {
     return state;
   },
   getPathFromState: (state: any, config: any) => {
-    const route = state.routes[0];
-    if (route?.name === "Dashboard") {
-      const params: RoutingStackParams["Dashboard"] = route.params;
+    const route = state.routes[state.routes.length - 1];
+    if (isDashboardRoute(route)) {
+      const params = route.params;
       let path = params.path;
       // If it's a folder, make sure it has a trailing slash
       if (!params.isFile && !path.endsWith("/") && path !== "") {
