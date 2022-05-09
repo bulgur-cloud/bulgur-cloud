@@ -69,6 +69,7 @@ export function FolderListEntry(
       <Icon
         as={FontAwesome5}
         name="pencil-alt"
+        accessibilityLabel="rename"
         height="100%"
         size={4}
         onPress={() => {
@@ -79,6 +80,7 @@ export function FolderListEntry(
       <Icon
         as={FontAwesome5}
         name="arrows-alt"
+        accessibilityLabel="move"
         height="100%"
         size={4}
         onPress={() => {
@@ -98,6 +100,7 @@ export function FolderListEntry(
       <Icon
         as={FontAwesome5}
         name="trash-alt"
+        accessibilityLabel="delete"
         height="100%"
         size={4}
         onPress={() => {
