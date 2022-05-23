@@ -65,3 +65,15 @@ set up to build and run the backend and frontend. The backend requires a bit of
 setup as you need to create a user for testing. There is no documentation for
 this right now, but let me know if you are interested and I'll help with the
 setup.
+
+### Tests
+
+To run tests, please run them single-threaded.
+
+```
+cargo test -- --test-threads=1
+```
+
+Tests create and use a test folder, and because they run in the same process
+this can't be parallelized. We'll make the file access parts modularized
+eventually so this won't be required.
