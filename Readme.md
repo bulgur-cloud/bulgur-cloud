@@ -77,3 +77,9 @@ cargo test -- --test-threads=1
 Tests create and use a test folder, and because they run in the same process
 this can't be parallelized. We'll make the file access parts modularized
 eventually so this won't be required.
+
+To get test coverage, install and use [tarpaulin](https://github.com/xd009642/tarpaulin):
+
+```
+cargo tarpaulin -- --test-threads=1
+```
