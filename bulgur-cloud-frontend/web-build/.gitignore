@@ -1,0 +1,5 @@
+# We don't actually want to include this folder, but if the folder is totally
+# missing then the backend build fails. That's especially problematic in CI
+# where the frontend won't be built when running backend tests.
+*
+!.gitignore
