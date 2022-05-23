@@ -1,9 +1,6 @@
 use bulgur_cloud::{
-    app::setup_app,
-    auth::{create_nobody, TOKEN_VALID_SECS},
     cli::{cli_command, Opt},
-    folder,
-    state::{AppState, PathTokenCache, TokenCache},
+    server::{setup_app, setup_app_deps},
 };
 
 use clap::StructOpt;
@@ -13,16 +10,13 @@ use opentelemetry_otlp::WithExportConfig;
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
 
-use std::{env, path::PathBuf, str::FromStr};
+use std::{env, str::FromStr};
 
-use actix_governor::GovernorConfigBuilder;
-use actix_web::{web, HttpServer};
+use actix_web::HttpServer;
 
-use tokio::fs;
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
-use tracing_unwrap::OptionExt;
 
 fn setup_logging() -> () {
     // Wow, thanks Luca Palmieri! https://www.lpalmieri.com/posts/2020-09-27-zero-to-production-4-are-we-observable-yet/
@@ -85,17 +79,6 @@ fn setup_logging() -> () {
     }
 }
 
-#[cfg(debug_assertions)]
-/// During debugging, throttling login attempts is not really needed
-const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
-#[cfg(not(debug_assertions))]
-/// For release, we strictly throttle login attempts to resist brute force attacks
-const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
-
-/// Store up to this many path tokens. Path tokens are needed to authorize
-/// read-only access to specific paths.
-const MAX_PATH_TOKEN_CACHE: usize = 100000;
-
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let opts = Opt::parse();
@@ -107,24 +90,8 @@ async fn main() -> anyhow::Result<()> {
         }
         None => {
             // Running the server
-            // Make sure the needed folders are available
-            fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
-            let state = web::Data::new(AppState {
-                started_at: chrono::Local::now(),
-                // Auth tokens are cached for 24 hours
-                token_cache: TokenCache::new(TOKEN_VALID_SECS),
-                path_token_cache: PathTokenCache::new(MAX_PATH_TOKEN_CACHE),
-            });
-            // Make sure the nobody user is created if it doesn't exist
-            create_nobody().await?;
-
+            let (state, login_governor) = setup_app_deps().await?;
             setup_logging();
-
-            let login_governor = GovernorConfigBuilder::default()
-                .per_second(60)
-                .burst_size(MAX_LOGIN_ATTEMPTS_PER_MIN)
-                .finish()
-                .unwrap_or_log();
 
             HttpServer::new(move || setup_app(state.clone(), login_governor.clone()))
                 .bind(opts.bind)?

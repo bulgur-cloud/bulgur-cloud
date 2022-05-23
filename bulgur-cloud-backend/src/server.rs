@@ -1,9 +1,11 @@
+use std::path::PathBuf;
+
 use crate::{
-    auth::login,
-    auth_middleware,
+    auth::{create_nobody, login, TOKEN_VALID_SECS},
+    auth_middleware, folder,
     meta::{get_stats, head_stats, is_bulgur_cloud},
     pages::{not_found, page_folder_list, page_login_get, page_login_post, page_logout},
-    state::AppState,
+    state::{AppState, PathTokenCache, TokenCache},
     static_files::{get_basic_assets, get_ui, get_ui_index},
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
@@ -11,7 +13,9 @@ use crate::{
 use actix_service::ServiceFactory;
 
 use actix_cors::Cors;
-use actix_governor::{Governor, GovernorConfig, PeerIpKeyExtractor};
+use actix_governor::{
+    Governor, GovernorConfig, GovernorConfigBuilder, KeyExtractor, PeerIpKeyExtractor,
+};
 
 use actix_web::{
     body::MessageBody,
@@ -21,11 +25,12 @@ use actix_web::{
     App, Error,
 };
 
+use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
-pub fn setup_app(
+pub fn setup_app<'l>(
     state: Data<AppState>,
-    login_governor: GovernorConfig<PeerIpKeyExtractor>,
+    login_governor: GovernorConfig<impl KeyExtractor + 'static>,
 ) -> App<
     impl ServiceFactory<
         ServiceRequest,
@@ -109,4 +114,37 @@ pub fn setup_app(
         .service(is_bulgur_cloud)
         .service(basic_html_scope)
         .default_service(web::to(not_found))
+}
+
+#[cfg(debug_assertions)]
+/// During debugging, throttling login attempts is not really needed
+const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
+#[cfg(not(debug_assertions))]
+/// For release, we strictly throttle login attempts to resist brute force attacks
+const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
+
+/// Store up to this many path tokens. Path tokens are needed to authorize
+/// read-only access to specific paths.
+const MAX_PATH_TOKEN_CACHE: usize = 100000;
+
+pub async fn setup_app_deps() -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)>
+{
+    // Make sure the needed folders are available
+    fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
+    let state = web::Data::new(AppState {
+        started_at: chrono::Local::now(),
+        // Auth tokens are cached for 24 hours
+        token_cache: TokenCache::new(TOKEN_VALID_SECS),
+        path_token_cache: PathTokenCache::new(MAX_PATH_TOKEN_CACHE),
+    });
+
+    let login_governor = GovernorConfigBuilder::default()
+        .per_second(60)
+        .burst_size(MAX_LOGIN_ATTEMPTS_PER_MIN)
+        .finish()
+        .expect("Unable to setup login governor");
+    // Make sure the nobody user is created if it doesn't exist
+    create_nobody().await?;
+
+    Ok((state, login_governor))
 }

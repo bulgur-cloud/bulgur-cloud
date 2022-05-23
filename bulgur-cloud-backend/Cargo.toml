@@ -7,7 +7,6 @@ license = "AGPL-3.0-only"
 default-run = "bulgur-cloud"
 
 [profile.release]
-strip = "symbols"
 lto = true
 
 [features]
@@ -49,6 +48,7 @@ derive_more = "0.99"
 simple-secrecy = { path = "../simple-secrecy" }
 # Data serialization
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "*"                                   # just match whatever in actix-web
 toml = "0.5"
 # Logging
 tracing = "0.1"

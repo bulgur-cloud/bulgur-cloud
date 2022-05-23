@@ -28,5 +28,6 @@
     "titleBar.inactiveBackground": "#69310b99",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "cSpell.words": ["actix"]
 }

@@ -788,6 +788,7 @@ dependencies = [
  "sanitize-filename",
  "scrypt",
  "serde",
+ "serde_json",
  "simple-secrecy",
  "thiserror",
  "tokio 1.18.0",

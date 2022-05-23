@@ -1,13 +1,8 @@
-use actix_web::{
-    get, head,
-    web,
-    HttpResponse
-};
+use actix_web::{get, head, web, HttpResponse};
 
-use serde::{Serialize, Serializer};
 use crate::state::AppState;
+use serde::{Serialize, Serializer};
 use tracing;
-
 
 fn serialize_duration<S>(duration: &chrono::Duration, serializer: S) -> Result<S::Ok, S::Error>
 where

@@ -26,13 +26,13 @@ use tracing::instrument;
 
 #[derive(Serialize, Deserialize)]
 /// The user data stored in files
-pub(crate) struct UserData {
+pub struct UserData {
     pub username: String,
     pub password_hash: String,
     pub user_type: UserType,
 }
 
-pub(crate) fn path_user_file(username: &str) -> PathBuf {
+pub fn path_user_file(username: &str) -> PathBuf {
     PathBuf::from(USERS_DIR)
         .join(username)
         .with_extension("toml")
@@ -96,12 +96,12 @@ const NOBODY_USER_COMMENT: &'static str = "#
 const USER_NOBODY: &'static str = "nobody";
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum BadUsername {
+pub enum BadUsername {
     #[error("You can't use {username} as a username. Try to avoid special characters.")]
     UsernameNotAllowed { username: String },
 }
 
-pub(crate) fn validate_username(username: &str) -> Result<(), BadUsername> {
+pub fn validate_username(username: &str) -> Result<(), BadUsername> {
     if is_sanitized_with_options(username, Default::default()) {
         Ok(())
     } else {
@@ -111,7 +111,7 @@ pub(crate) fn validate_username(username: &str) -> Result<(), BadUsername> {
     }
 }
 
-pub(crate) async fn create_user(
+pub async fn create_user(
     username: &str,
     password: &str,
     user_type: UserType,
@@ -131,7 +131,7 @@ pub(crate) async fn create_user(
     Ok(())
 }
 
-pub(crate) async fn create_user_folder(username: &str) -> anyhow::Result<()> {
+pub async fn create_user_folder(username: &str) -> anyhow::Result<()> {
     let path = PathBuf::from(STORAGE).join(username);
     fs::create_dir_all(path).await?;
 
@@ -150,7 +150,7 @@ pub async fn create_nobody() -> anyhow::Result<()> {
 }
 
 #[tracing::instrument]
-pub(crate) async fn verify_pass(username: &str, password_input: &Password) -> Result<()> {
+pub async fn verify_pass(username: &str, password_input: &Password) -> Result<()> {
     let mut path = path_user_file(username);
     // Log any errors during reading and parsing, but otherwise blackhole the error details so attackers can't read error messages to probe
     let contents = match fs::read(&path).await {
@@ -198,7 +198,7 @@ pub(crate) async fn verify_pass(username: &str, password_input: &Password) -> Re
 
 #[derive(Debug, Serialize, Deserialize)]
 /// Type of user. Admins can add and remove users.
-pub(crate) enum UserType {
+pub enum UserType {
     User,
     Admin,
 }
@@ -233,12 +233,12 @@ impl FromStr for UserType {
     simple_secrecy::Debug,
     simple_secrecy::Display,
 )]
-pub struct Password(String);
+pub struct Password(pub String);
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Login {
-    username: String,
-    password: Password,
+    pub username: String,
+    pub password: Password,
 }
 
 pub const TOKEN_VALID_SECS: u64 = 60 * 60 * 24;
