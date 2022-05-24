@@ -1,5 +1,7 @@
 # Bulgur Cloud - simple and delicious cloud storage and sharing
 
+![Build status](https://img.shields.io/github/workflow/status/SeriousBug/bulgur-cloud/coverage) [![Test coverage report](https://img.shields.io/codecov/c/github/SeriousBug/bulgur-cloud)](https://codecov.io/gh/SeriousBug/bulgur-cloud) [![Releases](https://img.shields.io/github/v/release/SeriousBug/bulgur-cloud?include_prereleases)](https://github.com/SeriousBug/bulgur-cloud/releases) [![Docker Image Size](https://img.shields.io/docker/image-size/seriousbug/bulgur-cloud)](https://hub.docker.com/r/seriousbug/bulgur-cloud) [![AGPL-3.0 license](https://img.shields.io/github/license/SeriousBug/bulgur-cloud)](https://github.com/SeriousBug/bulgur-cloud/blob/main/LICENSE.txt)
+
 Bulgur cloud is a cloud storage and sharing option, designed to be easy to self
 host. It depends on no databases or services, and uses little resources.
 
