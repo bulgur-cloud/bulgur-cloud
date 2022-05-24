@@ -18,7 +18,7 @@ use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
-fn setup_logging() -> () {
+fn setup_logging() {
     // Wow, thanks Luca Palmieri! https://www.lpalmieri.com/posts/2020-09-27-zero-to-production-4-are-we-observable-yet/
 
     // We are falling back to printing all spans at info-level or above
@@ -40,7 +40,7 @@ fn setup_logging() -> () {
     #[cfg(feature = "telemetry_opentelemetry")]
     {
         if env::var("OTEL_SERVICE_NAME").is_ok() {
-            const OTEL_HEADER_PREFIX: &'static str = "OTEL_META_";
+            const OTEL_HEADER_PREFIX: &str = "OTEL_META_";
 
             let mut meta = MetadataMap::new();
             for (key, value) in env::vars()

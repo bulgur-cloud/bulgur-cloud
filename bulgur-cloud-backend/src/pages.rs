@@ -97,7 +97,7 @@ pub async fn page_folder_list(
 ) -> Result<Either<NamedFile, FolderListPage>, StorageError> {
     let (store, path) = params.clone();
     let mut store_path = PathBuf::from(&store);
-    if (&path).len() > 0 {
+    if !(&path).is_empty() {
         store_path.push(&path);
     }
     tracing::debug!("{:?}, {:?}, {:?}", &store, &path, &store_path);

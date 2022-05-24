@@ -28,7 +28,7 @@ use actix_web::{
 use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
-pub fn setup_app<'l>(
+pub fn setup_app(
     state: Data<AppState>,
     login_governor: GovernorConfig<impl KeyExtractor + 'static>,
 ) -> App<
@@ -72,7 +72,7 @@ pub fn setup_app<'l>(
         .service(login);
     // API scope handles all api functionality (anything except storage)
     let api_scope = web::scope("/api")
-        .wrap(api_guard.clone())
+        .wrap(api_guard)
         .service(get_stats)
         .service(head_stats);
     // Storage scope handles the actual files and folders
@@ -107,7 +107,7 @@ pub fn setup_app<'l>(
         .wrap(middleware::Compress::default())
         // Allow CORS access.
         .wrap(cors)
-        .app_data(state.clone())
+        .app_data(state)
         .service(login_scope)
         .service(api_scope)
         .service(storage_scope)

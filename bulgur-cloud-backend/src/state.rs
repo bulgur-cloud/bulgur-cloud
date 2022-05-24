@@ -37,6 +37,12 @@ impl Token {
     }
 }
 
+impl Default for Token {
+    fn default() -> Self {
+        Token::new()
+    }
+}
+
 #[derive(Serialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct PathTokenResponse {

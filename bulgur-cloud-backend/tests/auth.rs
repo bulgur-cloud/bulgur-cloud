@@ -86,7 +86,7 @@ async fn test_login_succeeds() {
     let resp: LoginResponse = test::call_and_read_body_json(&app, req).await;
 
     assert!(
-        resp.token.reveal().len() > 0,
+        !resp.token.reveal().is_empty(),
         "POST /auth/login responds with atoken for a good login"
     );
 }

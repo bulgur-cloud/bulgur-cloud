@@ -1,2 +1,2 @@
-pub const USERS_DIR: &'static str = "users";
-pub const STORAGE: &'static str = "storage";
+pub const USERS_DIR: &str = "users";
+pub const STORAGE: &str = "storage";

@@ -78,7 +78,7 @@ async fn create_user_string(
     Ok(toml::to_string(&user)?)
 }
 
-const NOBODY_USER_COMMENT: &'static str = "#
+const NOBODY_USER_COMMENT: &str = "#
 # DO NOT DELETE THIS FILE!
 #
 # This user is a placeholder that is used to resist user probing.
@@ -93,7 +93,7 @@ const NOBODY_USER_COMMENT: &'static str = "#
 # for users that don't exist take just as long, making probing harder.
 #
 ";
-const USER_NOBODY: &'static str = "nobody";
+const USER_NOBODY: &str = "nobody";
 
 #[derive(thiserror::Error, Debug)]
 pub enum BadUsername {
@@ -183,7 +183,7 @@ pub async fn verify_pass(username: &str, password_input: &Password) -> Result<()
         return Err(ServerError::BadUserData {
             expected_user: username.to_string(),
             file: path,
-        })?;
+        }.into());
     }
 
     let password_input_clone = password_input.0.clone();

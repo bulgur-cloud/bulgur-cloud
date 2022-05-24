@@ -6,10 +6,6 @@ edition = "2021"
 license = "AGPL-3.0-only"
 default-run = "bulgur-cloud"
 
-[profile.release]
-strip = true
-lto = true
-
 [features]
 default = ["telemetry_opentelemetry"]
 # OpenTelemtry support

@@ -90,7 +90,7 @@ pub fn get_authorized_path(
 
                 match path {
                     Some(path) => {
-                        let path_full = path_base.clone().join(path);
+                        let path_full = path_base.join(path);
                         // Make sure to avoid someone using ".." to escape their
                         // authorized store. This may be unnecessary in some
                         // cases because actix cleans relative paths when
@@ -215,7 +215,7 @@ async fn head_storage(
         if meta.is_file() || meta.is_dir() {
             Ok::<(), StorageError>(())
         } else {
-            Err(std::io::Error::new(std::io::ErrorKind::NotFound, ""))?
+            Err(std::io::Error::new(std::io::ErrorKind::NotFound, "").into())
         }
     }
     .await;
@@ -268,7 +268,7 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
 
         let filename = content_disposition
             .get_filename()
-            .map_or_else(|| nanoid!().to_string(), sanitize_filename::sanitize);
+            .map_or_else(|| nanoid!(), sanitize_filename::sanitize);
         let filepath = store_path.join(filename);
         tracing::debug!("Uploading path {}", filepath.to_string_lossy());
 
@@ -328,7 +328,7 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
 
 #[tracing::instrument]
 fn parse_store_path(path: &str) -> Option<(&str, String)> {
-    let mut segments = path.split('/').filter(|segment| segment.len() > 0);
+    let mut segments = path.split('/').filter(|segment| !segment.is_empty());
     let store = segments.next();
     let rest: Vec<&str> = segments.collect();
     store.map(|store| (store, rest.join("/")))

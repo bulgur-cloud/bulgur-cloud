@@ -113,16 +113,16 @@ async fn verify_auth(
 
     let user = if let Some(user_token) = user_token {
         tracing::debug!("Found user token attached to request");
-        let user_cache = (&state.token_cache).0.read().await;
+        let user_cache = state.token_cache.0.read().await;
         let user = user_cache.peek(&user_token);
-        user.map(|user| user.clone())
+        user.cloned()
     } else {
         None
     };
 
     let path_authorized = (if let Some(path_token) = path_token {
         tracing::debug!("Found path token attached to request {:?}", path);
-        let path_cache = (&state.path_token_cache).0.read().await;
+        let path_cache = state.path_token_cache.0.read().await;
         let known_token = path_cache.peek(path);
         tracing::debug!("Token exists for path {:?}", &known_token);
         known_token.map(|known_token| known_token.eq(&path_token))
@@ -159,7 +159,7 @@ fn get_token_from_header(request: &HttpRequest) -> Option<Token> {
     None
 }
 
-pub static AUTH_COOKIE_NAME: &'static str = "bulgur-cloud-auth";
+pub static AUTH_COOKIE_NAME: &str = "bulgur-cloud-auth";
 
 fn get_token_from_cookie(request: &HttpRequest) -> Option<Token> {
     let header_token = request.cookie(AUTH_COOKIE_NAME);
