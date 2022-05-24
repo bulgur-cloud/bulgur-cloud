@@ -24,6 +24,21 @@
       "problemMatcher": []
     },
     {
+      "label": "Test backend",
+      "type": "shell",
+      "command": "cargo test -- --test-threads=1",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "RUST_LOG": "debug",
+          "RUST_BACKTRACE": "1"
+        }
+      },
+      "detail": "Runs the backend server without bunyan. Logs may be hard to read.",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
       "label": "Run backend with bunyan",
       "type": "shell",
       "command": "cargo run | bunyan",

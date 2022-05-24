@@ -243,10 +243,10 @@ pub struct Login {
 
 pub const TOKEN_VALID_SECS: u64 = 60 * 60 * 24;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct LoginResponse {
-    token: Token,
+    pub token: Token,
     valid_for_seconds: u64,
 }
 

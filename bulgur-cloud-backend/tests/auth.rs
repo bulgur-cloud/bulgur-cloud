@@ -1,7 +1,7 @@
 mod common;
 use actix_web::test;
 use bulgur_cloud::{
-    auth::{Login, Password},
+    auth::{Login, LoginResponse, Password},
     server::setup_app,
 };
 use common::TestEnv;
@@ -30,11 +30,10 @@ async fn test_login_fails_bad_username() {
         username: "someone-else".to_string(),
         password: Password("correct-horse-battery-staple".to_string()),
     };
-    let login_data = serde_json::to_string(&login).expect("Failed to serialize login data");
 
     let req = test::TestRequest::post()
         .uri("/auth/login")
-        .set_payload(login_data)
+        .set_json(login)
         .to_request();
     let resp = test::call_service(&app, req).await;
 
@@ -55,11 +54,10 @@ async fn test_login_fails_bad_password() {
         username: "testuser".to_string(),
         password: Password("hunter2".to_string()),
     };
-    let login_data = serde_json::to_string(&login).expect("Failed to serialize login data");
 
     let req = test::TestRequest::post()
         .uri("/auth/login")
-        .set_payload(login_data)
+        .set_json(login)
         .to_request();
     let resp = test::call_service(&app, req).await;
 
@@ -80,16 +78,15 @@ async fn test_login_succeeds() {
         username: "testuser".to_string(),
         password: Password("correct-horse-battery-staple".to_string()),
     };
-    let login_data = serde_json::to_string(&login).expect("Failed to serialize login data");
 
     let req = test::TestRequest::post()
         .uri("/auth/login")
-        .set_payload(login_data)
+        .set_json(login)
         .to_request();
-    let resp = test::call_service(&app, req).await;
+    let resp: LoginResponse = test::call_and_read_body_json(&app, req).await;
 
     assert!(
-        resp.status().is_client_error(),
-        "POST /auth/login accepts login with the right password"
+        resp.token.reveal().len() > 0,
+        "POST /auth/login responds with atoken for a good login"
     );
 }

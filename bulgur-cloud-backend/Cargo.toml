@@ -49,7 +49,6 @@ derive_more = "0.99"
 simple-secrecy = { path = "../simple-secrecy" }
 # Data serialization
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "*"                                   # just match whatever in actix-web
 toml = "0.5"
 # Logging
 tracing = "0.1"
