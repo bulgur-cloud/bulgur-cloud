@@ -7,20 +7,7 @@ use actix_web::{
     test,
 };
 use bulgur_cloud::{folder::STORAGE, server::setup_app, storage::FolderResults};
-use common::TestEnv;
-use tokio::fs;
-
-async fn create_dir(path: PathBuf) {
-    fs::create_dir(path)
-        .await
-        .expect("Failed to create directory");
-}
-
-async fn create_file(path: PathBuf, content: &str) {
-    fs::write(path, content)
-        .await
-        .expect("Failed to create directory");
-}
+use common::{create_dir, create_file, TestEnv};
 
 #[actix_web::test]
 async fn test_get_home_auth_token() {

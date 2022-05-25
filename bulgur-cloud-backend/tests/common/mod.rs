@@ -4,12 +4,13 @@ use std::{
 };
 
 use actix_governor::{GovernorConfig, GovernorConfigBuilder, KeyExtractor};
-use actix_web::web::Data;
+use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
     auth::{create_user, create_user_folder},
     server::setup_app_deps,
     state::{AppState, Token, User},
 };
+use tokio::fs;
 
 pub struct TestEnv<T: KeyExtractor> {
     folder: PathBuf,
@@ -63,6 +64,7 @@ impl TestEnv<TestKeyExtractor> {
         self.login_governor.clone()
     }
 
+    #[allow(dead_code)]
     pub async fn add_user(&self, user: &str, password: &str) {
         create_user(user, password, bulgur_cloud::auth::UserType::User)
             .await
@@ -96,4 +98,28 @@ impl<T: KeyExtractor> Drop for TestEnv<T> {
     fn drop(&mut self) {
         std::fs::remove_dir_all(&self.folder).expect("Failed to clean up test dir");
     }
+}
+
+#[allow(dead_code)]
+pub async fn create_dir(path: PathBuf) {
+    fs::create_dir(path)
+        .await
+        .expect("Failed to create directory");
+}
+
+#[allow(dead_code)]
+pub async fn create_file(path: PathBuf, content: &str) {
+    fs::write(path, content)
+        .await
+        .expect("Failed to create directory");
+}
+
+#[allow(dead_code)]
+pub fn read_header(resp: &ServiceResponse<impl MessageBody>, header: impl AsHeaderName) -> String {
+    resp.headers()
+        .get(header)
+        .expect("Failed to read header")
+        .to_str()
+        .expect("Failed to parse header")
+        .to_string()
 }
