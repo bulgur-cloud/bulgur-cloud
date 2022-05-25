@@ -6,7 +6,7 @@ use std::{
 use actix_governor::{GovernorConfig, GovernorConfigBuilder, KeyExtractor};
 use actix_web::web::Data;
 use bulgur_cloud::{
-    auth::create_user,
+    auth::{create_user, create_user_folder},
     server::setup_app_deps,
     state::{AppState, Token, User},
 };
@@ -65,8 +65,12 @@ impl TestEnv<TestKeyExtractor> {
         create_user(user, password, bulgur_cloud::auth::UserType::User)
             .await
             .expect("Failed to create user");
+        create_user_folder(user)
+            .await
+            .expect("Failed to create user folder");
     }
 
+    #[allow(dead_code)]
     pub async fn setup_user_token(&self, username: &str, password: &str) -> Token {
         self.add_user(username, password).await;
 
@@ -77,12 +81,11 @@ impl TestEnv<TestKeyExtractor> {
         token
     }
 
-    pub async fn setup_path_token(&self, path: String) -> Token {
+    #[allow(dead_code)]
+    pub async fn setup_path_token(&self, path: &str) -> Token {
         let mut cache = self.state.path_token_cache.0.write().await;
         let token = Token::new();
-        cache
-            .insert(path, token.clone())
-            .expect("Failed to create auth token");
+        cache.insert(path.to_string(), token.clone());
         token
     }
 }
