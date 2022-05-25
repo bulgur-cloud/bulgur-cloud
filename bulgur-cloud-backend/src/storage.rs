@@ -15,7 +15,7 @@ use actix_web::{
 };
 use futures::TryStreamExt;
 use nanoid::nanoid;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio::{fs, io::AsyncWriteExt};
 
 use crate::{
@@ -124,13 +124,13 @@ pub fn get_authorized_path(
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct FolderResults {
     pub entries: Vec<FolderEntry>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct FolderEntry {
     pub is_file: bool,

@@ -6,9 +6,21 @@ use actix_web::{
     http::{header, Method},
     test,
 };
-use bulgur_cloud::{folder::STORAGE, server::setup_app};
+use bulgur_cloud::{folder::STORAGE, server::setup_app, storage::FolderResults};
 use common::TestEnv;
 use tokio::fs;
+
+async fn create_dir(path: PathBuf) {
+    fs::create_dir(path)
+        .await
+        .expect("Failed to create directory");
+}
+
+async fn create_file(path: PathBuf, content: &str) {
+    fs::write(path, content)
+        .await
+        .expect("Failed to create directory");
+}
 
 #[actix_web::test]
 async fn test_get_home_auth_token() {
@@ -96,9 +108,7 @@ async fn test_head_existing_folder() {
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
 
     let path = PathBuf::from(STORAGE).join("testuser").join("example");
-    fs::create_dir(path)
-        .await
-        .expect("Failed to create example folder");
+    create_dir(path).await;
 
     let req = test::TestRequest::default()
         .method(Method::HEAD)
@@ -120,9 +130,7 @@ async fn test_head_existing_file() {
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
 
     let path = PathBuf::from(STORAGE).join("testuser").join("example.txt");
-    fs::write(path, "")
-        .await
-        .expect("Failed to create example file");
+    create_file(path, "").await;
 
     let req = test::TestRequest::default()
         .method(Method::HEAD)
@@ -153,5 +161,60 @@ async fn test_head_missing_path() {
     assert!(
         resp.status().is_client_error(),
         "HEAD storage fails for missing path"
+    );
+}
+
+#[actix_web::test]
+async fn test_get_folder_listing() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_dir(PathBuf::from(STORAGE).join("testuser").join("apple")).await;
+    create_file(
+        PathBuf::from(STORAGE).join("testuser").join("banana.txt"),
+        "",
+    )
+    .await;
+
+    let req = test::TestRequest::get()
+        .uri("/storage/testuser/")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let mut resp: FolderResults = test::call_and_read_body_json(&app, req).await;
+    resp.entries.sort_by_key(|v| v.name.clone()); // sort so the order is stable between test runs
+
+    assert_eq!(resp.entries.len(), 2, "Folder listing contains all entries");
+    assert_eq!(resp.entries[0].name, "apple", "Folder entry exists");
+    assert_eq!(
+        resp.entries[0].is_file, false,
+        "Folder is marked as a folder"
+    );
+    assert_eq!(resp.entries[1].name, "banana.txt", "File entry exists");
+    assert_eq!(resp.entries[1].is_file, true, "File is marked as a file");
+}
+
+#[actix_web::test]
+async fn test_get_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(
+        PathBuf::from(STORAGE).join("testuser").join("banana.txt"),
+        "Aut suscipit amet hic",
+    )
+    .await;
+
+    let req = test::TestRequest::get()
+        .uri("/storage/testuser/banana.txt")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_and_read_body(&app, req).await;
+
+    let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response string");
+    assert_eq!(
+        "Aut suscipit amet hic", resp_str,
+        "File contents are correct"
     );
 }
