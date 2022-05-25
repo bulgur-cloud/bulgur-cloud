@@ -9,5 +9,7 @@
   "editor.formatOnType": true,
   "peacock.color": "#69310B",
   "editor.formatOnSave": true,
-  "cSpell.words": ["actix"]
+  "cSpell.words": [
+    "actix"
+  ]
 }

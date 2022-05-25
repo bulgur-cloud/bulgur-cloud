@@ -52,3 +52,35 @@ async fn test_head_status_accepts_authorized() {
         "HEAD /api/stats accepts authorized users"
     );
 }
+
+#[actix_web::test]
+async fn test_get_stats_unauthorized() {
+    let ctx = TestEnv::setup().await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::post().uri("/api/stats").to_request();
+    let resp = test::call_service(&app, req).await;
+
+    assert!(
+        resp.status().is_client_error(),
+        "GET /api/stats rejects unauthorized users"
+    );
+}
+
+#[actix_web::test]
+async fn test_get_stats() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::get()
+        .uri("/api/stats")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+
+    assert!(
+        resp.status().is_success(),
+        "GET /api/stats responds to authorized users"
+    );
+}
