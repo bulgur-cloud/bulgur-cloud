@@ -53,10 +53,12 @@ impl TestEnv<TestKeyExtractor> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn state(&self) -> Data<AppState> {
         self.state.clone()
     }
 
+    #[allow(dead_code)]
     pub fn login_governor(&self) -> GovernorConfig<TestKeyExtractor> {
         self.login_governor.clone()
     }

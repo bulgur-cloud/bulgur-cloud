@@ -183,7 +183,8 @@ pub async fn verify_pass(username: &str, password_input: &Password) -> Result<()
         return Err(ServerError::BadUserData {
             expected_user: username.to_string(),
             file: path,
-        }.into());
+        }
+        .into());
     }
 
     let password_input_clone = password_input.0.clone();

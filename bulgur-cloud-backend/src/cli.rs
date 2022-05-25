@@ -14,20 +14,20 @@ use crate::{
 /// Add a new user to the server. Users can edit surveys and view survey results. Surveyees don't need to be users.
 pub struct UserAdd {
     #[clap(short, long)]
-    username: String,
+    pub username: String,
 
     #[clap(long, name = "type")]
-    user_type: Option<UserType>,
+    pub user_type: Option<UserType>,
 }
 
 #[derive(Parser, Debug)]
 /// Remove a user.
 pub struct UserRemove {
     #[clap(short, long)]
-    username: String,
+    pub username: String,
     #[clap(name = "delete-files", long)]
     /// Delete the store for this user. Files will be removed, and may be irrecoverable.
-    delete_files: bool,
+    pub delete_files: bool,
 }
 
 #[derive(Subcommand, Debug)]
@@ -64,12 +64,23 @@ pub struct Opt {
     pub workers: usize,
 }
 
-pub async fn cli_command(command: Commands) -> anyhow::Result<()> {
+pub trait CLIContext {
+    fn prompt_password() -> anyhow::Result<String>;
+}
+
+pub struct CLITerminalContext {}
+impl CLIContext for CLITerminalContext {
+    fn prompt_password() -> anyhow::Result<String> {
+        Ok(prompt_password("Enter the password for this user: ")?)
+    }
+}
+
+pub async fn cli_command<Ctx: CLIContext>(command: Commands) -> anyhow::Result<()> {
     match command {
         Commands::User(user) => match user {
             User::UserAdd(add) => {
                 validate_username(&add.username)?;
-                let password = prompt_password("Enter the password for this user: ")?;
+                let password = Ctx::prompt_password()?;
                 create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
                 create_user_folder(&add.username).await?;
                 Ok(())

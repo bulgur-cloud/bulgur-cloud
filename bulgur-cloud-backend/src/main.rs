@@ -1,5 +1,5 @@
 use bulgur_cloud::{
-    cli::{cli_command, Opt},
+    cli::{cli_command, CLITerminalContext, Opt},
     server::{setup_app, setup_app_deps},
 };
 
@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
     match opts.command {
         Some(command) => {
             // Running a CLI command
-            cli_command(command).await?;
+            cli_command::<CLITerminalContext>(command).await?;
             Ok(())
         }
         None => {
