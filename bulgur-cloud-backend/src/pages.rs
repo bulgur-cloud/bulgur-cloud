@@ -9,7 +9,7 @@ use actix_web::{
 };
 
 use askama_actix::Template;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing_unwrap::ResultExt;
 
 use crate::{
@@ -39,10 +39,10 @@ pub async fn not_found() -> HttpResponse {
     HttpResponse::NotFound().body(page)
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct LoginFormData {
-    username: String,
-    password: Password,
+    pub username: String,
+    pub password: Password,
 }
 
 #[tracing::instrument(skip(form))]
