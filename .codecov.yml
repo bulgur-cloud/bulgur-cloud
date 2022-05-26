@@ -3,3 +3,5 @@ ignore:
   - "bulgur-cloud-frontend/generate_types.rs"
   # Derivations for basic Display and Debug impls, nothing to test
   - "simple-secrecy/src"
+  # The main file is not really testable
+  - "bulgur-cloud-backend/src/main.rs"
