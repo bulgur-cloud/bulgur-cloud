@@ -6,8 +6,14 @@ use actix_web::{
     http::{header, Method},
     test,
 };
-use bulgur_cloud::{folder::STORAGE, server::setup_app, storage::FolderResults};
+use bulgur_cloud::{
+    folder::STORAGE,
+    server::setup_app,
+    state::PathTokenResponse,
+    storage::{FolderResults, StorageAction},
+};
 use common::{create_dir, create_file, TestEnv};
+use tokio::fs;
 
 #[actix_web::test]
 async fn test_get_home_auth_token() {
@@ -203,5 +209,156 @@ async fn test_get_file() {
     assert_eq!(
         "Aut suscipit amet hic", resp_str,
         "File contents are correct"
+    );
+}
+
+#[actix_web::test]
+async fn test_rename_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(PathBuf::from(STORAGE).join("testuser").join("test.txt"), "").await;
+
+    let rename = StorageAction::Move {
+        new_path: "/testuser/test.js".to_string(),
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/storage/testuser/test.txt")
+        .set_json(rename)
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Rename successful");
+
+    let js = fs::metadata(PathBuf::from(STORAGE).join("testuser").join("test.js")).await;
+    assert!(
+        js.expect("Renamed file is missing").is_file(),
+        "Renamed file exists"
+    );
+
+    let txt = fs::metadata(PathBuf::from(STORAGE).join("testuser").join("test.txt")).await;
+    assert!(txt.is_err(), "Old name does not exist");
+}
+
+#[actix_web::test]
+async fn test_move_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(PathBuf::from(STORAGE).join("testuser").join("test.txt"), "").await;
+    create_dir(PathBuf::from(STORAGE).join("testuser").join("test")).await;
+
+    let rename = StorageAction::Move {
+        new_path: "/testuser/test/test.js".to_string(),
+    };
+
+    let req = test::TestRequest::post()
+        .uri("/storage/testuser/test.txt")
+        .set_json(rename)
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Move successful");
+
+    let js = fs::metadata(
+        PathBuf::from(STORAGE)
+            .join("testuser")
+            .join("test")
+            .join("test.js"),
+    )
+    .await;
+    assert!(
+        js.expect("Moved file is missing").is_file(),
+        "Renamed file exists"
+    );
+
+    let txt = fs::metadata(PathBuf::from(STORAGE).join("testuser").join("test.txt")).await;
+    assert!(txt.is_err(), "Old name does not exist");
+}
+
+#[actix_web::test]
+async fn test_create_dir() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let rename = StorageAction::CreateFolder {};
+
+    let req = test::TestRequest::post()
+        .uri("/storage/testuser/test")
+        .set_json(rename)
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Create folder successful");
+
+    let txt = fs::metadata(PathBuf::from(STORAGE).join("testuser").join("test")).await;
+    assert!(
+        txt.expect("Created folder does not exist").is_dir(),
+        "Folder exists"
+    );
+}
+
+#[actix_web::test]
+async fn test_make_path_token() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(
+        PathBuf::from(STORAGE).join("testuser").join("test.txt"),
+        "Voluptate eaque asperiores eum",
+    )
+    .await;
+    let rename = StorageAction::MakePathToken {};
+
+    let req = test::TestRequest::post()
+        .uri("/storage/testuser/test.txt")
+        .set_json(rename)
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp: PathTokenResponse = test::call_and_read_body_json(&app, req).await;
+    let path_token = resp.token.reveal();
+    assert!(path_token.len() > 0, "Got the path token");
+
+    let uri = format!("/storage/testuser/test.txt?token={}", path_token);
+    let req_path_token = test::TestRequest::get().uri(&uri).to_request();
+    let resp_path_token = test::call_and_read_body(&app, req_path_token).await;
+    let resp_str = String::from_utf8(resp_path_token.to_vec()).expect("Unable to read output");
+    assert_eq!(
+        resp_str.as_str(),
+        "Voluptate eaque asperiores eum",
+        "Response has the right body"
+    );
+}
+
+#[actix_web::test]
+async fn test_delete_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(PathBuf::from(STORAGE).join("testuser").join("test.txt"), "").await;
+
+    let req = test::TestRequest::delete()
+        .uri("/storage/testuser/test.txt")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Delete successful");
+
+    assert!(
+        fs::metadata(
+            PathBuf::from(STORAGE)
+                .join("testuser")
+                .join("test")
+                .join("test.txt"),
+        )
+        .await
+        .is_err(),
+        "Delete file is removed"
     );
 }

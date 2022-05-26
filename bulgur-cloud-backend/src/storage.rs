@@ -281,7 +281,7 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
     Ok(files_written)
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 #[serde(tag = "action")]
 pub enum StorageAction {

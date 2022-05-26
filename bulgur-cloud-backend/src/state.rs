@@ -43,7 +43,7 @@ impl Default for Token {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct PathTokenResponse {
     pub token: Token,
