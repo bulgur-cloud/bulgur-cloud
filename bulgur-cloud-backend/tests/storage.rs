@@ -374,7 +374,7 @@ async fn test_upload_file() {
     let req = test::TestRequest::put()
         .uri("/storage/testuser/")
         .insert_header((header::AUTHORIZATION, token.reveal()))
-        .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test\"; filename=\"test.txt\"\r\nContent-Type: text/plain\r\n\r\nAutem tempore\r\n")
+        .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nAutem tempore\r\n--zzz--\r\n\r\n")
         .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
         .to_request();
     let resp = test::call_service(&app, req).await;
