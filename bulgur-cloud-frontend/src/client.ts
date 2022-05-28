@@ -222,6 +222,7 @@ function useRequest<D, R>() {
         authorization: token,
       },
       method: params.method,
+      url: params.url,
     };
 
     if (params.data) {
