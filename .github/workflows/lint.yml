@@ -1,7 +1,7 @@
 on: push
-name: Clippy check
+name: lint checks
 jobs:
-  clippy_check:
+  rust_lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -10,3 +10,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
+  rust_format_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: cargo fmt --all --check

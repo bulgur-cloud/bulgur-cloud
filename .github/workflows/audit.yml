@@ -1,11 +1,11 @@
-name: Security audit
+name: security audit
 on:
   push:
     paths:
       - "**/Cargo.toml"
       - "**/Cargo.lock"
 jobs:
-  security_audit:
+  rust_security_audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1

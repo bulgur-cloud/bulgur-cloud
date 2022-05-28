@@ -1,4 +1,4 @@
-name: coverage
+name: tests
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
 jobs:
-  test:
+  backend_test:
     name: coverage
     runs-on: ubuntu-latest
     container:
