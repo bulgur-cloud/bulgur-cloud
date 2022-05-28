@@ -362,3 +362,35 @@ async fn test_delete_file() {
         "Delete file is removed"
     );
 }
+
+#[actix_web::test]
+async fn test_upload_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    create_file(PathBuf::from(STORAGE).join("testuser").join("test.txt"), "").await;
+
+    let req = test::TestRequest::put()
+        .uri("/storage/testuser/")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test\"; filename=\"test.txt\"\r\nContent-Type: text/plain\r\n\r\nAutem tempore\r\n")
+        .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Upload successful");
+
+    let contents = fs::read_to_string(
+        PathBuf::from(STORAGE)
+            .join("testuser")
+            .join("")
+            .join("test.txt"),
+    )
+    .await;
+    assert!(contents.is_ok(), "Uploaded file exists");
+    assert_eq!(
+        contents.unwrap(),
+        "Autem tempore",
+        "Uploaded file has the right contents"
+    );
+}

@@ -2,7 +2,11 @@ mod common;
 
 use std::path::PathBuf;
 
-use actix_web::{cookie::Cookie, http::header, test};
+use actix_web::{
+    cookie::Cookie,
+    http::{header, StatusCode},
+    test,
+};
 use bulgur_cloud::{
     auth::Password, auth_middleware::AUTH_COOKIE_NAME, folder::STORAGE, pages::LoginFormData,
     server::setup_app,
@@ -23,6 +27,40 @@ async fn test_get_basic_home() {
     assert!(
         read_header(&resp, header::CONTENT_TYPE).starts_with("text/html"),
         "basic UI has HTML type"
+    );
+}
+
+#[actix_web::test]
+async fn test_get_basic_missing() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::get()
+        .uri("/basic/testuser/not-found/")
+        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+
+    assert_eq!(
+        resp.status(),
+        StatusCode::NOT_FOUND,
+        "missing storage folders are handled"
+    );
+}
+
+#[actix_web::test]
+async fn test_get_any_missing() {
+    let ctx = TestEnv::setup().await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::get().uri("/not-found/").to_request();
+    let resp = test::call_service(&app, req).await;
+
+    assert_eq!(
+        resp.status(),
+        StatusCode::NOT_FOUND,
+        "missing pages are handled"
     );
 }
 
