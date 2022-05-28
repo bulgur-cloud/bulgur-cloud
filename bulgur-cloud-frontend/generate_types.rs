@@ -5,13 +5,14 @@
 use std::{env, fs, path::PathBuf};
 
 use bulgur_cloud::{
-    auth::LoginResponse,
+    auth::{Login, LoginResponse},
     state::PathTokenResponse,
     storage::{FolderResults, StorageAction},
 };
 use typescript_type_def::{write_definition_file, DefinitionFileOptions};
 
 type ApiTypes = (
+    Login,
     LoginResponse,
     FolderResults,
     PathTokenResponse,

@@ -17,12 +17,12 @@ import { Dashboard } from "./Dashboard";
 import { Login } from "./Login";
 import { store } from "./store";
 import { FullPageLoading } from "./Loading";
-import { useClient } from "./client";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { NavigationContainer } from "@react-navigation/native";
 import { isDashboardRoute, LINKING, Stack } from "./routes";
 import { urlFileName } from "./fetch";
 import { NotFound } from "./NotFound";
+import { useEnsureAuthInitialized } from "./client";
 
 function Base() {
   const theme = extendTheme({
@@ -79,9 +79,34 @@ function Base() {
       <NativeBaseProvider theme={theme}>
         <View paddingX={8} paddingY={4}>
           <Provider store={store}>
-            <App />
-            <StatusBar style="auto" />
-            <ErrorDisplay />
+            <NavigationContainer
+              linking={LINKING}
+              fallback={FullPageLoading}
+              documentTitle={{
+                formatter: (options, route) => {
+                  console.log("formatter", route);
+                  let name: string | undefined = options?.title;
+                  if (isDashboardRoute(route)) {
+                    let path: string | undefined = route.params?.path;
+                    if (path !== undefined && path !== "") {
+                      name = urlFileName(path);
+                    } else {
+                      name = route.params?.store;
+                    }
+                  }
+                  if (name === undefined) {
+                    name = "";
+                  } else {
+                    name = `${name} - `;
+                  }
+                  return `${name}Bulgur Cloud`;
+                },
+              }}
+            >
+              <App />
+              <StatusBar style="auto" />
+              <ErrorDisplay />
+            </NavigationContainer>
           </Provider>
         </View>
       </NativeBaseProvider>
@@ -95,43 +120,18 @@ function App() {
     Bitter_600SemiBold,
     Bitter_400Regular_Italic,
   });
-  const { state } = useClient();
+  const state = useEnsureAuthInitialized();
 
   if (!fontsLoaded || state === "loading" || state === "uninitialized") {
     return <FullPageLoading />;
   }
 
   return (
-    <NavigationContainer
-      linking={LINKING}
-      fallback={FullPageLoading}
-      documentTitle={{
-        formatter: (options, route) => {
-          console.log("formatter", route);
-          let name: string | undefined = options?.title;
-          if (isDashboardRoute(route)) {
-            let path: string | undefined = route.params?.path;
-            if (path !== undefined && path !== "") {
-              name = urlFileName(path);
-            } else {
-              name = route.params?.store;
-            }
-          }
-          if (name === undefined) {
-            name = "";
-          } else {
-            name = `${name} - `;
-          }
-          return `${name}Bulgur Cloud`;
-        },
-      }}
-    >
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="NotFound" component={NotFound} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator initialRouteName="Login">
+      <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Dashboard" component={Dashboard} />
+      <Stack.Screen name="NotFound" component={NotFound} />
+    </Stack.Navigator>
   );
 }
 

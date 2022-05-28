@@ -3,14 +3,23 @@ import { Center, Input, Spacer, VStack, Button, Text } from "native-base";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { runAsync, useClient } from "./client";
+import { runAsync, useLogin } from "./client";
 import { FullPageLoading } from "./Loading";
 import { RoutingStackParams } from "./routes";
+import { useAppSelector } from "./store";
+import { pick } from "./utils";
 
 type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
 
 export function Login({ navigation }: LoginParams) {
-  const { login, username: loggedInUsername } = useClient();
+  const {
+    username: loggedInUsername,
+    token,
+    state: authState,
+  } = useAppSelector((selector) =>
+    pick(selector.auth, "token", "username", "state"),
+  );
+  const { doLogin } = useLogin();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [site, setSite] = useState<string | undefined>(undefined);
@@ -28,15 +37,16 @@ export function Login({ navigation }: LoginParams) {
   }, []);
 
   useEffect(() => {
-    console.log("checking at login", loggedInUsername);
-    if (loggedInUsername !== undefined && loggedInUsername?.length > 0) {
-      navigation.replace("Dashboard", {
+    console.log("checking at login", loggedInUsername, token, authState);
+    if (loggedInUsername && token && authState === "done") {
+      console.log("navigating", loggedInUsername, token, authState);
+      navigation.navigate("Dashboard", {
         store: loggedInUsername,
         path: "",
         isFile: false,
       });
     }
-  }, [loggedInUsername]);
+  }, [loggedInUsername, token, authState]);
 
   if (!site) {
     return <FullPageLoading />;
@@ -44,8 +54,8 @@ export function Login({ navigation }: LoginParams) {
 
   const onLogin = () => {
     runAsync(async () => {
-      await login.run({ username, password, site });
-      navigation.replace("Dashboard", {
+      await doLogin({ username, password, site });
+      navigation.navigate("Dashboard", {
         store: username,
         path: "",
         isFile: false,

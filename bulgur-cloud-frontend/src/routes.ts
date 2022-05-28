@@ -29,6 +29,7 @@ export const LINKING = {
     },
   },
   getStateFromPath: (path: string, config: any) => {
+    console.log("getStateFromPath", path, config);
     if (path.startsWith("/s/")) {
       const matches =
         /^[/]s[/](?<store>[^/]+)[/](?<path>.*?)(?<trailingSlash>[/]?)$/.exec(
@@ -55,6 +56,7 @@ export const LINKING = {
     return state;
   },
   getPathFromState: (state: any, config: any) => {
+    console.log("getPathFromState", state, config);
     const route = state.routes[state.routes.length - 1];
     if (isDashboardRoute(route)) {
       const params = route.params;

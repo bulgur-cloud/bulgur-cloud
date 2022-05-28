@@ -1,6 +1,8 @@
 // Auto-generated from backend types, do not edit by hand
 export default api;
 export namespace api{
+export type Password=string;
+export type Login={"username":string;"password":api.Password;};
 export type Token=string;
 export type U64=number;
 export type LoginResponse={"token":api.Token;"valid_for_seconds":api.U64;};

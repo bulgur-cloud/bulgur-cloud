@@ -12,11 +12,18 @@ import {
   View,
 } from "native-base";
 import { Platform } from "react-native";
-import { runAsync, useClient } from "./client";
+import {
+  runAsync,
+  STORAGE,
+  useCreateFolder,
+  useRename,
+  useUpload,
+} from "./client";
 import { ERR_NOT_IMPLEMENTED } from "./error";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { DashboardParams } from "./routes";
+import { joinURL } from "./fetch";
 
 function selectFiles(): Promise<null | File[]> {
   if (Platform.OS === "web") {
@@ -44,7 +51,7 @@ function selectFiles(): Promise<null | File[]> {
 }
 
 export function UploadButton(props: DashboardParams) {
-  const { upload } = useClient();
+  const { doUpload } = useUpload();
   const params = props.route.params;
 
   return (
@@ -70,7 +77,7 @@ export function UploadButton(props: DashboardParams) {
           }
           console.log(`Picked ${files.length} files`);
 
-          upload.run(params.store, params.path, files);
+          doUpload(joinURL(STORAGE, params.store, params.path), files);
         });
       }}
     ></Fab>
@@ -110,7 +117,7 @@ export function CreateNewFolderModal(
   props: Parameters<typeof Modal>[0] & DashboardParams,
 ) {
   const [newName, setNewName] = useState("");
-  const { createFolder } = useClient();
+  const { doCreateFolder } = useCreateFolder();
   const params = props.route.params;
 
   return (
@@ -136,11 +143,9 @@ export function CreateNewFolderModal(
                   onPress={() => {
                     runAsync(async () => {
                       // An empty upload will just create the folder in the path
-                      await createFolder.run({
-                        store: params.store,
-                        path: params.path,
-                        name: newName,
-                      });
+                      await doCreateFolder(
+                        joinURL(STORAGE, params.store, params.path, newName),
+                      );
                       props.onClose();
                     });
                   }}
@@ -174,7 +179,7 @@ export function CreateNewFolderModal(
 export function MoveItems(props: DashboardParams) {
   const dispatch = useAppDispatch();
   const markedForMove = useAppSelector((state) => state.storage.markedForMove);
-  const { rename } = useClient();
+  const { doRename } = useRename();
   const params = props.route.params;
 
   if (Object.keys(markedForMove).length === 0) return <View />;
@@ -195,20 +200,12 @@ export function MoveItems(props: DashboardParams) {
       }
       onPress={() => {
         runAsync(async () => {
-          await rename.run(
-            Object.values(markedForMove).map(({ store, path, name }) => {
-              return {
-                from: {
-                  store,
-                  path,
-                  name,
-                },
-                to: {
-                  store: params.store,
-                  path: params.path,
-                  name,
-                },
-              };
+          await Promise.all(
+            Object.values(markedForMove).map(async ({ store, path, name }) => {
+              await doRename(
+                joinURL(STORAGE, store, path, name),
+                joinURL(STORAGE, params.store, params.path, name),
+              );
             }),
           );
           dispatch(storageSlice.actions.clearMarksForMove());

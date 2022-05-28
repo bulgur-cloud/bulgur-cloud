@@ -1,33 +1,22 @@
 import { Modal, Text, Input, Center, HStack, Button } from "native-base";
 import React, { useState } from "react";
-import { runAsync, useClient } from "../client";
+import { runAsync, STORAGE, useRename } from "../client";
 import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
-import { useAppSelector } from "../store";
 
 export function RenameModal(
   props: Parameters<typeof Modal>[0] & { itemName: string } & DashboardParams,
 ) {
   const [newName, setNewName] = useState("");
-  const { rename } = useClient();
+  const { doRename } = useRename();
   const { path, store } = props.route.params;
 
-  function doRename() {
+  function runRename() {
     runAsync(async () => {
-      await rename.run([
-        {
-          from: {
-            store,
-            path,
-            name: props.itemName,
-          },
-          to: {
-            store,
-            path,
-            name: newName,
-          },
-        },
-      ]);
+      await doRename(
+        joinURL(STORAGE, store, path, props.itemName),
+        joinURL(STORAGE, store, path, newName),
+      );
       props.onClose();
     });
   }
@@ -47,7 +36,7 @@ export function RenameModal(
             onChangeText={setNewName}
             defaultValue={props.itemName}
             selectTextOnFocus={true}
-            onSubmitEditing={doRename}
+            onSubmitEditing={runRename}
           />
         </Modal.Body>
         <Modal.Footer>
@@ -56,7 +45,7 @@ export function RenameModal(
               <Button
                 flexGrow={2}
                 maxWidth={48}
-                onPress={doRename}
+                onPress={runRename}
                 bgColor={"primary.800"}
               >
                 <Text color={"lightText"} fontWeight={"semibold"}>
