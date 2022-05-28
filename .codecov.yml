@@ -5,3 +5,9 @@ ignore:
   - "simple-secrecy/src"
   # The main file is not really testable
   - "bulgur-cloud-backend/src/main.rs"
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 0%
