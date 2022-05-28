@@ -204,7 +204,7 @@ export function MoveItems(props: DashboardParams) {
             Object.values(markedForMove).map(async ({ store, path, name }) => {
               await doRename(
                 joinURL(STORAGE, store, path, name),
-                joinURL(STORAGE, params.store, params.path, name),
+                joinURL(params.store, params.path, name),
               );
             }),
           );

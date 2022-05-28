@@ -17,7 +17,6 @@ import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
 import { useNavigation } from "@react-navigation/native";
-import { useSWRConfig } from "swr";
 import { useLogout } from "./client";
 
 function StorageItem(params: DashboardParams) {

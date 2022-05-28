@@ -15,7 +15,7 @@ export function RenameModal(
     runAsync(async () => {
       await doRename(
         joinURL(STORAGE, store, path, props.itemName),
-        joinURL(STORAGE, store, path, newName),
+        joinURL(store, path, newName),
       );
       props.onClose();
     });

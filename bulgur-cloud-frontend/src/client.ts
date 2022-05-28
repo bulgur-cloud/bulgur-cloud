@@ -16,6 +16,7 @@ import { isBoolean, isString } from "./typeUtils";
 import FormData from "form-data";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { joinURL, urlUp1Level } from "./fetch";
 
 export const STORAGE = "storage";
 
@@ -273,20 +274,44 @@ export function usePathToken(url: string) {
   return useFetch<api.StorageAction, api.PathTokenResponse>({
     method: "POST",
     url,
+    data: {
+      action: "MakePathToken",
+    },
   });
+}
+
+function useMutateFolder() {
+  const { mutate } = useSWRConfig();
+
+  function doMutateFolder(url: string) {
+    console.log("Path being mutated", url);
+    const mutateParams: RequestParams<never> = {
+      method: "GET",
+      url,
+    };
+    mutate(mutateParams);
+  }
+
+  function doMutateContainingFolder(url: string) {
+    doMutateFolder(urlUp1Level(url));
+  }
+
+  return { doMutateFolder, doMutateContainingFolder };
 }
 
 export function useCreateFolder() {
   const { doRequest } = useRequest<api.StorageAction, never>();
+  const { doMutateContainingFolder } = useMutateFolder();
 
   async function doCreateFolder(url: string) {
-    doRequest({
+    await doRequest({
       url,
       method: "POST",
       data: {
         action: "CreateFolder",
       },
     });
+    doMutateContainingFolder(url);
   }
 
   return { doCreateFolder };
@@ -294,12 +319,14 @@ export function useCreateFolder() {
 
 export function useDelete() {
   const { doRequest } = useRequest<never, never>();
+  const { doMutateContainingFolder } = useMutateFolder();
 
   async function doDelete(url: string) {
     doRequest({
       url,
       method: "DELETE",
     });
+    doMutateContainingFolder(url);
   }
 
   return { doDelete };
@@ -321,7 +348,7 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export function useFolderListing(url: string) {
   const resp = useFetch<never, api.FolderResults>({
-    url: "/" + url,
+    url: url,
     method: "GET",
   });
 
@@ -338,9 +365,10 @@ export function useFolderListing(url: string) {
 
 export function useRename() {
   const { doRequest } = useRequest<api.StorageAction, never>();
+  const { doMutateContainingFolder } = useMutateFolder();
 
   async function doRename(from: string, to: string) {
-    return doRequest({
+    await doRequest({
       method: "POST",
       url: from,
       data: {
@@ -348,6 +376,10 @@ export function useRename() {
         new_path: to,
       },
     });
+
+    doMutateContainingFolder(from);
+    const toPath = joinURL(STORAGE, to);
+    doMutateContainingFolder(toPath);
   }
 
   return { doRename };

@@ -196,7 +196,8 @@ export function File(params: DashboardParams) {
   const site = useAppSelector((selector) => selector.auth.site);
 
   const pathExists = usePathExists(joinURL(STORAGE, store, path));
-  const pathToken = usePathToken(joinURL(STORAGE, store, path));
+  const pathToken = usePathToken(joinURL(STORAGE, store, path)).data?.data
+    .token;
 
   if (pathToken === undefined) {
     return <Loading />;
@@ -215,7 +216,9 @@ export function File(params: DashboardParams) {
   }
 
   const fullPath =
-    site + encodeURI(joinURL(STORAGE, store, path) + `?token=${pathToken}`);
+    site +
+    "/" +
+    encodeURI(joinURL(STORAGE, store, path) + `?token=${pathToken}`);
   console.log(fullPath);
   const extension = urlFileExtension(filename) || "";
 
