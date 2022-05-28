@@ -37,16 +37,15 @@ export function Login({ navigation }: LoginParams) {
   }, []);
 
   useEffect(() => {
-    console.log("checking at login", loggedInUsername, token, authState);
+    console.log("checking at login", site, loggedInUsername, authState);
     if (loggedInUsername && token && authState === "done") {
-      console.log("navigating", loggedInUsername, token, authState);
-      navigation.navigate("Dashboard", {
+      navigation.replace("Dashboard", {
         store: loggedInUsername,
         path: "",
         isFile: false,
       });
     }
-  }, [loggedInUsername, token, authState]);
+  }, [site, loggedInUsername, token, authState]);
 
   if (!site) {
     return <FullPageLoading />;
@@ -55,7 +54,7 @@ export function Login({ navigation }: LoginParams) {
   const onLogin = () => {
     runAsync(async () => {
       await doLogin({ username, password, site });
-      navigation.navigate("Dashboard", {
+      navigation.replace("Dashboard", {
         store: username,
         path: "",
         isFile: false,
