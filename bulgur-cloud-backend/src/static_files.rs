@@ -32,7 +32,9 @@ async fn get_by_path<T: RustEmbed>(path: &str) -> HttpResponse {
     match file {
         Some(file) => {
             let mut response = HttpResponse::Ok();
-            if let Some(content_type) = extension_to_content_type(path) { response.content_type(content_type); }
+            if let Some(content_type) = extension_to_content_type(path) {
+                response.content_type(content_type);
+            }
             // TODO: should cache the file vectors
             response.body(file.data.to_vec())
         }

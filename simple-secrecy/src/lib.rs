@@ -1,22 +1,22 @@
 //! Inspired by the [secrecy](https://docs.rs/secrecy/0.8.0/secrecy/) crate,
 //! this derives Debug and Display traits that don't display the actual
 //! contents.
-//! 
+//!
 //! If something tries to display the contents of a type using this derivation,
 //! it will show up as `[[SECRET]]` for Display or `Type { SECRET }` for Debug.
-//! 
+//!
 //! For example, here's a basic wrapper around a string.
-//! 
+//!
 //! ```rust
 //! #[derive(simple_secrecy::Debug, simple_secrecy::Display)]
 //! /// A wrapper around a string.
 //! struct Password(String);
-//! 
+//!
 //! let secret_password = Password("correct horse battery staple".to_string());
 //!
 //! let out = format!("My password: {}", secret_password);
 //! assert_eq!(out, "My password: [[SECRET]]");
-//! 
+//!
 //! let out_debug = format!("Logging value {:?}", secret_password);
 //! assert_eq!(out_debug, "Logging value Password { SECRET }");
 //! ```
