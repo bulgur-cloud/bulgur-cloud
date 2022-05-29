@@ -1,5 +1,4 @@
 import { Center, Text, View, VStack } from "native-base";
-import React from "react";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
 import { joinURL } from "../fetch";
@@ -17,7 +16,7 @@ export function FolderList(params: DashboardParams) {
     console.log(response.error);
     return (
       <Center>
-        <Text>Can't display this folder due to an error.</Text>
+        <Text>Can&apos;t display this folder due to an error.</Text>
       </Center>
     );
   }

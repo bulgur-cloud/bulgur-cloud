@@ -6,16 +6,14 @@ import {
   Text,
   IconButton,
   CloseIcon,
-  Box,
   Stack,
   Spacer,
 } from "native-base";
-import React from "react";
 import { errorSlice, useAppDispatch, useAppSelector } from "./store";
 
 export function ErrorDisplay() {
   const dispatch = useAppDispatch();
-  let errors = useAppSelector((state) => state.error.errors);
+  const errors = useAppSelector((state) => state.error.errors);
 
   return (
     <Center>

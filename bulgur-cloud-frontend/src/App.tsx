@@ -1,7 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import React from "react";
 import { NativeBaseProvider, extendTheme, View } from "native-base";
 import { Provider } from "react-redux";
 
@@ -87,7 +86,7 @@ function Base() {
                   console.log("formatter", route);
                   let name: string | undefined = options?.title;
                   if (isDashboardRoute(route)) {
-                    let path: string | undefined = route.params?.path;
+                    const path: string | undefined = route.params?.path;
                     if (path !== undefined && path !== "") {
                       name = urlFileName(path);
                     } else {

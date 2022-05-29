@@ -8,15 +8,14 @@ import {
   Text,
   VStack,
 } from "native-base";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { File } from "./storage/File";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
-import { DashboardParams } from "./routes";
-import { useNavigation } from "@react-navigation/native";
+import { DashboardParams, useAppNavigation } from "./routes";
 import { useLogout } from "./client/auth";
 
 function StorageItem(params: DashboardParams) {
@@ -28,7 +27,7 @@ function StorageItem(params: DashboardParams) {
 }
 
 function BackButton(params: DashboardParams) {
-  const navigation = useNavigation();
+  const navigation = useAppNavigation();
   const { store, path } = params.route.params;
 
   if (path === "") {

@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, StackActions } from "@react-navigation/native";
 import { TextProps } from "react-native";
 import { RoutingStackParams } from "./routes";

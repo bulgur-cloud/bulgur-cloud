@@ -1,5 +1,4 @@
 import { Center, Heading, HStack, Spinner } from "native-base";
-import React from "react";
 
 export function Loading() {
   return (

@@ -1,4 +1,3 @@
-import React from "react";
 import { Center, Text, Image, VStack, Heading, Box, Button } from "native-base";
 import { runAsync, STORAGE } from "../client/base";
 import { usePathExists, usePathToken } from "../client/storage";
@@ -25,27 +24,27 @@ export const PDF_EXTENSIONS: ReadonlySet<string> = new Set(["pdf"]);
 
 function supportedVideoExtensions() {
   switch (Platform.OS) {
-    case "web":
-      return ["mp4", "webm"];
-    case "android":
-      return ["mp4", "ogv", "m4a", "webm", "mkv", "flv"];
-    case "ios":
-      return ["mp4", "m4v", "mov"];
-    default:
-      return [];
+  case "web":
+    return ["mp4", "webm"];
+  case "android":
+    return ["mp4", "ogv", "m4a", "webm", "mkv", "flv"];
+  case "ios":
+    return ["mp4", "m4v", "mov"];
+  default:
+    return [];
   }
 }
 
 function supportedAudioExtensions() {
   switch (Platform.OS) {
-    case "web":
-      return ["wav", "mp3", "opus", "ogg", "flac"];
-    case "android":
-      return [];
-    case "ios":
-      return [];
-    default:
-      return [];
+  case "web":
+    return ["wav", "mp3", "opus", "ogg", "flac"];
+  case "android":
+    return [];
+  case "ios":
+    return [];
+  default:
+    return [];
   }
 }
 
