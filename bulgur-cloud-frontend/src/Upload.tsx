@@ -12,13 +12,8 @@ import {
   View,
 } from "native-base";
 import { Platform } from "react-native";
-import {
-  runAsync,
-  STORAGE,
-  useCreateFolder,
-  useRename,
-  useUpload,
-} from "./client";
+import { runAsync, STORAGE } from "./client/base";
+import { useCreateFolder, useRename, useUpload } from "./client/storage";
 import { ERR_NOT_IMPLEMENTED } from "./error";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";

@@ -1,12 +1,12 @@
 import React from "react";
 import { Center, Text, Image, VStack, Heading, Box, Button } from "native-base";
-import { runAsync, STORAGE, usePathExists, usePathToken } from "../client";
+import { runAsync, STORAGE } from "../client/base";
+import { usePathExists, usePathToken } from "../client/storage";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
 import * as FileSystem from "expo-file-system";
 import { DashboardParams } from "../routes";
-import useSWR from "swr";
 import { NotFound } from "../NotFound";
 import { useAppSelector } from "../store";
 

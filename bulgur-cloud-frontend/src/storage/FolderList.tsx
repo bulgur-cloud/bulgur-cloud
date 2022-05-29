@@ -1,6 +1,7 @@
 import { Center, Text, View, VStack } from "native-base";
 import React from "react";
-import { STORAGE, useFolderListing } from "../client";
+import { STORAGE } from "../client/base";
+import { useFolderListing } from "../client/storage";
 import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";

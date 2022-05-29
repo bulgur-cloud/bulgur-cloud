@@ -17,7 +17,7 @@ import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
 import { useNavigation } from "@react-navigation/native";
-import { useLogout } from "./client";
+import { useLogout } from "./client/auth";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {

@@ -1,6 +1,7 @@
-import { Button, Center, HStack, Modal, Text, VStack } from "native-base";
+import { Button, Center, HStack, Modal, Text } from "native-base";
 import React from "react";
-import { runAsync, STORAGE, useDelete } from "../client";
+import { runAsync, STORAGE } from "../client/base";
+import { useDelete } from "../client/storage";
 import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
 

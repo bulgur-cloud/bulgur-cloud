@@ -10,7 +10,7 @@ import { RenameModal } from "./RenameModal";
 import api from "../api";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
-import { STORAGE } from "../client";
+import { STORAGE } from "../client/base";
 
 function itemIconType({
   isFile,

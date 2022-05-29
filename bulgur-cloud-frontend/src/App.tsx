@@ -22,7 +22,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { isDashboardRoute, LINKING, Stack } from "./routes";
 import { urlFileName } from "./fetch";
 import { NotFound } from "./NotFound";
-import { useEnsureAuthInitialized } from "./client";
+import { useEnsureAuthInitialized } from "./client/auth";
 
 function Base() {
   const theme = extendTheme({

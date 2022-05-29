@@ -1,6 +1,7 @@
 import { Modal, Text, Input, Center, HStack, Button } from "native-base";
 import React, { useState } from "react";
-import { runAsync, STORAGE, useRename } from "../client";
+import { runAsync, STORAGE } from "../client/base";
+import { useRename } from "../client/storage";
 import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
 
