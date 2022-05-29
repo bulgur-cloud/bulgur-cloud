@@ -1,7 +1,8 @@
-import { Center, Text, View, VStack } from "native-base";
+import { Center, Text, View, VStack, Box } from "native-base";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
 import { joinURL } from "../fetch";
+import { Loading } from "../Loading";
 import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
@@ -21,24 +22,35 @@ export function FolderList(params: DashboardParams) {
     );
   }
 
+  let body: JSX.Element;
+
   const contents = response.data?.data?.entries;
   if (!contents || contents.length === 0) {
-    return (
+    body = (
       <Center>
         <Text color="darkText">This folder is empty.</Text>
         <FABs {...params} />
       </Center>
     );
+  } else {
+    body = (
+      <VStack space={3}>
+        {contents.map((item, index) => (
+          <FolderListEntry {...params} item={item} key={index} />
+        ))}
+        <FABs {...params} />
+      </VStack>
+    );
   }
 
-  return (
-    <VStack space={3}>
-      {contents.map((item, index) => (
-        <FolderListEntry {...params} item={item} key={index} />
-      ))}
-      <FABs {...params} />
-    </VStack>
-  );
+  return <VStack>
+    <Center height="1rem">
+      {
+        response.isValidating ? <Loading /> : <Box />
+      }
+    </Center>
+    {body}
+  </VStack>;
 }
 
 function FABs(params: DashboardParams) {
