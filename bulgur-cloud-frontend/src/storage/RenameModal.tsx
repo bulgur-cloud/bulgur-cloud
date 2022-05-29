@@ -1,5 +1,5 @@
 import { Modal, Text, Input, Center, HStack, Button } from "native-base";
-import React, { useState } from "react";
+import { useState } from "react";
 import { runAsync, STORAGE } from "../client/base";
 import { useRename } from "../client/storage";
 import { joinURL } from "../fetch";

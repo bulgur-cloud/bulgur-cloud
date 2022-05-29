@@ -7,7 +7,9 @@ module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
     "plugin:@typescript-eslint/recommended",
+    "prettier",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -17,12 +19,18 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "prettier"],
   rules: {
     indent: ["error", 2],
     "linebreak-style": ["error", "unix"],
     quotes: ["error", "double"],
     semi: ["error", "always"],
-    "no-explicit-any": false,
+    "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/ban-ts-comment": 0,
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
   },
 };

@@ -9,9 +9,7 @@
   "editor.formatOnType": true,
   "peacock.color": "#69310B",
   "editor.formatOnSave": true,
-  "cSpell.words": [
-    "actix"
-  ],
+  "cSpell.words": ["actix"],
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#974710",
     "activityBar.activeBorder": "#12ad51",
@@ -31,5 +29,6 @@
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#69310b99",
     "titleBar.inactiveForeground": "#e7e7e799"
-  }
+  },
+  "eslint.format.enable": true
 }

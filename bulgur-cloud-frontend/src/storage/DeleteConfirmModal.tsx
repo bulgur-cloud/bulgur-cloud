@@ -1,5 +1,4 @@
 import { Button, Center, HStack, Modal, Text } from "native-base";
-import React from "react";
 import { runAsync, STORAGE } from "../client/base";
 import { useDelete } from "../client/storage";
 import { joinURL } from "../fetch";

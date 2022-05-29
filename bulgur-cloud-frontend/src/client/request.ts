@@ -18,7 +18,7 @@ export type RequestParams<D> = {
 };
 
 export async function axiosThrowless<D, R>(config: AxiosRequestConfig<D>) {
-  let response: AxiosResponse<R, any>;
+  let response: AxiosResponse<R, unknown>;
   try {
     response = await axios.request<R>(config);
   } catch (err) {
@@ -71,9 +71,8 @@ export function useRequest<D, R>() {
       }
       config.data = params.data;
     }
-    console.log("doRequest", config);
 
-    const response = await axiosThrowless(config);
+    const response = await axiosThrowless<D, R>(config);
     if (response.status === HttpStatusCode.UNAUTHORIZED) {
       if (!site || !username || !password) return response;
       // Once we log in again, this request should automatically get retried

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useSWRConfig } from "swr";
 import api from "../api";
 import { BError } from "../error";
@@ -12,9 +11,9 @@ import {
 } from "../store";
 import { isString } from "../typeUtils";
 import { useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { HttpStatusCode, isOkResponse, runAsync } from "./base";
 import { axiosThrowless } from "./request";
+import { useAppNavigation } from "../routes";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -106,7 +105,7 @@ export function useLogin() {
 export function useLogout() {
   const dispatch = useAppDispatch();
   const { cache } = useSWRConfig();
-  const navigation = useNavigation();
+  const navigation = useAppNavigation();
 
   async function doLogout() {
     // Delete any saved tokens, otherwise we'd re-log the user.

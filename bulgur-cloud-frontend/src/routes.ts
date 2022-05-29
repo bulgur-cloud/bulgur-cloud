@@ -2,6 +2,8 @@ import {
   getStateFromPath,
   getPathFromState,
   Route,
+  useNavigation,
+  NavigationProp,
 } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
@@ -84,8 +86,6 @@ export function isDashboardRoute(
   return route?.name === "Dashboard";
 }
 
-declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RoutingStackParams {}
-  }
+export function useAppNavigation() {
+  return useNavigation<NavigationProp<RoutingStackParams>>();
 }

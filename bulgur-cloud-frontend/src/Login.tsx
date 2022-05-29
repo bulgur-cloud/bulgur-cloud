@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Center, Input, Spacer, VStack, Button, Text } from "native-base";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLogin } from "./client/auth";

@@ -1,5 +1,5 @@
 import { Text, HStack, Icon, Spacer } from "native-base";
-import React, { useState } from "react";
+import { useState } from "react";
 import { joinURL } from "../fetch";
 import { FillSpacer } from "../FillSpacer";
 import { storageSlice, useAppDispatch, useAppSelector } from "../store";
