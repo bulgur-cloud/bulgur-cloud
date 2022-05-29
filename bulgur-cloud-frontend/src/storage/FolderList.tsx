@@ -29,7 +29,6 @@ export function FolderList(params: DashboardParams) {
     body = (
       <Center>
         <Text color="darkText">This folder is empty.</Text>
-        <FABs {...params} />
       </Center>
     );
   } else {
@@ -38,7 +37,6 @@ export function FolderList(params: DashboardParams) {
         {contents.map((item, index) => (
           <FolderListEntry {...params} item={item} key={index} />
         ))}
-        <FABs {...params} />
       </VStack>
     );
   }
@@ -50,6 +48,7 @@ export function FolderList(params: DashboardParams) {
       }
     </Center>
     {body}
+    <FABs {...params} />
   </VStack>;
 }
 
