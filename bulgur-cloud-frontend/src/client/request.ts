@@ -1,4 +1,9 @@
-import axios, { AxiosRequestConfig, Method } from "axios";
+import axios, {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+  Method,
+} from "axios";
 import useSWR from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
@@ -11,6 +16,20 @@ export type RequestParams<D> = {
   url: string;
   data?: D;
 };
+
+export async function axiosThrowless<D, R>(config: AxiosRequestConfig<D>) {
+  let response: AxiosResponse<R, any>;
+  try {
+    response = await axios.request<R>(config);
+  } catch (err) {
+    if (err instanceof AxiosError && err.response) {
+      response = err.response;
+    } else {
+      throw err;
+    }
+  }
+  return response;
+}
 
 /** Use this when writing a new hook that performs an action on the server.
  *
@@ -53,7 +72,8 @@ export function useRequest<D, R>() {
       config.data = params.data;
     }
     console.log("doRequest", config);
-    const response = await axios.request<R>(config);
+
+    const response = await axiosThrowless(config);
     if (response.status === HttpStatusCode.UNAUTHORIZED) {
       if (!site || !username || !password) return response;
       // Once we log in again, this request should automatically get retried

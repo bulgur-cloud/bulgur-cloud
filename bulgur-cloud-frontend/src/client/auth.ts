@@ -13,7 +13,8 @@ import {
 import { isString } from "../typeUtils";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { isOkResponse, runAsync } from "./base";
+import { HttpStatusCode, isOkResponse, runAsync } from "./base";
+import { axiosThrowless } from "./request";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -30,7 +31,7 @@ export function useTokenCheck() {
     token: string;
   }) {
     try {
-      const out = await axios.request<never>({
+      const out = await axiosThrowless<never, never>({
         method: "HEAD",
         url: "/api/stats",
         headers: {
@@ -64,9 +65,21 @@ export function useLogin() {
       username,
       password,
     };
-    const out = await axios.post<api.LoginResponse>("/auth/login", data, {
+    const out = await axiosThrowless<api.Login, api.LoginResponse>({
+      url: "/auth/login",
       baseURL: site,
+      method: "POST",
+      data,
     });
+
+    if (out.status === HttpStatusCode.BAD_REQUEST) {
+      throw new BError({
+        code: "login_bad",
+        title: "Bad username or password",
+        description: "The username or password you tried to use is incorrect.",
+      });
+    }
+
     if (!isLoginResponse(out.data)) {
       throw new BError({
         code: "login_failed",

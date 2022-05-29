@@ -55,6 +55,7 @@ export function Login({ navigation }: LoginParams) {
   const onLogin = () => {
     runAsync(async () => {
       await doLogin({ username, password, site });
+
       navigation.replace("Dashboard", {
         store: username,
         path: "",
