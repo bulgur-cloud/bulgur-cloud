@@ -26,5 +26,6 @@ jobs:
         with:
           node-version: lts/gallium
           cache: "yarn"
+          cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
       - run: yarn install --frozen-lockfile
       - run: yarn lint
