@@ -8,9 +8,9 @@ import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { RenameModal } from "./RenameModal";
 import api from "../api";
-import { Link, StackActions } from "@react-navigation/native";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
+import { STORAGE } from "../client/base";
 
 function itemIconType({
   isFile,
@@ -37,7 +37,7 @@ export function FolderListEntry(
   const isMarkedForMove = useAppSelector(
     (state) =>
       state.storage.markedForMove[
-        joinURL(route.params.store, route.params.path, item.name)
+        joinURL(STORAGE, route.params.store, route.params.path, item.name)
       ] !== undefined,
   );
 

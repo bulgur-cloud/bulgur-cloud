@@ -234,9 +234,11 @@ impl FromStr for UserType {
     simple_secrecy::Debug,
     simple_secrecy::Display,
 )]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct Password(pub String);
 
 #[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct Login {
     pub username: String,
     pub password: Password,

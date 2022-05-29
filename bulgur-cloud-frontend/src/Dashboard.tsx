@@ -9,7 +9,6 @@ import {
   VStack,
 } from "native-base";
 import React, { useEffect } from "react";
-import { useClient } from "./client";
 import { File } from "./storage/File";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -18,7 +17,7 @@ import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams } from "./routes";
 import { useNavigation } from "@react-navigation/native";
-import { useSWRConfig } from "swr";
+import { useLogout } from "./client/auth";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -64,22 +63,15 @@ function BackButton(params: DashboardParams) {
 }
 
 export function Dashboard(params: DashboardParams) {
-  const { username, isAuthenticated, logout } = useClient();
-  const { cache } = useSWRConfig();
-
-  const doLogout = () => {
-    logout.run();
-    // Type mismatch, function is available: https://github.com/vercel/swr/issues/1887
-    // @ts-ignore
-    cache.clear();
-    params.navigation.replace("Login");
-  };
+  const username = useAppSelector((selector) => selector.auth.username);
+  const { doLogout } = useLogout();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    console.log("Dashboard", username);
+    if (!username) {
       doLogout();
     }
-  }, [isAuthenticated]);
+  }, [username]);
 
   return (
     <Center paddingTop={16}>

@@ -1,7 +1,7 @@
-import { Button, Center, HStack, Modal, Text, VStack } from "native-base";
-import React, { useEffect, useState } from "react";
-import { runAsync, useClient } from "../client";
-import { useAppSelector } from "../store";
+import { Button, Center, HStack, Modal, Text } from "native-base";
+import React from "react";
+import { runAsync, STORAGE } from "../client/base";
+import { useDelete } from "../client/storage";
 import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
 
@@ -11,7 +11,7 @@ export function DeleteConfirmModal(
     isFile: boolean;
   } & DashboardParams,
 ) {
-  const { deletePath } = useClient();
+  const { doDelete } = useDelete();
   const params = props.route.params;
 
   let titleMessage: string;
@@ -35,11 +35,14 @@ export function DeleteConfirmModal(
                 maxWidth={48}
                 onPress={() => {
                   runAsync(async () => {
-                    await deletePath.run({
-                      store: params.store,
-                      path: params.path,
-                      name: props.itemName,
-                    });
+                    await doDelete(
+                      joinURL(
+                        STORAGE,
+                        params.store,
+                        params.path,
+                        props.itemName,
+                      ),
+                    );
                     props.onClose();
                   });
                 }}

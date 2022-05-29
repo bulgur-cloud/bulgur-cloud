@@ -3,14 +3,24 @@ import { Center, Input, Spacer, VStack, Button, Text } from "native-base";
 import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { runAsync, useClient } from "./client";
+import { useLogin } from "./client/auth";
+import { runAsync } from "./client/base";
 import { FullPageLoading } from "./Loading";
 import { RoutingStackParams } from "./routes";
+import { useAppSelector } from "./store";
+import { pick } from "./utils";
 
 type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
 
 export function Login({ navigation }: LoginParams) {
-  const { login, username: loggedInUsername } = useClient();
+  const {
+    username: loggedInUsername,
+    token,
+    state: authState,
+  } = useAppSelector((selector) =>
+    pick(selector.auth, "token", "username", "state"),
+  );
+  const { doLogin } = useLogin();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [site, setSite] = useState<string | undefined>(undefined);
@@ -28,15 +38,15 @@ export function Login({ navigation }: LoginParams) {
   }, []);
 
   useEffect(() => {
-    console.log("checking at login", loggedInUsername);
-    if (loggedInUsername !== undefined && loggedInUsername?.length > 0) {
+    console.log("checking at login", site, loggedInUsername, authState);
+    if (loggedInUsername && token && authState === "done") {
       navigation.replace("Dashboard", {
         store: loggedInUsername,
         path: "",
         isFile: false,
       });
     }
-  }, [loggedInUsername]);
+  }, [site, loggedInUsername, token, authState]);
 
   if (!site) {
     return <FullPageLoading />;
@@ -44,7 +54,8 @@ export function Login({ navigation }: LoginParams) {
 
   const onLogin = () => {
     runAsync(async () => {
-      await login.run({ username, password, site });
+      await doLogin({ username, password, site });
+
       navigation.replace("Dashboard", {
         store: username,
         path: "",

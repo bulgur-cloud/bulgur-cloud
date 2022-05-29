@@ -1,25 +1,20 @@
 import { Center, Text, View, VStack } from "native-base";
 import React from "react";
-import useSWR from "swr";
-import { useClient } from "../client";
-import { NotFound } from "../NotFound";
+import { STORAGE } from "../client/base";
+import { useFolderListing } from "../client/storage";
+import { joinURL } from "../fetch";
 import { DashboardParams } from "../routes";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
 export function FolderList(params: DashboardParams) {
-  const { fetchFolder } = useClient();
   const { store, path } = params.route.params;
-  const { data, error } = useSWR([store, path, "fetchFolder"], fetchFolder);
+  console.log("FolderList", store, path);
+  console.log(joinURL(STORAGE, store, path));
+  const response = useFolderListing(joinURL(STORAGE, store, path));
 
-  const contents = data?.entries;
-
-  if (data?.notFound) {
-    return <NotFound />;
-  }
-
-  if (error) {
-    console.log(error);
+  if (response.error) {
+    console.log(response.error);
     return (
       <Center>
         <Text>Can't display this folder due to an error.</Text>
@@ -27,6 +22,7 @@ export function FolderList(params: DashboardParams) {
     );
   }
 
+  const contents = response.data?.data?.entries;
   if (!contents || contents.length === 0) {
     return (
       <Center>

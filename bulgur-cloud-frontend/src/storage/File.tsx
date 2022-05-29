@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Center, Text, Image, VStack, Heading, Box, Button } from "native-base";
-import { runAsync, useClient } from "../client";
+import { runAsync, STORAGE } from "../client/base";
+import { usePathExists, usePathToken } from "../client/storage";
 import { Loading } from "../Loading";
 import { Platform } from "react-native";
 import { joinURL, urlFileExtension, urlFileName } from "../fetch";
 import * as FileSystem from "expo-file-system";
 import { DashboardParams } from "../routes";
-import useSWR from "swr";
 import { NotFound } from "../NotFound";
-import { STORAGE } from "../client/loadFolder";
+import { useAppSelector } from "../store";
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   "png",
@@ -193,17 +193,11 @@ function DownloadButton({
 export function File(params: DashboardParams) {
   const { path, store } = params.route.params;
   const filename = urlFileName(path);
+  const site = useAppSelector((selector) => selector.auth.site);
 
-  const api = useClient();
-  const { data: pathExists } = useSWR(
-    [store, path, "fetchPathExists"],
-    api.fetchPathExists,
-  );
-  const { data: pathToken } = useSWR(
-    [store, path, "fetchPathToken"],
-    api.fetchPathToken,
-  );
-  console.log(pathToken, pathExists);
+  const pathExists = usePathExists(joinURL(STORAGE, store, path));
+  const pathToken = usePathToken(joinURL(STORAGE, store, path)).data?.data
+    .token;
 
   if (pathToken === undefined) {
     return <Loading />;
@@ -213,7 +207,7 @@ export function File(params: DashboardParams) {
     return <NotFound />;
   }
 
-  if (pathToken === null || api.site === undefined || !filename) {
+  if (pathToken === null || !site || !filename) {
     return (
       <Center>
         <Text>Unable to load file.</Text>
@@ -222,7 +216,9 @@ export function File(params: DashboardParams) {
   }
 
   const fullPath =
-    api.site + encodeURI(joinURL(STORAGE, store, path) + `?token=${pathToken}`);
+    site +
+    "/" +
+    encodeURI(joinURL(STORAGE, store, path) + `?token=${pathToken}`);
   console.log(fullPath);
   const extension = urlFileExtension(filename) || "";
 
