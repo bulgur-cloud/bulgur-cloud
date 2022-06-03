@@ -6,6 +6,7 @@ import FormData from "form-data";
 import { joinURL, urlUp1Level } from "../fetch";
 import { isOkResponse, STORAGE } from "./base";
 import { RequestParams, useFetch, useRequest } from "./request";
+import { storageSlice, useAppDispatch } from "../store";
 
 export function usePathExists(url: string) {
   const out = useFetch({
@@ -138,18 +139,43 @@ export function useRename() {
 
 export function useUpload() {
   const { doRequest } = useRequest<FormData, never>();
+  const dispatch = useAppDispatch();
 
   async function doUpload(url: string, files: File[]) {
     const uploadForm = new FormData();
     files.forEach((file) => {
       uploadForm.append(file.name, file);
     });
+    const name = `Uploading ${files.length} files`;
 
-    await doRequest({
-      method: "PUT",
-      url,
-      data: uploadForm,
-    });
+    // TODO: Should upload files one by one, possibly using multiple connections.
+    // That's the only way to get progress info on individual files as far as I can tell.
+    // Also would be the only way to cancel an individual upload.
+    await doRequest(
+      {
+        method: "PUT",
+        url,
+        data: uploadForm,
+      },
+      ({ total, done }) => {
+        dispatch(
+          storageSlice.actions.uploadProgress({
+            name,
+            done,
+            total,
+          }),
+        );
+      },
+    );
+
+    // Make sure it's removed from the upload progress once the request is done
+    dispatch(
+      storageSlice.actions.uploadProgress({
+        name,
+        done: 0,
+        total: 0,
+      }),
+    );
   }
 
   return { doUpload };

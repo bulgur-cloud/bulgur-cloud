@@ -58,10 +58,19 @@ export type StorageState = {
       name: string;
     };
   };
+  /** Maps file names to their current upload progress. */
+  uploadProgress: {
+    [filename: string]: {
+      name: string;
+      total: number;
+      done: number;
+    };
+  };
 };
 
 const initialStorageState: StorageState = {
   markedForMove: {},
+  uploadProgress: {},
 };
 
 export type LoadFolderPayload = api.FolderResults;
@@ -93,6 +102,20 @@ export const storageSlice = createSlice({
     },
     clearMarksForMove: (state) => {
       state.markedForMove = {};
+    },
+    uploadProgress: (
+      state,
+      action: { payload: { name: string; total: number; done: number } },
+    ) => {
+      const { name, total, done } = action.payload;
+      state.uploadProgress[name] = {
+        name,
+        total,
+        done,
+      };
+      if (done === total) {
+        delete state.uploadProgress[name];
+      }
     },
   },
 });

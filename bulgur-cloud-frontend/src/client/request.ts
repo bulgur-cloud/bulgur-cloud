@@ -7,7 +7,6 @@ import axios, {
 import useSWR from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
-import FormData from "form-data";
 import { HttpStatusCode } from "./base";
 import { useEnsureAuthInitialized, useLogin } from "./auth";
 
@@ -31,6 +30,11 @@ export async function axiosThrowless<D, R>(config: AxiosRequestConfig<D>) {
   return response;
 }
 
+export type OnProgressCallback = (opts: {
+  total: number;
+  done: number;
+}) => void;
+
 /** Use this when writing a new hook that performs an action on the server.
  *
  * @returns.doRequest A function that will perform the request when used.
@@ -43,7 +47,10 @@ export function useRequest<D, R>() {
   const { doLogin } = useLogin();
   useEnsureAuthInitialized();
 
-  async function doRequest(params: RequestParams<D>) {
+  async function doRequest(
+    params: RequestParams<D>,
+    onUploadProgress?: OnProgressCallback | undefined,
+  ) {
     console.log("doRequest");
     if (!site || !token)
       throw new BError({
@@ -63,13 +70,29 @@ export function useRequest<D, R>() {
     };
 
     if (params.data) {
-      if (params.data instanceof FormData) {
+      if ("getHeaders" in params.data) {
         config.headers = {
           ...config.headers,
           ...config.data.getHeaders(),
         };
       }
       config.data = params.data;
+    }
+
+    if (onUploadProgress) {
+      config.onUploadProgress = (progress) => {
+        // For XMLHttpRequest on the web
+        if (
+          progress &&
+          Number.isInteger(progress.loaded) &&
+          Number.isInteger(progress.total)
+        ) {
+          onUploadProgress({
+            total: progress.total,
+            done: progress.loaded,
+          });
+        }
+      };
     }
 
     const response = await axiosThrowless<D, R>(config);
