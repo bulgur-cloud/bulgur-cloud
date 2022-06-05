@@ -121,7 +121,7 @@ function App() {
   });
   const state = useEnsureAuthInitialized();
 
-  if (!fontsLoaded || state === "loading" || state === "uninitialized") {
+  if (!fontsLoaded || state === "uninitialized") {
     return <FullPageLoading />;
   }
 
