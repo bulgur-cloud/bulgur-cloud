@@ -64,6 +64,8 @@ export function Login({ navigation }: LoginParams) {
     });
   };
 
+  const isLoading = authState === "loading";
+
   return (
     <Center justifyContent="center" flexGrow={1}>
       <SafeAreaView>
@@ -96,13 +98,14 @@ export function Login({ navigation }: LoginParams) {
           <Spacer />
           <Center>
             <Button
+              disabled={isLoading ? true : false}
               flexGrow={2}
               maxWidth={48}
               onPress={onLogin}
-              bgColor={"primary.800"}
+              bgColor={isLoading ? "primary.600" : "primary.800"}
             >
               <Text color={"lightText"} fontWeight={"semibold"}>
-                Login
+                { isLoading ? "Logging in": "Login"}
               </Text>
             </Button>
           </Center>

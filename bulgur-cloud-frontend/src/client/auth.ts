@@ -60,43 +60,52 @@ export function useLogin() {
     username: string;
     password: string;
   }) {
-    const data: api.Login = {
-      username,
-      password,
-    };
-    const out = await axiosThrowless<api.Login, api.LoginResponse>({
-      url: "/auth/login",
-      baseURL: site,
-      method: "POST",
-      data,
-    });
+    dispatch(authSlice.actions.markLoading());
 
-    if (out.status === HttpStatusCode.BAD_REQUEST) {
-      throw new BError({
-        code: "login_bad",
-        title: "Bad username or password",
-        description: "The username or password you tried to use is incorrect.",
+    try {
+      const data: api.Login = {
+        username,
+        password,
+      };
+      const out = await axiosThrowless<api.Login, api.LoginResponse>({
+        url: "/auth/login",
+        baseURL: site,
+        method: "POST",
+        data,
       });
-    }
 
-    if (!isLoginResponse(out.data)) {
-      throw new BError({
-        code: "login_failed",
-        title: "Failed to log in or reauthenticate",
-        description:
-          "You may be trying to log in with the wrong password, the server may be having internal issues, or your account may have been deleted.",
-      });
-    }
+      if (out.status === HttpStatusCode.BAD_REQUEST) {
+        throw new BError({
+          code: "login_bad",
+          title: "Bad username or password",
+          description:
+            "The username or password you tried to use is incorrect.",
+        });
+      }
 
-    const payload: LoginPayload = {
-      username,
-      password,
-      token: out.data.token,
-      site,
-    };
-    await Persist.set(PERSIST_AUTH_KEY, payload);
-    dispatch(authSlice.actions.login(payload));
-    return { username };
+      if (!isLoginResponse(out.data)) {
+        throw new BError({
+          code: "login_failed",
+          title: "Failed to log in or reauthenticate",
+          description:
+            "You may be trying to log in with the wrong password, the server may be having internal issues, or your account may have been deleted.",
+        });
+      }
+
+      const payload: LoginPayload = {
+        username,
+        password,
+        token: out.data.token,
+        site,
+      };
+      await Persist.set(PERSIST_AUTH_KEY, payload);
+      dispatch(authSlice.actions.login(payload));
+      return { username };
+    } catch (err) {
+      // If the login fails, mark the status as done so the loading indicator is dismissed.
+      dispatch(authSlice.actions.logout());
+      throw err;
+    }
   }
 
   return { doLogin };
