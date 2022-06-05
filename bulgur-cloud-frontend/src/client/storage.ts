@@ -6,6 +6,8 @@ import FormData from "form-data";
 import { joinURL, urlUp1Level } from "../fetch";
 import { isOkResponse, STORAGE } from "./base";
 import { RequestParams, useFetch, useRequest } from "./request";
+import { storageSlice, useAppDispatch } from "../store";
+import { LiveLimit } from "live-limit";
 
 export function usePathExists(url: string) {
   const out = useFetch({
@@ -136,19 +138,63 @@ export function useRename() {
   return { doRename };
 }
 
+/** Do this many uploads concurrently at maximum. */
+const CONCURRENT_UPLOADS = 2;
+const UPLOAD_LIMIT = new LiveLimit({ maxLive: CONCURRENT_UPLOADS });
+
 export function useUpload() {
   const { doRequest } = useRequest<FormData, never>();
+  const dispatch = useAppDispatch();
 
   async function doUpload(url: string, files: File[]) {
-    const uploadForm = new FormData();
-    files.forEach((file) => {
-      uploadForm.append(file.name, file);
+    files.map((file) => {
+      // Mark up all the uploads immediately
+      dispatch(
+        storageSlice.actions.uploadProgress({
+          name: file.name,
+          done: 0,
+          total: file.size,
+        }),
+      );
     });
 
-    await doRequest({
-      method: "PUT",
-      url,
-      data: uploadForm,
+    // The uploads that are in progress right now.
+    await Promise.all(
+      files.map(async (file) => {
+        await UPLOAD_LIMIT.limit(async () => {
+          // Perform the request to upload this file
+          const name = file.name;
+          const form = new FormData();
+          form.append(name, file);
+          await doRequest(
+            {
+              method: "PUT",
+              url,
+              data: form,
+            },
+            ({ total, done }) => {
+              dispatch(
+                storageSlice.actions.uploadProgress({
+                  name,
+                  done,
+                  total,
+                }),
+              );
+            },
+          );
+        });
+      }),
+    );
+
+    files.map((file) => {
+      // Make sure it's removed from the upload progress once the request is done
+      dispatch(
+        storageSlice.actions.uploadProgress({
+          name: file.name,
+          done: 0,
+          total: 0,
+        }),
+      );
     });
   }
 

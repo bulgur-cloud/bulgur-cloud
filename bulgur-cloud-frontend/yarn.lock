@@ -8240,6 +8240,11 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
+live-limit@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/live-limit/-/live-limit-1.0.0.tgz#248d9a342780174b4db3dabd996a46b87c184db7"
+  integrity sha512-Meh/GWks9i+zO6UihG9DAtwX13q/PZgqgmUk71Geftmseb7npoZTcHXZUVQWcBA35ajKSDPh899EKleKM43rTw==
+
 loader-runner@^2.4.0:
   version "2.4.0"
   resolved "https://registry.npmjs.org/loader-runner/-/loader-runner-2.4.0.tgz#ed47066bfe534d7e84c4c7b9998c2a75607d9357"

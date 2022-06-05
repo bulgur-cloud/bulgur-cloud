@@ -1,9 +1,10 @@
-import { Center, Text, View, VStack, Box } from "native-base";
+import { Center, Text, View, VStack, Box, HStack, Progress } from "native-base";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
 import { joinURL } from "../fetch";
 import { Loading } from "../Loading";
 import { DashboardParams } from "../routes";
+import { useAppSelector } from "../store";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
@@ -12,6 +13,7 @@ export function FolderList(params: DashboardParams) {
   console.log("FolderList", store, path);
   console.log(joinURL(STORAGE, store, path));
   const response = useFolderListing(joinURL(STORAGE, store, path));
+  const uploadProgress = useAppSelector((selector) => selector.storage.uploadProgress);
 
   if (response.error) {
     console.log(response.error);
@@ -33,10 +35,24 @@ export function FolderList(params: DashboardParams) {
     );
   } else {
     body = (
-      <VStack space={3}>
-        {contents.map((item, index) => (
-          <FolderListEntry {...params} item={item} key={index} />
-        ))}
+      <VStack space={16}>
+        <VStack space={3}>
+          {contents.map((item, index) => (
+            <FolderListEntry {...params} item={item} key={index} />
+          ))}
+        </VStack>
+        <VStack space={3}>
+          {
+            Object.values(uploadProgress).map(({ name, total, done }) => {
+              const percent = Math.floor((done / total) * 100);
+              return (
+                <VStack space={2} key={name}>
+                  <HStack space={8}><Text>{name}</Text><Text>{percent}% uploaded</Text></HStack>
+                  <Progress width="100%" colorScheme="primary" value={percent} />
+                </VStack>
+              );
+            })}
+        </VStack>
       </VStack>
     );
   }
