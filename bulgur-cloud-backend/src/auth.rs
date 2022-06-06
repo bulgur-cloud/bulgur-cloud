@@ -123,7 +123,8 @@ pub async fn create_user(
     let mut file = fs::OpenOptions::new()
         .write(true)
         // Make sure to not overwrite an existing user
-        .create_new(true)
+        .create(true)
+        .truncate(true)
         .open(user_path)
         .await?;
     file.write_all(data.as_bytes()).await?;

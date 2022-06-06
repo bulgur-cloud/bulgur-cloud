@@ -23,7 +23,13 @@ module.exports = {
   rules: {
     indent: ["error", 2],
     "linebreak-style": ["error", "unix"],
-    quotes: ["error", "double"],
+    quotes: [
+      "error",
+      "double",
+      {
+        avoidEscape: true,
+      },
+    ],
     semi: ["error", "always"],
     "@typescript-eslint/no-explicit-any": 0,
     "@typescript-eslint/ban-ts-comment": 0,

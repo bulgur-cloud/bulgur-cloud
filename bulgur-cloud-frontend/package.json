@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build:web": "expo build:web"
+    "build:web": "expo build:web",
+    "start:test": "node ./scripts/build-run.js",
+    "test": "yarn playwright test"
   },
   "dependencies": {
     "@expo-google-fonts/bitter": "^0.2.2",
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.18.2",
+    "@playwright/test": "^1.22.2",
     "@types/react": "^17.0.2",
     "@types/react-native": "~0.67.7",
     "@types/react-native-video": "^5.0.13",

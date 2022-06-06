@@ -16,6 +16,11 @@ pub struct UserAdd {
     #[clap(short, long)]
     pub username: String,
 
+    #[clap(long)]
+    /// Avoid using this, because the password may be saved in bash history.
+    /// Instead, run the command and let it prompt for the password.
+    pub password: Option<String>,
+
     #[clap(long, name = "type")]
     pub user_type: Option<UserType>,
 }
@@ -80,7 +85,10 @@ pub async fn cli_command<Ctx: CLIContext>(command: Commands) -> anyhow::Result<(
         Commands::User(user) => match user {
             User::UserAdd(add) => {
                 validate_username(&add.username)?;
-                let password = Ctx::prompt_password()?;
+                let password = match add.password {
+                    Some(password) => password,
+                    None => Ctx::prompt_password()?,
+                };
                 create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
                 create_user_folder(&add.username).await?;
                 Ok(())
