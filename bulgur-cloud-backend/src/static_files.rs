@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use actix_web::{get, web, HttpResponse};
+use actix_web::{get, head, web, HttpResponse};
 use rust_embed::RustEmbed;
 
 use crate::pages::not_found;
@@ -51,6 +51,12 @@ struct UI;
 #[get("/")]
 pub async fn get_ui_index() -> HttpResponse {
     get_by_path::<UI>("index.html").await
+}
+
+#[tracing::instrument]
+#[head("/")]
+pub async fn head_ui_index() -> HttpResponse {
+    HttpResponse::Ok().finish()
 }
 
 #[tracing::instrument]

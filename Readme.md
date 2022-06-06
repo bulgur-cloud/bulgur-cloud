@@ -1,7 +1,5 @@
 # Bulgur Cloud - simple and delicious cloud storage and sharing
 
-
-
 [![tests](https://img.shields.io/github/workflow/status/SeriousBug/bulgur-cloud/tests?label=tests)](https://github.com/SeriousBug/bulgur-cloud/actions/workflows/coverage.yml) [![Test coverage report](https://img.shields.io/codecov/c/github/SeriousBug/bulgur-cloud)](https://codecov.io/gh/SeriousBug/bulgur-cloud) [![lint checks](https://img.shields.io/github/workflow/status/SeriousBug/bulgur-cloud/lint%20checks?label=lint)](https://github.com/SeriousBug/bulgur-cloud/actions/workflows/lint.yml) ![Audit status](https://img.shields.io/github/workflow/status/SeriousBug/bulgur-cloud/Security%20audit?label=audit) [![Releases](https://img.shields.io/github/v/release/SeriousBug/bulgur-cloud?include_prereleases)](https://github.com/SeriousBug/bulgur-cloud/releases) [![Docker Image Size](https://img.shields.io/docker/image-size/seriousbug/bulgur-cloud)](https://hub.docker.com/r/seriousbug/bulgur-cloud) [![AGPL-3.0 license](https://img.shields.io/github/license/SeriousBug/bulgur-cloud)](https://github.com/SeriousBug/bulgur-cloud/blob/main/LICENSE.txt)
 
 Bulgur cloud is a cloud storage and sharing option, designed to be easy to self
@@ -72,9 +70,11 @@ setup.
 
 ### Tests
 
+#### Backend
+
 To run tests, please run them single-threaded.
 
-```
+```sh
 cargo test -- --test-threads=1
 ```
 
@@ -84,6 +84,17 @@ eventually so this won't be required.
 
 To get test coverage, install and use [tarpaulin](https://github.com/xd009642/tarpaulin):
 
-```
+```sh
 cargo tarpaulin -- --test-threads=1
+```
+
+#### Frontend
+
+There is a Playwright test suite. You can run it inside the `bulgur-cloud-frontend` folder with:
+
+```sh
+# You need to install browsers first if you haven't used playwright before
+yarn playwright install
+# Then, you can run the tests. By default it tests with Firefox and Chromium.
+yarn test
 ```
