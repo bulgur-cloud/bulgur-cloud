@@ -22,6 +22,7 @@ async fn test_cli_user_add() {
 
     let command = Commands::User(User::UserAdd(UserAdd {
         user_type: None,
+        password: None,
         username: "testuser".to_string(),
     }));
     cli_command::<CLITestContext>(command)
