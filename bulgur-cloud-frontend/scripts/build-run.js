@@ -1,9 +1,8 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
-const { exec, execSync } = require("child_process");
+const { execSync } = require("child_process");
 
-// eslint-disable-next-line no-undef
 const frontendRoot = path.join(__dirname, "..");
 const projectRoot = path.join(frontendRoot, "..");
 
