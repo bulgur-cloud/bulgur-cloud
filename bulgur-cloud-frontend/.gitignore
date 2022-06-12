@@ -12,6 +12,5 @@ npm-debug.*
 # macOS
 .DS_Store
 
-# web build
 web-build/
 playwright-report/
