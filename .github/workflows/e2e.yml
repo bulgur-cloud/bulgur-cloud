@@ -1,0 +1,29 @@
+name: e2e-tests
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  e2e-tests:
+    name: e2e ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "bulgur-cloud-frontend"
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/gallium
+          cache: "yarn"
+          cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
+      - run: yarn install --frozen-lockfile
+      - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
+      - run: yarn test --project=${{ matrix.browser }}
