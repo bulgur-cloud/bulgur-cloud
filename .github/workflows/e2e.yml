@@ -25,5 +25,8 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
       - run: yarn install --frozen-lockfile
+        # Get a build first, because otherwise playwright times out waiting for the build
+      - run: cargo build
+        working-directory: ""
       - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
       - run: yarn test --project=${{ matrix.browser }}
