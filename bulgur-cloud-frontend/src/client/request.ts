@@ -51,7 +51,6 @@ export function useRequest<D, R>() {
     params: RequestParams<D>,
     onUploadProgress?: OnProgressCallback | undefined,
   ) {
-    console.log("doRequest");
     if (!site || !token)
       throw new BError({
         code: "missing_auth",

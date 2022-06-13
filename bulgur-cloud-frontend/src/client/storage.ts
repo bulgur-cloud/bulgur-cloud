@@ -45,7 +45,7 @@ function useMutateFolder() {
   }
 
   function doMutateContainingFolder(url: string) {
-    doMutateFolder(urlUp1Level(url.replace(/[/]*$/, "")));
+    doMutateFolder(urlUp1Level(url));
   }
 
   return { doMutateFolder, doMutateContainingFolder };
@@ -101,7 +101,7 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export function useFolderListing(url: string) {
   const resp = useFetch<never, api.FolderResults>({
-    url: url,
+    url,
     method: "GET",
   });
 
@@ -145,6 +145,7 @@ const UPLOAD_LIMIT = new LiveLimit({ maxLive: CONCURRENT_UPLOADS });
 export function useUpload() {
   const { doRequest } = useRequest<FormData, never>();
   const dispatch = useAppDispatch();
+  const { doMutateFolder } = useMutateFolder();
 
   async function doUpload(url: string, files: File[]) {
     files.map((file) => {
@@ -180,6 +181,9 @@ export function useUpload() {
                   total,
                 }),
               );
+              if (total === done) {
+                doMutateFolder(url);
+              }
             },
           );
         });
@@ -196,6 +200,7 @@ export function useUpload() {
         }),
       );
     });
+    doMutateFolder(url);
   }
 
   return { doUpload };
