@@ -45,7 +45,7 @@ function useMutateFolder() {
   }
 
   function doMutateContainingFolder(url: string) {
-    doMutateFolder(urlUp1Level(url.replace(/[/]*$/, "")));
+    doMutateFolder(urlUp1Level(url));
   }
 
   return { doMutateFolder, doMutateContainingFolder };
@@ -101,7 +101,7 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export function useFolderListing(url: string) {
   const resp = useFetch<never, api.FolderResults>({
-    url: url,
+    url,
     method: "GET",
   });
 

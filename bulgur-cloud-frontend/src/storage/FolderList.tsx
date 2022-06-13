@@ -10,8 +10,6 @@ import { FolderListEntry } from "./FolderListEntry";
 
 export function FolderList(params: DashboardParams) {
   const { store, path } = params.route.params;
-  console.log("FolderList", store, path);
-  console.log(joinURL(STORAGE, store, path));
   const response = useFolderListing(joinURL(STORAGE, store, path));
   const uploadProgress = useAppSelector((selector) => selector.storage.uploadProgress);
 
