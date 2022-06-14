@@ -110,7 +110,18 @@ export function useRequest<D, R>() {
 
 /** Use this when writing a new hook that fetches data from the server. */
 export function useFetch<D, R>(params: RequestParams<D>) {
+  const token = useAppSelector((selector) => selector.auth.token);
   const { doRequest } = useRequest<D, R>();
 
-  return useSWR(params, doRequest);
+  return useSWR(
+    {
+      ...params,
+      // Passing the token in, even though `doRequest` doesn't need it, so the
+      // cache will be invalidated if the token changes. This is necessary when
+      // the page is refreshed, where there's a race between the page trying to
+      // fetch results and the saved auth state being loaded.
+      token,
+    },
+    doRequest,
+  );
 }

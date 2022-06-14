@@ -147,6 +147,7 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
 /** Ensures that if there's a saved auth token, the app is authenticated with the saved token. */
 export function useEnsureAuthInitialized() {
   const state = useAppSelector((selector) => selector.auth.state);
+  const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
   const { doTokenCheck } = useTokenCheck();
   const { doLogin } = useLogin();
@@ -174,8 +175,9 @@ export function useEnsureAuthInitialized() {
           }
         } else {
           console.log("Saved state was bad or did not exist");
-          await doLogout();
           Persist.delete(PERSIST_AUTH_KEY);
+          await doLogout();
+          navigation.navigate("Login");
         }
       });
     }

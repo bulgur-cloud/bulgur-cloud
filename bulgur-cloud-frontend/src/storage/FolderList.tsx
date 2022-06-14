@@ -1,12 +1,35 @@
-import { Center, Text, View, VStack, Box, HStack, Progress } from "native-base";
+import { Center, Text, View, VStack, Box, HStack, Progress, Spacer, Heading } from "native-base";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
+import { BError } from "../error";
 import { joinURL } from "../fetch";
 import { Loading } from "../Loading";
 import { DashboardParams } from "../routes";
 import { useAppSelector } from "../store";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
+
+function ErrorDisplay({error}: { error: unknown }) {
+  if (error instanceof BError) {
+    return (<Center>
+      <VStack>
+        <Text>Can&apos;t display this folder due to an error.</Text>
+        <Spacer />
+        <Heading>{error.title}</Heading>
+        <Text>{error.description}</Text>
+        <Text fontFamily={"mono"}>{error.code}</Text>
+      </VStack>
+    </Center>);
+  } else {
+    return (<Center>
+      <VStack>
+        <Text>Can&apos;t display this folder due to an error.</Text>
+        <Spacer />
+        <Text>{JSON.stringify(error)}</Text>
+      </VStack>
+    </Center>);
+  }
+}
 
 export function FolderList(params: DashboardParams) {
   const { store, path } = params.route.params;
@@ -15,11 +38,7 @@ export function FolderList(params: DashboardParams) {
 
   if (response.error) {
     console.log(response.error);
-    return (
-      <Center>
-        <Text>Can&apos;t display this folder due to an error.</Text>
-      </Center>
-    );
+    return <ErrorDisplay error={response.error} />;
   }
 
   let body: JSX.Element;

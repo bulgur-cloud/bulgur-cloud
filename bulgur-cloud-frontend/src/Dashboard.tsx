@@ -8,7 +8,6 @@ import {
   Text,
   VStack,
 } from "native-base";
-import { useEffect } from "react";
 import { File } from "./storage/File";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -64,13 +63,6 @@ function BackButton(params: DashboardParams) {
 export function Dashboard(params: DashboardParams) {
   const username = useAppSelector((selector) => selector.auth.username);
   const { doLogout } = useLogout();
-
-  useEffect(() => {
-    console.log("Dashboard", username);
-    if (!username) {
-      doLogout();
-    }
-  }, [username]);
 
   return (
     <Center paddingTop={16}>
