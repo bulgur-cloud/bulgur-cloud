@@ -130,8 +130,12 @@ async fn test_get_banner_login_found() {
 async fn test_get_banner_page_missing() {
     let ctx = TestEnv::setup().await;
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
 
-    let req = test::TestRequest::get().uri("/banner/page").to_request();
+    let req = test::TestRequest::get()
+        .uri("/banner/page")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
     let resp = test::call_service(&app, req).await;
 
     assert_eq!(
@@ -145,6 +149,7 @@ async fn test_get_banner_page_missing() {
 async fn test_get_banner_page_found() {
     let ctx = TestEnv::setup().await;
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
 
     fs::create_dir(PathBuf::from(BANNER))
         .await
@@ -154,7 +159,10 @@ async fn test_get_banner_page_found() {
         .await
         .expect("Failed to write the banner");
 
-    let req = test::TestRequest::get().uri("/banner/login").to_request();
+    let req = test::TestRequest::get()
+        .uri("/banner/page")
+        .insert_header((header::AUTHORIZATION, token.reveal()))
+        .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_text = String::from_utf8_lossy(&resp[..]);
 
