@@ -1,7 +1,7 @@
 [package]
 name = "bulgur-cloud-frontend"
 description = "Simple and delicious cloud storage and sharing."
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 
