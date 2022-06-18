@@ -129,6 +129,16 @@ export function useFolderListing(url: string) {
     });
   }
 
+  if (resp.data?.data.entries) {
+    // Keep the folder sorted by name, with folders put first
+    resp.data.data.entries = resp.data?.data.entries.sort((a, b) => {
+      if (!a.is_file && b.is_file) return -1;
+      if (!b.is_file && a.is_file) return 1;
+      // TODO: The performance of this can be improved: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare#performance
+      return a.name.localeCompare(b.name);
+    });
+  }
+
   return resp;
 }
 
