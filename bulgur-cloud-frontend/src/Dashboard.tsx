@@ -15,7 +15,8 @@ import { urlUp1Level } from "./fetch";
 import { FolderList } from "./storage/FolderList";
 import { FillSpacer } from "./FillSpacer";
 import { DashboardParams, useAppNavigation } from "./routes";
-import { useLogout } from "./client/auth";
+import { useEnsureAuthInitialized, useLogout } from "./client/auth";
+import { FullPageLoading } from "./Loading";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -63,6 +64,11 @@ function BackButton(params: DashboardParams) {
 export function Dashboard(params: DashboardParams) {
   const username = useAppSelector((selector) => selector.auth.username);
   const { doLogout } = useLogout();
+  const state = useEnsureAuthInitialized();
+
+  if (state !== "done") {
+    return <FullPageLoading />;
+  }
 
   return (
     <Center paddingTop={16}>

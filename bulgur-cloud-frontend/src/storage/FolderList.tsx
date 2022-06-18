@@ -12,12 +12,12 @@ import { FolderListEntry } from "./FolderListEntry";
 function ErrorDisplay({error}: { error: unknown }) {
   if (error instanceof BError) {
     return (<Center>
-      <VStack>
+      <VStack space={4}>
         <Text>Can&apos;t display this folder due to an error.</Text>
         <Spacer />
         <Heading>{error.title}</Heading>
         <Text>{error.description}</Text>
-        <Text fontFamily={"mono"}>{error.code}</Text>
+        <Text>Error code: <Text fontFamily={"monospace"}>{error.code}</Text></Text>
       </VStack>
     </Center>);
   } else {
@@ -36,8 +36,10 @@ export function FolderList(params: DashboardParams) {
   const response = useFolderListing(joinURL(STORAGE, store, path));
   const uploadProgress = useAppSelector((selector) => selector.storage.uploadProgress);
 
+  if (response instanceof BError) {
+    return <ErrorDisplay error={response} />;
+  }
   if (response.error) {
-    console.log(response.error);
     return <ErrorDisplay error={response.error} />;
   }
 

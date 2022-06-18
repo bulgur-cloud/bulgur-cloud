@@ -119,9 +119,8 @@ function App() {
     Bitter_600SemiBold,
     Bitter_400Regular_Italic,
   });
-  const state = useEnsureAuthInitialized();
 
-  if (!fontsLoaded || state === "uninitialized") {
+  if (!fontsLoaded) {
     return <FullPageLoading />;
   }
 
