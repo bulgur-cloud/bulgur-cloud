@@ -4,11 +4,12 @@ import axios, {
   AxiosResponse,
   Method,
 } from "axios";
-import useSWR from "swr";
+import useSWR, { SWRConfiguration } from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
 import { HttpStatusCode } from "./base";
 import { useEnsureAuthInitialized, useLogin } from "./auth";
+import { pick } from "../utils";
 
 export type RequestParams<D> = {
   method: Method;
@@ -51,19 +52,24 @@ export function useRequest<D, R>() {
     params: RequestParams<D>,
     onUploadProgress?: OnProgressCallback | undefined,
   ) {
-    if (!site || !token)
+    if (!site) {
+      console.log("Missing auth error");
       throw new BError({
         code: "missing_auth",
         title: "Authentication Data Missing",
         description:
           "The app data may have been corrupted. Please try erasing your browser cache and reloading the page.",
       });
+    }
+
+    const headers: { [key: string]: string } = {};
+    if (token) {
+      headers.authorization = token;
+    }
 
     const config: AxiosRequestConfig = {
       baseURL: site,
-      headers: {
-        authorization: token,
-      },
+      headers,
       method: params.method,
       url: params.url,
     };
@@ -109,8 +115,13 @@ export function useRequest<D, R>() {
 }
 
 /** Use this when writing a new hook that fetches data from the server. */
-export function useFetch<D, R>(params: RequestParams<D>) {
-  const token = useAppSelector((selector) => selector.auth.token);
+export function useFetch<D, R>(
+  params: RequestParams<D>,
+  swrConfig?: SWRConfiguration,
+) {
+  const { token, site } = useAppSelector((selector) =>
+    pick(selector.auth, "token", "site"),
+  );
   const { doRequest } = useRequest<D, R>();
 
   return useSWR(
@@ -121,7 +132,9 @@ export function useFetch<D, R>(params: RequestParams<D>) {
       // the page is refreshed, where there's a race between the page trying to
       // fetch results and the saved auth state being loaded.
       token,
+      site,
     },
     doRequest,
+    swrConfig,
   );
 }

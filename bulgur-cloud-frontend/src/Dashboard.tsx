@@ -17,6 +17,7 @@ import { FillSpacer } from "./FillSpacer";
 import { DashboardParams, useAppNavigation } from "./routes";
 import { useEnsureAuthInitialized, useLogout } from "./client/auth";
 import { FullPageLoading } from "./Loading";
+import { Banner } from "./components/Banner";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -71,7 +72,7 @@ export function Dashboard(params: DashboardParams) {
   }
 
   return (
-    <Center paddingTop={16}>
+    <Center>
       <VStack
         width="100%"
         maxWidth="2xl"
@@ -79,8 +80,10 @@ export function Dashboard(params: DashboardParams) {
         justifyItems="left"
         alignItems="left"
       >
+        <Banner bannerKey="page"/>
         <HStack
           space={4}
+          marginTop={12}
           marginBottom={4}
           paddingBottom={4}
           borderBottomColor="primary.900"

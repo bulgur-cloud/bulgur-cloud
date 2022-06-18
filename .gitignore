@@ -1,6 +1,7 @@
 /target
 /users
 /storage
+/banner
 *.zip
 *.gz
 *.xz
