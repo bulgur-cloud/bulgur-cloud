@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { HttpStatusCode, isOkResponse, runAsync } from "./base";
 import { axiosThrowless } from "./request";
 import { useAppNavigation } from "../routes";
+import { Platform } from "react-native";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -154,7 +155,18 @@ export function useEnsureAuthInitialized() {
   const { doLogout } = useLogout();
 
   useEffect(() => {
-    if (state === "uninitialized") {
+    if (state === "uninitialized" && Platform.OS === "web") {
+      // On web platforms, immediately set the site since it's known to be the
+      // current page.
+      if (__DEV__) {
+        dispatch(authSlice.actions.setSite("http://localhost:8000"));
+      } else {
+        dispatch(
+          authSlice.actions.setSite(
+            `${window.location.protocol}//${window.location.host}`,
+          ),
+        );
+      }
       dispatch(authSlice.actions.markLoading());
       runAsync(async () => {
         const out = await Persist.get(PERSIST_AUTH_KEY);

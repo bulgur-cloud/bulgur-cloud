@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{
     auth::{create_nobody, login, TOKEN_VALID_SECS},
     auth_middleware, folder,
-    meta::{get_stats, head_stats, is_bulgur_cloud},
+    meta::{get_banner_login, get_banner_page, get_stats, head_stats, is_bulgur_cloud},
     pages::{not_found, page_folder_list, page_login_get, page_login_post, page_logout},
     state::{AppState, PathTokenCache, TokenCache},
     static_files::{get_basic_assets, get_ui, get_ui_index, head_ui_index},
@@ -72,7 +72,7 @@ pub fn setup_app(
         .service(login);
     // API scope handles all api functionality (anything except storage)
     let api_scope = web::scope("/api")
-        .wrap(api_guard)
+        .wrap(api_guard.clone())
         .service(get_stats)
         .service(head_stats);
     // Storage scope handles the actual files and folders
@@ -95,7 +95,13 @@ pub fn setup_app(
         .service(authenticated_basic_html_scope)
         .service(get_ui_index)
         .service(head_ui_index)
-        .service(get_ui); /*  */
+        .service(get_ui);
+    let banner_auth_scope = web::scope("")
+        .wrap(api_guard.clone())
+        .service(get_banner_page);
+    let banner_scope = web::scope("banner")
+        .service(get_banner_login)
+        .service(banner_auth_scope);
 
     // Build the app with all these scopes, and add middleware for CORS and tracing
     App::new()
@@ -113,6 +119,7 @@ pub fn setup_app(
         .service(api_scope)
         .service(storage_scope)
         .service(is_bulgur_cloud)
+        .service(banner_scope)
         .service(basic_html_scope)
         .default_service(web::to(not_found))
 }

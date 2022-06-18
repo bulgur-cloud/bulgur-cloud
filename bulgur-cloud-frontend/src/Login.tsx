@@ -9,6 +9,7 @@ import { FullPageLoading } from "./Loading";
 import { RoutingStackParams } from "./routes";
 import { useAppSelector } from "./store";
 import { pick } from "./utils";
+import { Banner } from "./components/Banner";
 
 type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
 
@@ -38,7 +39,6 @@ export function Login({ navigation }: LoginParams) {
   }, []);
 
   useEffect(() => {
-    console.log("checking at login", site, loggedInUsername, authState);
     if (loggedInUsername && token && authState === "done") {
       navigation.replace("Dashboard", {
         store: loggedInUsername,
@@ -70,6 +70,7 @@ export function Login({ navigation }: LoginParams) {
     <Center justifyContent="center" flexGrow={1}>
       <SafeAreaView>
         <VStack space={3}>
+          <Banner bannerKey="login"/>
           <Text fontSize="7xl">Bulgur Cloud</Text>
           <Text>Simple and delicious cloud storage and sharing.</Text>
           <Spacer />
@@ -105,7 +106,7 @@ export function Login({ navigation }: LoginParams) {
               bgColor={isLoading ? "primary.600" : "primary.800"}
             >
               <Text color={"lightText"} fontWeight={"semibold"}>
-                { isLoading ? "Logging in": "Login"}
+                {isLoading ? "Logging in" : "Login"}
               </Text>
             </Button>
           </Center>

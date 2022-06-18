@@ -1,6 +1,9 @@
+use std::path::PathBuf;
+
+use actix_files::NamedFile;
 use actix_web::{get, head, web, HttpResponse};
 
-use crate::state::AppState;
+use crate::{folder::BANNER, state::AppState};
 use serde::{Serialize, Serializer};
 use tracing;
 
@@ -36,4 +39,16 @@ async fn head_stats(_state: web::Data<AppState>) -> HttpResponse {
 #[tracing::instrument]
 async fn is_bulgur_cloud() -> HttpResponse {
     HttpResponse::Ok().finish()
+}
+
+#[get("/login")]
+async fn get_banner_login() -> Result<NamedFile, std::io::Error> {
+    let banner_path = PathBuf::from(BANNER).join("login.txt");
+    NamedFile::open_async(banner_path).await
+}
+
+#[get("/page")]
+async fn get_banner_page() -> Result<NamedFile, std::io::Error> {
+    let banner_path = PathBuf::from(BANNER).join("page.txt");
+    NamedFile::open_async(banner_path).await
 }
