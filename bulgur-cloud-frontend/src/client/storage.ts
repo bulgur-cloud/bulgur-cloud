@@ -105,8 +105,24 @@ export function useFolderListing(url: string) {
     method: "GET",
   });
 
-  if (resp.data && isFolderResults(resp.data)) {
-    throw new BError({
+  if (resp.data?.status === 401) {
+    return new BError({
+      code: "load_folder_unauthorized",
+      title: "Unauthorized",
+      description: "You are not authorized to view this folder",
+    });
+  }
+
+  if (resp.data?.status === 404) {
+    return new BError({
+      code: "not_found",
+      title: "Not found",
+      description: "This folder does not exist.",
+    });
+  }
+
+  if (resp.data?.data && !isFolderResults(resp.data.data)) {
+    return new BError({
       code: "load_folder_failed",
       title: "Failed to load folder",
       description: `Unable to load ${url}`,
