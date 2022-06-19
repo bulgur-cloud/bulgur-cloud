@@ -46,6 +46,8 @@ simple-secrecy = { path = "../simple-secrecy" }
 # Data serialization
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
+# Decode url-encoded URLs
+urlencoding = "2.1.0"
 # Logging
 tracing = "0.1"
 tracing-unwrap = { version = "0.9", default-features = false }

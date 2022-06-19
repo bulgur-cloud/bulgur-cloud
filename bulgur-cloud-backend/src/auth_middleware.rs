@@ -121,11 +121,15 @@ async fn verify_auth(
     };
 
     let path_authorized = (if let Some(path_token) = path_token {
-        tracing::debug!("Found path token attached to request {:?}", path);
-        let path_cache = state.path_token_cache.0.read().await;
-        let known_token = path_cache.peek(path);
-        tracing::debug!("Token exists for path {:?}", &known_token);
-        known_token.map(|known_token| known_token.eq(&path_token))
+        if let Ok(path) = urlencoding::decode(path) {
+            tracing::debug!("Found path token attached to request {:?}", path);
+            let path_cache = state.path_token_cache.0.read().await;
+            let known_token = path_cache.peek(path.as_ref());
+            tracing::debug!("Token exists for path {:?}", &known_token);
+            known_token.map(|known_token| known_token.eq(&path_token))
+        } else {
+            None
+        }
     } else {
         None
     })
