@@ -1,4 +1,5 @@
 use std::{
+    ffi::OsStr,
     io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -248,7 +249,7 @@ async fn put_storage(
             // It's fine if the folder already exists
             std::io::Result::Ok(())
         } else {
-            tracing::warn!("Unexpected error: {:?}", err);
+            tracing::warn!(error = ?err, "Unexpected error when creating a folder during upload");
             std::io::Result::Err(err)
         }
     })?;
@@ -258,6 +259,9 @@ async fn put_storage(
         Err(err) => Err(err),
     }
 }
+
+/// If there's more than this many files with the same name in the folder, fail the upload.
+static MAX_RENAME_ATTEMPTS: u32 = 100;
 
 #[tracing::instrument(skip(payload))]
 async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, StorageError> {
@@ -269,13 +273,55 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
         let filename = content_disposition
             .get_filename()
             .map_or_else(|| nanoid!(), sanitize_filename::sanitize);
-        let filepath = store_path.join(filename);
-        tracing::debug!("Uploading path {}", filepath.to_string_lossy());
+        let part_filename = format!(".{filename}.{}.part", nanoid!(8));
+        let part_filepath = store_path.join(part_filename);
+        tracing::debug!(filename = ?filename, part_filepath = ?part_filepath, "Upload started");
 
-        let mut file = tokio::fs::File::create(&filepath).await?;
-        // Field in turn is stream of *Bytes* object
+        // First start uploading using a temporary, random file name to make
+        // sure it doesn't conflict with any existing files
+        let mut file = tokio::fs::File::create(&part_filepath).await?;
         while let Some(chunk) = field.try_next().await? {
             file.write_all(&chunk).await?;
+        }
+
+        let mut filepath = store_path.join(&filename);
+        let extension = filepath
+            .extension()
+            .map(|ext| {
+                let ext = ext.to_string_lossy();
+                format!(".{ext}")
+            })
+            .unwrap_or("".to_string());
+        let mut i: u32 = 0;
+        loop {
+            i += 1;
+            // Once the upload is done, try to rename the file to it's real name
+            let success = fs::rename(&part_filepath, &filepath).await;
+            if let Err(err) = &success {
+                if err.kind() == std::io::ErrorKind::AlreadyExists {
+                    // If the rename failed because a file with the same name
+                    // exists, come up with a new file name
+                    filepath.set_file_name(format!("{filename} ({i}){extension}"));
+                } else {
+                    // If the rename failed for any other reason, the upload
+                    // should fail too
+                    success?;
+                }
+            } else {
+                // The rename worked, we're done
+                break;
+            }
+
+            // Avoid too many rename attempts, otherwise this could turn into a
+            // DoS vulnerability
+            if i == MAX_RENAME_ATTEMPTS {
+                // If we're about to hit the max, try a nanoid which is unlikely
+                // to hit another conflict
+                filepath.set_file_name(format!("{filename} ({}){extension}", nanoid!()));
+            }
+            if i > MAX_RENAME_ATTEMPTS {
+                break;
+            }
         }
     }
     Ok(files_written)
