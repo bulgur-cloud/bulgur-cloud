@@ -397,6 +397,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-rename"
+version = "1.0.0"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "windows-sys",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -483,6 +492,7 @@ dependencies = [
  "anyhow",
  "askama",
  "askama_actix",
+ "atomic-rename",
  "chrono",
  "clap",
  "derive_more",

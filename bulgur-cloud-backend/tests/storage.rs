@@ -369,8 +369,6 @@ async fn test_upload_file() {
     let token = ctx.setup_user_token("testuser", "testpass").await;
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
 
-    create_file(PathBuf::from(STORAGE).join("testuser").join("test.txt"), "").await;
-
     let req = test::TestRequest::put()
         .uri("/storage/testuser/")
         .insert_header((header::AUTHORIZATION, token.reveal()))
@@ -380,17 +378,56 @@ async fn test_upload_file() {
     let resp = test::call_service(&app, req).await;
     assert!(resp.status().is_success(), "Upload successful");
 
-    let contents = fs::read_to_string(
-        PathBuf::from(STORAGE)
-            .join("testuser")
-            .join("")
-            .join("test.txt"),
-    )
-    .await;
+    let contents =
+        fs::read_to_string(PathBuf::from(STORAGE).join("testuser").join("test.txt")).await;
     assert!(contents.is_ok(), "Uploaded file exists");
     assert_eq!(
         contents.unwrap(),
         "Autem tempore",
         "Uploaded file has the right contents"
+    );
+}
+
+#[actix_web::test]
+async fn test_upload_file_duplicate_name() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let token_data = token.reveal();
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::put()
+        .uri("/storage/testuser/")
+        .insert_header((header::AUTHORIZATION, token_data.clone()))
+        .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nAutem tempore\r\n--zzz--\r\n\r\n")
+        .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Upload successful");
+
+    let req = test::TestRequest::put()
+        .uri("/storage/testuser/")
+        .insert_header((header::AUTHORIZATION, token_data))
+        .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nEt voluptatibu\r\n--zzz--\r\n\r\n")
+        .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
+        .to_request();
+    let resp = test::call_service(&app, req).await;
+    assert!(resp.status().is_success(), "Second upload successful");
+
+    let contents =
+        fs::read_to_string(PathBuf::from(STORAGE).join("testuser").join("test.txt")).await;
+    assert!(contents.is_ok(), "Uploaded file exists");
+    assert_eq!(
+        contents.unwrap(),
+        "Autem tempore",
+        "Uploaded file has the right contents"
+    );
+
+    let contents =
+        fs::read_to_string(PathBuf::from(STORAGE).join("testuser").join("test (1).txt")).await;
+    assert!(contents.is_ok(), "Second uploaded file exists");
+    assert_eq!(
+        contents.unwrap(),
+        "Et voluptatibu",
+        "Second uploaded file has the right contents"
     );
 }

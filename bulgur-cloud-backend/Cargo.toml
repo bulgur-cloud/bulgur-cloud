@@ -33,6 +33,8 @@ actix-governor = "0.3.0"
 # Verifying file names
 sanitize-filename = "0.4"
 pathdiff = "0.2"
+# Atomic rename for overwrite-free uploads
+atomic-rename = { path = "../atomic-rename" }
 # Template rendering for static pages
 askama = "0.11"
 askama_actix = "0.13"

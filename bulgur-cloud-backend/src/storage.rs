@@ -1,5 +1,4 @@
 use std::{
-    ffi::OsStr,
     io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -18,6 +17,7 @@ use futures::TryStreamExt;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
 use tokio::{fs, io::AsyncWriteExt};
+use tracing_unwrap::ResultExt;
 
 use crate::{
     folder,
@@ -273,6 +273,10 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
         let filename = content_disposition
             .get_filename()
             .map_or_else(|| nanoid!(), sanitize_filename::sanitize);
+        let basename = PathBuf::from(&filename)
+            .file_stem()
+            .map(|b| b.to_string_lossy().to_string())
+            .unwrap_or_else(|| filename.clone());
         let part_filename = format!(".{filename}.{}.part", nanoid!(8));
         let part_filepath = store_path.join(part_filename);
         tracing::debug!(filename = ?filename, part_filepath = ?part_filepath, "Upload started");
@@ -291,17 +295,22 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
                 let ext = ext.to_string_lossy();
                 format!(".{ext}")
             })
-            .unwrap_or("".to_string());
+            .unwrap_or_else(|| "".to_string());
         let mut i: u32 = 0;
         loop {
             i += 1;
             // Once the upload is done, try to rename the file to it's real name
-            let success = fs::rename(&part_filepath, &filepath).await;
+            let c_filepath = filepath.clone();
+            let c_part_filepath = part_filepath.clone();
+            let success = web::block(move || atomic_rename::rename(c_part_filepath, c_filepath))
+                .await
+                // Very unlikely/unrecoverable
+                .unwrap_or_log();
             if let Err(err) = &success {
                 if err.kind() == std::io::ErrorKind::AlreadyExists {
                     // If the rename failed because a file with the same name
                     // exists, come up with a new file name
-                    filepath.set_file_name(format!("{filename} ({i}){extension}"));
+                    filepath.set_file_name(format!("{basename} ({i}){extension}"));
                 } else {
                     // If the rename failed for any other reason, the upload
                     // should fail too
