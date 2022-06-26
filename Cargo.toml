@@ -1,5 +1,10 @@
 [workspace]
-members = ["bulgur-cloud-backend", "simple-secrecy", "bulgur-cloud-frontend"]
+members = [
+  "bulgur-cloud-backend",
+  "simple-secrecy",
+  "atomic-rename",
+  "bulgur-cloud-frontend",
+]
 
 [profile.release]
 strip = true

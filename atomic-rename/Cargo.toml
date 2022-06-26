@@ -1,0 +1,22 @@
+[package]
+name = "atomic-rename"
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+cfg-if = "1"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.27"
+
+[target.'cfg(windows)'.dependencies.windows-sys]
+version = "0.36"
+features = ["Win32_Storage_FileSystem", "Win32_Foundation"]
+
+[features]
+# By default this create only supports Unix and Windows platforms. On other
+# platforms, it will refuse to compile. If you enable this feature, the crate
+# will compile on other platforms as well, but the rename operation won't be
+# atomic on those platforms.
+allow-unsafe-platforms = []

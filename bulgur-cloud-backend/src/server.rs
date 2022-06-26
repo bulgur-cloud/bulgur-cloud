@@ -96,9 +96,7 @@ pub fn setup_app(
         .service(get_ui_index)
         .service(head_ui_index)
         .service(get_ui);
-    let banner_auth_scope = web::scope("")
-        .wrap(api_guard.clone())
-        .service(get_banner_page);
+    let banner_auth_scope = web::scope("").wrap(api_guard).service(get_banner_page);
     let banner_scope = web::scope("banner")
         .service(get_banner_login)
         .service(banner_auth_scope);
