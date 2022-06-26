@@ -14,11 +14,14 @@ import { STORAGE } from "../client/base";
 
 function itemIconType({
   isFile,
+  isMarkedForMove,
   itemName,
 }: {
-  isFile: boolean;
+    isFile: boolean;
+  isMarkedForMove: boolean;
   itemName: string;
-}) {
+  }) {
+  if (isMarkedForMove) return "check";
   if (!isFile) return "folder";
   const extensionMatch = /[.]([^.]+)$/.exec(itemName);
   const extension = extensionMatch ? extensionMatch[1] : undefined;
@@ -37,9 +40,10 @@ export function FolderListEntry(
   const isMarkedForMove = useAppSelector(
     (state) =>
       state.storage.markedForMove[
-        joinURL(STORAGE, route.params.store, route.params.path, item.name)
+        joinURL(route.params.store, route.params.path, item.name)
       ] !== undefined,
   );
+  const isHidden = item.name.startsWith(".");
 
   const { store, path } = route.params;
 
@@ -51,9 +55,9 @@ export function FolderListEntry(
       <Icon
         size="sm"
         as={FontAwesome5}
-        name={itemIconType({ isFile: item.is_file, itemName: item.name })}
+        name={itemIconType({ isFile: item.is_file, itemName: item.name, isMarkedForMove })}
         color="darkText"
-        opacity={isMarkedForMove ? 20 : 100}
+        opacity={isHidden ? 40 : 100}
       />
       <BLink
         screen="Dashboard"
@@ -63,7 +67,7 @@ export function FolderListEntry(
           isFile: item.is_file,
         }}
       >
-        <Text opacity={isMarkedForMove ? 20 : 100}>{item.name}</Text>
+        <Text opacity={isHidden ? 40 : 100}>{item.name}</Text>
       </BLink>
       <FillSpacer />
       <Icon
