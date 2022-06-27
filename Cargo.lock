@@ -481,7 +481,7 @@ dependencies = [
 
 [[package]]
 name = "bulgur-cloud"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "actix-cors",
  "actix-files",
@@ -526,7 +526,7 @@ dependencies = [
 
 [[package]]
 name = "bulgur-cloud-frontend"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "bulgur-cloud",
  "typescript-type-def",
