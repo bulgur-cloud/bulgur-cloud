@@ -61,7 +61,7 @@ scrypt = { version = "0.10" }
 # For use as a CLI tool
 clap = { version = "3.1", features = ["wrap_help", "derive"] }
 num_cpus = "1.13"
-rpassword = "6.0"
+rpassword = "7.0"
 # Error management
 thiserror = "1.0"
 anyhow = "1.0"
