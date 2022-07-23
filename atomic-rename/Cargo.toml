@@ -8,7 +8,7 @@ license = "MIT"
 cfg-if = "1"
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2.27"
+libc = "0.2"
 
 [target.'cfg(windows)'.dependencies.windows-sys]
 version = "0.36"

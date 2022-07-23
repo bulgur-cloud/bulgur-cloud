@@ -20,14 +20,14 @@ generate_types = []
 
 [dependencies]
 # Server
-actix-web = "4.0"
+actix-web = "4.1"
 actix-cors = "0.6"
 actix-service = "2.0"
 actix-files = "0.6"
 actix-multipart = "0.4"
 qstring = "0.7"
 futures = "0.3"
-tokio = { version = "1.18", features = ["full"] }
+tokio = { version = "1.20", features = ["full"] }
 chrono = "0.4"
 actix-governor = "0.3.0"
 # Verifying file names
@@ -53,30 +53,30 @@ urlencoding = "2.1.0"
 # Logging
 tracing = "0.1"
 tracing-unwrap = { version = "0.9", default-features = false }
-tracing-actix-web = "0.5"
+tracing-actix-web = "0.6"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-bunyan-formatter = "0.3"
 # Password hashing
 scrypt = { version = "0.10" }
 # For use as a CLI tool
-clap = { version = "3.1", features = ["wrap_help", "derive"] }
+clap = { version = "3.2", features = ["wrap_help", "derive"] }
 num_cpus = "1.13"
-rpassword = "6.0"
+rpassword = "7.0"
 # Error management
 thiserror = "1.0"
 anyhow = "1.0"
 # Can we limit this to only if `generate_types` is set?
-typescript-type-def = "0.5.2"
+typescript-type-def = "0.5"
 
 # Tracing (optional, enabled with `telemetry_opentelemetry` option)
-opentelemetry = { version = "0.17.0", features = [
+opentelemetry = { version = "0.17", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
-opentelemetry-otlp = { version = "0.10.0", features = [
+opentelemetry-otlp = { version = "0.10", features = [
   "tonic",
   "tls",
   "tls-roots",
 ], optional = true }
 tonic = { version = "0.6.2", optional = true }
-tracing-opentelemetry = { version = "0.17.2", optional = true }
+tracing-opentelemetry = { version = "0.17", optional = true }
