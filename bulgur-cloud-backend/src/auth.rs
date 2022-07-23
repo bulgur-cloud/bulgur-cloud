@@ -15,6 +15,7 @@ use scrypt::{
     },
     Params, Scrypt,
 };
+use tracing_unwrap::ResultExt;
 
 #[cfg(feature = "generate_types")]
 use typescript_type_def::TypeDef;
