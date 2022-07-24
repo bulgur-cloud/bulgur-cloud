@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 use crate::{
     auth::{create_nobody, login, TOKEN_VALID_SECS},
@@ -28,6 +28,27 @@ use actix_web::{
 use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
+fn setup_cors() -> Cors {
+    let cors = Cors::default()
+        .allow_any_method()
+        .allowed_headers(vec![
+            http::header::AUTHORIZATION,
+            http::header::ACCEPT,
+            http::header::CONTENT_TYPE,
+        ])
+        .max_age(86400);
+    let origin = env::var("BULGUR_CLOUD_CORS_ORIGIN").unwrap_or_else(|_| "*".to_string());
+    if origin.eq("*") {
+        tracing::info!("Allowing any origin");
+        cors.allow_any_origin()
+    } else {
+        origin.split(",").fold(cors, |cors, origin| {
+            tracing::info!("Allowing origin {origin}");
+            cors.allowed_origin(origin)
+        })
+    }
+}
+
 pub fn setup_app(
     state: Data<AppState>,
     login_governor: GovernorConfig<impl KeyExtractor + 'static>,
@@ -40,22 +61,7 @@ pub fn setup_app(
         Error = Error,
     >,
 > {
-    let cors = Cors::default()
-        .allow_any_origin()
-        .allowed_methods(vec![
-            http::Method::OPTIONS,
-            http::Method::GET,
-            http::Method::POST,
-            http::Method::PUT,
-            http::Method::HEAD,
-            http::Method::DELETE,
-        ])
-        .allowed_headers(vec![
-            http::header::AUTHORIZATION,
-            http::header::ACCEPT,
-            http::header::CONTENT_TYPE,
-        ])
-        .max_age(3600);
+    let cors = setup_cors();
 
     let api_guard = auth_middleware::CheckLogin {
         state: state.clone(),
