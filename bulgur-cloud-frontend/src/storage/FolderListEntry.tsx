@@ -1,4 +1,4 @@
-import { Text, HStack, Icon, Spacer } from "native-base";
+import { HStack, Icon, Spacer, Text } from "native-base";
 import { useState } from "react";
 import { joinURL } from "../fetch";
 import { FillSpacer } from "../FillSpacer";
@@ -10,17 +10,16 @@ import { RenameModal } from "./RenameModal";
 import api from "../api";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
-import { STORAGE } from "../client/base";
 
 function itemIconType({
   isFile,
   isMarkedForMove,
   itemName,
 }: {
-    isFile: boolean;
+  isFile: boolean;
   isMarkedForMove: boolean;
   itemName: string;
-  }) {
+}) {
   if (isMarkedForMove) return "check";
   if (!isFile) return "folder";
   const extensionMatch = /[.]([^.]+)$/.exec(itemName);
@@ -55,7 +54,11 @@ export function FolderListEntry(
       <Icon
         size="sm"
         as={FontAwesome5}
-        name={itemIconType({ isFile: item.is_file, itemName: item.name, isMarkedForMove })}
+        name={itemIconType({
+          isFile: item.is_file,
+          itemName: item.name,
+          isMarkedForMove,
+        })}
         color="darkText"
         opacity={isHidden ? 40 : 100}
       />

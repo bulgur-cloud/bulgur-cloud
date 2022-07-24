@@ -1,4 +1,14 @@
-import { Center, Text, View, VStack, Box, HStack, Progress, Spacer, Heading } from "native-base";
+import {
+  Center,
+  Text,
+  View,
+  VStack,
+  Box,
+  HStack,
+  Progress,
+  Spacer,
+  Heading,
+} from "native-base";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
 import { BError } from "../error";
@@ -9,32 +19,40 @@ import { useAppSelector } from "../store";
 import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
-function ErrorDisplay({error}: { error: unknown }) {
+function ErrorDisplay({ error }: { error: unknown }) {
   if (error instanceof BError) {
-    return (<Center>
-      <VStack space={4}>
-        <Text>Can&apos;t display this folder due to an error.</Text>
-        <Spacer />
-        <Heading>{error.title}</Heading>
-        <Text>{error.description}</Text>
-        <Text>Error code: <Text fontFamily={"monospace"}>{error.code}</Text></Text>
-      </VStack>
-    </Center>);
+    return (
+      <Center>
+        <VStack space={4}>
+          <Text>Can&apos;t display this folder due to an error.</Text>
+          <Spacer />
+          <Heading>{error.title}</Heading>
+          <Text>{error.description}</Text>
+          <Text>
+            Error code: <Text fontFamily={"monospace"}>{error.code}</Text>
+          </Text>
+        </VStack>
+      </Center>
+    );
   } else {
-    return (<Center>
-      <VStack>
-        <Text>Can&apos;t display this folder due to an error.</Text>
-        <Spacer />
-        <Text>{JSON.stringify(error)}</Text>
-      </VStack>
-    </Center>);
+    return (
+      <Center>
+        <VStack>
+          <Text>Can&apos;t display this folder due to an error.</Text>
+          <Spacer />
+          <Text>{JSON.stringify(error)}</Text>
+        </VStack>
+      </Center>
+    );
   }
 }
 
 export function FolderList(params: DashboardParams) {
   const { store, path } = params.route.params;
   const response = useFolderListing(joinURL(STORAGE, store, path));
-  const uploadProgress = useAppSelector((selector) => selector.storage.uploadProgress);
+  const uploadProgress = useAppSelector(
+    (selector) => selector.storage.uploadProgress,
+  );
 
   if (response instanceof BError) {
     return <ErrorDisplay error={response} />;
@@ -61,30 +79,32 @@ export function FolderList(params: DashboardParams) {
           ))}
         </VStack>
         <VStack space={3}>
-          {
-            Object.values(uploadProgress).map(({ name, total, done }) => {
-              const percent = Math.floor((done / total) * 100);
-              return (
-                <VStack space={2} key={name}>
-                  <HStack space={8}><Text>{name}</Text><Text>{percent}% uploaded</Text></HStack>
-                  <Progress width="100%" colorScheme="primary" value={percent} />
-                </VStack>
-              );
-            })}
+          {Object.values(uploadProgress).map(({ name, total, done }) => {
+            const percent = Math.floor((done / total) * 100);
+            return (
+              <VStack space={2} key={name}>
+                <HStack space={8}>
+                  <Text>{name}</Text>
+                  <Text>{percent}% uploaded</Text>
+                </HStack>
+                <Progress width="100%" colorScheme="primary" value={percent} />
+              </VStack>
+            );
+          })}
         </VStack>
       </VStack>
     );
   }
 
-  return <VStack>
-    <Center height="1rem">
-      {
-        response.isValidating ? <Loading /> : <Box />
-      }
-    </Center>
-    {body}
-    <FABs {...params} />
-  </VStack>;
+  return (
+    <VStack>
+      <Center height="1rem">
+        {response.isValidating ? <Loading /> : <Box />}
+      </Center>
+      {body}
+      <FABs {...params} />
+    </VStack>
+  );
 }
 
 function FABs(params: DashboardParams) {

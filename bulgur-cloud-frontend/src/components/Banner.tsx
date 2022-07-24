@@ -1,5 +1,5 @@
 import { useBanner } from "../client/meta";
-import { Center, VStack, Text, Box } from "native-base";
+import { Center, Text, Box } from "native-base";
 
 export function Banner({ bannerKey }: { bannerKey: string }) {
   const bannerText = useBanner(bannerKey);

@@ -124,7 +124,7 @@ export function useFetch<D, R>(
   );
   const { doRequest } = useRequest<D, R>();
 
-  return useSWR(
+  return useSWR<AxiosResponse<R, any>, any, any>(
     {
       ...params,
       // Passing the token in, even though `doRequest` doesn't need it, so the
