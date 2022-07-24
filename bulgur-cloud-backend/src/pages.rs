@@ -60,7 +60,10 @@ pub async fn page_login_post(
         cache.insert(token.clone(), state::User(form.username.clone()));
 
         HttpResponse::SeeOther()
-            .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+            .cookie(Cookie::new(
+                AUTH_COOKIE_NAME,
+                format!("{}; SameSite=Strict", token.reveal()),
+            ))
             .append_header(("Location", format!("/basic/{}/", form.username)))
             .finish()
     } else {
