@@ -10,4 +10,5 @@ export type FolderEntry={"is_file":boolean;"name":string;"size":api.U64;};
 export type FolderResults={"entries":(api.FolderEntry)[];};
 export type PathTokenResponse={"token":api.Token;};
 export type StorageAction=({"action":"MakePathToken";}|({"action":"Move";}&{"new_path":string;})|{"action":"CreateFolder";});
+export type PutStoragePayload={"files_written":(string)[];};
 }

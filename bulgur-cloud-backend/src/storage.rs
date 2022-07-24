@@ -229,8 +229,9 @@ async fn head_storage(
 }
 
 #[derive(Debug, Serialize)]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct PutStoragePayload {
-    pub files_written: u32,
+    pub files_written: Vec<String>,
 }
 
 #[tracing::instrument(skip(payload))]
@@ -255,7 +256,12 @@ async fn put_storage(
     })?;
 
     match write_files(&mut payload, &store_path).await {
-        Ok(files_written) => Ok(web::Json(PutStoragePayload { files_written })),
+        Ok(files_written) => Ok(web::Json(PutStoragePayload {
+            files_written: files_written
+                .iter()
+                .map(|file| file.to_string_lossy().to_string())
+                .collect(),
+        })),
         Err(err) => Err(err),
     }
 }
@@ -264,10 +270,12 @@ async fn put_storage(
 static MAX_RENAME_ATTEMPTS: u32 = 100;
 
 #[tracing::instrument(skip(payload))]
-async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, StorageError> {
-    let mut files_written: u32 = 0;
+async fn write_files(
+    payload: &mut Multipart,
+    store_path: &Path,
+) -> Result<Vec<PathBuf>, StorageError> {
+    let mut files_written: Vec<PathBuf> = vec![];
     while let Some(mut field) = payload.try_next().await? {
-        files_written += 1;
         let content_disposition = field.content_disposition();
 
         let filename = content_disposition
@@ -318,6 +326,7 @@ async fn write_files(payload: &mut Multipart, store_path: &Path) -> Result<u32, 
                 }
             } else {
                 // The rename worked, we're done
+                files_written.push(filepath);
                 break;
             }
 
@@ -382,6 +391,7 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
 }
 
 #[tracing::instrument]
+/// Parses a path into a store and a path inside that store, sanitizing any path segments.
 fn parse_store_path(path: &str) -> Option<(&str, String)> {
     let mut segments = path.split('/').filter(|segment| !segment.is_empty());
     let store = segments.next();
