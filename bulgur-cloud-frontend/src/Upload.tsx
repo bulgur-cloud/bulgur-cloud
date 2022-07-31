@@ -1,16 +1,4 @@
-import { useState } from "react";
-import {
-  Button,
-  Center,
-  Fab,
-  HStack,
-  Icon,
-  Modal,
-  VStack,
-  Text,
-  Input,
-  View,
-} from "native-base";
+import { Fab, Icon, View } from "native-base";
 import { Platform } from "react-native";
 import { runAsync, STORAGE } from "./client/base";
 import { useCreateFolder, useRename, useUpload } from "./client/storage";
@@ -19,6 +7,7 @@ import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import { storageSlice, useAppDispatch, useAppSelector } from "./store";
 import { DashboardParams } from "./routes";
 import { joinURL } from "./fetch";
+import { useFilenameModal } from "./components/FilenameModal";
 
 function selectFiles(): Promise<null | File[]> {
   if (Platform.OS === "web") {
@@ -80,7 +69,7 @@ export function UploadButton(props: DashboardParams) {
 }
 
 export function CreateNewDirectory(props: DashboardParams) {
-  const [showCreateNewFolderModal, setCreateNewFolderModal] = useState(false);
+  const [openNewFolderModal, NewFolderModal] = useCreateNewFolderModal(props);
 
   return (
     <View>
@@ -93,82 +82,36 @@ export function CreateNewDirectory(props: DashboardParams) {
           <Icon as={FontAwesome5} name="folder-plus" height="100%" size={4} />
         }
         onPress={() => {
-          console.log("Displaying the create new folder modal");
-          setCreateNewFolderModal(true);
+          openNewFolderModal();
         }}
       ></Fab>
-      <CreateNewFolderModal
-        isOpen={showCreateNewFolderModal}
-        onClose={() => {
-          setCreateNewFolderModal(false);
-        }}
-        {...props}
-      />
+      {NewFolderModal}
     </View>
   );
 }
 
-export function CreateNewFolderModal(
-  props: Parameters<typeof Modal>[0] & DashboardParams,
-) {
-  const [newName, setNewName] = useState("");
+export function useCreateNewFolderModal(props: DashboardParams) {
   const { doCreateFolder } = useCreateFolder();
   const params = props.route.params;
 
-  return (
-    <Modal {...props}>
-      <Modal.Content maxWidth={96}>
-        <Modal.Header>
-          <Text>Create a new folder</Text>
-        </Modal.Header>
-        <Modal.Body>
-          <VStack space={4}>
-            <Input
-              variant="underlined"
-              placeholder="New name"
-              returnKeyType="send"
-              autoFocus={true}
-              onChangeText={setNewName}
-            />
-            <Center>
-              <HStack space={4}>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
-                    runAsync(async () => {
-                      // An empty upload will just create the folder in the path
-                      await doCreateFolder(
-                        joinURL(STORAGE, params.store, params.path, newName),
-                      );
-                      props.onClose();
-                    });
-                  }}
-                  bgColor={"primary.800"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Create
-                  </Text>
-                </Button>
-                <Button
-                  flexGrow={2}
-                  maxWidth={48}
-                  onPress={() => {
-                    props.onClose();
-                  }}
-                  bgColor={"primary.600"}
-                >
-                  <Text color={"lightText"} fontWeight={"semibold"}>
-                    Cancel
-                  </Text>
-                </Button>
-              </HStack>
-            </Center>
-          </VStack>
-        </Modal.Body>
-      </Modal.Content>
-    </Modal>
-  );
+  function runCreateFolder(name: string) {
+    runAsync(async () => {
+      // An empty upload will just create the folder in the path
+      await doCreateFolder(joinURL(STORAGE, params.store, params.path, name));
+    });
+  }
+
+  return useFilenameModal({
+    title: "Create new folder",
+    primary: "Create",
+    placeHolder: "Enter a name for the new folder",
+    actions: {
+      Create: {
+        message: "Create",
+        action: runCreateFolder,
+      },
+    },
+  });
 }
 
 export function MoveItems(props: DashboardParams) {

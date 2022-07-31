@@ -6,7 +6,7 @@ import { storageSlice, useAppDispatch, useAppSelector } from "../store";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { RenameModal } from "./RenameModal";
+import { useRenameModal } from "./RenameModal";
 import api from "../api";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
@@ -46,8 +46,13 @@ export function FolderListEntry(
 
   const { store, path } = route.params;
 
-  const [isRenameModalOpen, setRenameModelOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setDeleteModelOpen] = useState<boolean>(false);
+
+  const [openRenameModal, RenameModal] = useRenameModal({
+    ...params,
+    itemName: item.name,
+    isFile: item.is_file,
+  });
 
   return (
     <HStack space={4} key={item.name} alignItems="center">
@@ -80,7 +85,7 @@ export function FolderListEntry(
         height="100%"
         size={4}
         onPress={() => {
-          setRenameModelOpen(true);
+          openRenameModal();
         }}
       />
       <Spacer flexGrow={0} />
@@ -114,12 +119,7 @@ export function FolderListEntry(
           setDeleteModelOpen(true);
         }}
       />
-      <RenameModal
-        itemName={item.name}
-        isOpen={isRenameModalOpen}
-        onClose={() => setRenameModelOpen(false)}
-        {...params}
-      />
+      {RenameModal}
       <DeleteConfirmModal
         itemName={item.name}
         isFile={item.is_file}
