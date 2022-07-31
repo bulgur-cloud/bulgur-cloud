@@ -7,7 +7,15 @@ import {
   Center,
   Input,
 } from "native-base";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { describeUnsafeFilename, isSafeFilename } from "../filenameUtils";
+
+/** Wait this many ms before warning users about an unsafe filename.
+ *
+ * This is required to avoid the warning flickering as the user types. The
+ * warning is also displayed if the user tries to submit an unsafe filename.
+ */
+const UNSAFE_FILENAME_WARNING_DELAY = 800;
 
 export type FilenameModalAction = {
   message: string;
@@ -75,6 +83,25 @@ function FilenameModal<
   const [isOpen, setOpen] = props.openState;
   const [newName, setNewName] = useState(props.initialValue ?? "");
 
+  const safety = isSafeFilename(newName);
+  const isUnsafe = !!safety;
+  const description = isUnsafe ? describeUnsafeFilename(safety) : undefined;
+
+  const [shouldDisplay, setShouldDisplay] = useState(false);
+
+  useEffect(() => {
+    if (description === undefined) {
+      setShouldDisplay(false);
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldDisplay(true);
+      }, UNSAFE_FILENAME_WARNING_DELAY);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [description]);
+
   const primary = props.actions[props.primary];
   const cancel: FilenameModalAction = props.cancel
     ? props.actions[props.cancel]
@@ -84,9 +111,14 @@ function FilenameModal<
     .map(([_key, value]) => value);
 
   const onSubmit = () => {
-    console.log("submit");
-    if (primary.action) primary.action(newName);
-    setOpen(false);
+    if (isUnsafe) {
+      console.log("tried to submit unsafe filename");
+      setShouldDisplay(true);
+    } else {
+      console.log("submit");
+      if (primary.action) primary.action(newName);
+      setOpen(false);
+    }
   };
   const onDismiss = () => {
     console.log("cancel");
@@ -102,6 +134,10 @@ function FilenameModal<
         </Modal.Header>
         <Modal.Body>
           <VStack space={4}>
+            <SafetyLabel
+              shouldDisplay={shouldDisplay}
+              description={description}
+            />
             <Input
               variant="underlined"
               placeholder={props.placeHolder ?? "new name"}
@@ -110,6 +146,9 @@ function FilenameModal<
               onChangeText={setNewName}
               onSubmitEditing={onSubmit}
               defaultValue={props.initialValue}
+              backgroundColor={
+                isUnsafe && shouldDisplay ? "amber.100" : undefined
+              }
             />
             <Center>
               <HStack space={4}>
@@ -117,6 +156,7 @@ function FilenameModal<
                   onPress={onSubmit}
                   message={primary.message}
                   highlight={true}
+                  isDisabled={isUnsafe && shouldDisplay}
                 />
                 {rest.map((action) => (
                   <ModalButton
@@ -141,10 +181,12 @@ function ModalButton({
   onPress,
   message,
   highlight,
+  isDisabled,
 }: {
   onPress: () => void;
   message: string;
   highlight?: boolean;
+  isDisabled?: boolean;
 }) {
   return (
     <Button
@@ -152,10 +194,30 @@ function ModalButton({
       maxWidth={48}
       bgColor={highlight ? "primary.800" : "primary.600"}
       onPress={onPress}
+      isDisabled={isDisabled}
     >
       <Text color={"lightText"} fontWeight={"semibold"}>
         {message}
       </Text>
     </Button>
+  );
+}
+
+function SafetyLabel({
+  description,
+  shouldDisplay,
+}: {
+  description?: string;
+  shouldDisplay: boolean;
+}) {
+  return (
+    <Text
+      fontSize="xs"
+      fontStyle="italic"
+      color="amber.900"
+      opacity={shouldDisplay ? 100 : 0}
+    >
+      {description ?? " "}
+    </Text>
   );
 }
