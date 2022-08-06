@@ -8,6 +8,8 @@ use simple_secrecy;
 #[cfg(feature = "generate_types")]
 use typescript_type_def::TypeDef;
 
+use crate::kv::kv::KVDatabase;
+
 #[derive(
     Serialize,
     Deserialize,
@@ -79,6 +81,8 @@ pub struct AppState {
     pub token_cache: TokenCache,
     /// Maps paths to tokens
     pub path_token_cache: PathTokenCache,
+    /// The KV storage for metadata
+    pub kv: Box<dyn KVDatabase + Send + Sync>,
 }
 
 #[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]

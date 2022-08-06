@@ -3,6 +3,7 @@ use std::{env, path::PathBuf};
 use crate::{
     auth::{create_nobody, login, TOKEN_VALID_SECS},
     auth_middleware, folder,
+    kv::{kv_filesystem::KVFilesystem, table::TABLE_USERS},
     meta::{get_banner_login, get_banner_page, get_stats, head_stats, is_bulgur_cloud},
     pages::{not_found, page_folder_list, page_login_get, page_login_post, page_logout},
     state::{AppState, PathTokenCache, TokenCache},
@@ -139,8 +140,9 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 /// read-only access to specific paths.
 const MAX_PATH_TOKEN_CACHE: usize = 100000;
 
-pub async fn setup_app_deps() -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)>
-{
+pub async fn setup_app_deps(
+    base_folder: PathBuf,
+) -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)> {
     // Make sure the needed folders are available
     fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
     let state = web::Data::new(AppState {
@@ -148,6 +150,7 @@ pub async fn setup_app_deps() -> anyhow::Result<(Data<AppState>, GovernorConfig<
         // Auth tokens are cached for 24 hours
         token_cache: TokenCache::new(TOKEN_VALID_SECS),
         path_token_cache: PathTokenCache::new(MAX_PATH_TOKEN_CACHE),
+        kv: Box::new(KVFilesystem::new(base_folder).await),
     });
 
     let login_governor = GovernorConfigBuilder::default()
@@ -156,7 +159,7 @@ pub async fn setup_app_deps() -> anyhow::Result<(Data<AppState>, GovernorConfig<
         .finish()
         .expect("Unable to setup login governor");
     // Make sure the nobody user is created if it doesn't exist
-    create_nobody().await?;
+    create_nobody(&mut state.kv.open(TABLE_USERS).await).await?;
 
     Ok((state, login_governor))
 }

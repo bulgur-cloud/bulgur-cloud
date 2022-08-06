@@ -9,6 +9,7 @@ use clap::StructOpt;
 use opentelemetry_otlp::WithExportConfig;
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
+use tracing_unwrap::ResultExt;
 
 use std::{env, str::FromStr};
 
@@ -90,7 +91,8 @@ async fn main() -> anyhow::Result<()> {
         }
         None => {
             // Running the server
-            let (state, login_governor) = setup_app_deps().await?;
+            let (state, login_governor) =
+                setup_app_deps(env::current_dir().unwrap_or_log()).await?;
             setup_logging();
 
             HttpServer::new(move || setup_app(state.clone(), login_governor.clone()))
