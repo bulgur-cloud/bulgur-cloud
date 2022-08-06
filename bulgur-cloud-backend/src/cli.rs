@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 use rpassword::prompt_password;
 
@@ -8,6 +8,8 @@ use tokio::fs;
 use crate::{
     auth::{create_user, create_user_folder, validate_username, UserType},
     folder::{STORAGE, USERS_DIR},
+    kv::table::TABLE_USERS,
+    server::setup_app_deps,
 };
 
 #[derive(Parser, Debug)]
@@ -89,7 +91,14 @@ pub async fn cli_command<Ctx: CLIContext>(command: Commands) -> anyhow::Result<(
                     Some(password) => password,
                     None => Ctx::prompt_password()?,
                 };
-                create_user(&add.username, &password, add.user_type.unwrap_or_default()).await?;
+                let state = setup_app_deps(env::current_dir().unwrap()).await.unwrap();
+                create_user(
+                    &add.username,
+                    &password,
+                    add.user_type.unwrap_or_default(),
+                    &mut state.0.kv.open(TABLE_USERS).await,
+                )
+                .await?;
                 create_user_folder(&add.username).await?;
                 Ok(())
             }

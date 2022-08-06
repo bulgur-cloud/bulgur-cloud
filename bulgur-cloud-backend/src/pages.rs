@@ -15,6 +15,7 @@ use tracing_unwrap::ResultExt;
 use crate::{
     auth::{verify_pass, Password},
     auth_middleware::AUTH_COOKIE_NAME,
+    kv::table::TABLE_USERS,
     state::{self, AppState, Authorized, Token},
     storage::{get_storage_internal, FolderEntry, StorageError},
 };
@@ -51,7 +52,14 @@ pub async fn page_login_post(
     form: web::Form<LoginFormData>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    if verify_pass(&form.username, &form.password).await.is_ok() {
+    if verify_pass(
+        &form.username,
+        &form.password,
+        &mut state.kv.open(TABLE_USERS).await,
+    )
+    .await
+    .is_ok()
+    {
         let mut cache = state.token_cache.0.write().await;
         // generate and cache token
         let token = Token::new();

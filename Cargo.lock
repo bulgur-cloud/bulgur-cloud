@@ -492,6 +492,7 @@ dependencies = [
  "anyhow",
  "askama",
  "askama_actix",
+ "async-trait",
  "atomic-rename",
  "chrono",
  "clap",

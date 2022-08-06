@@ -1,6 +1,7 @@
 use crate::{
     error::{CLIError, ServerError},
     folder::{STORAGE, USERS_DIR},
+    kv::{kv::BKVTable, table::TABLE_USERS},
     state::{self, AppState, Token},
 };
 use std::{path::PathBuf, str::FromStr};
@@ -15,7 +16,7 @@ use scrypt::{
     },
     Params, Scrypt,
 };
-use tracing_unwrap::ResultExt;
+use tracing_unwrap::{OptionExt, ResultExt};
 
 #[cfg(feature = "generate_types")]
 use typescript_type_def::TypeDef;
@@ -68,8 +69,6 @@ async fn create_user_string(
             Salt::try_from(&salt)?,
         )?
         .to_string();
-    let dir_path = PathBuf::from(USERS_DIR);
-    fs::create_dir_all(&dir_path).await?;
     let user = UserData {
         username: username.to_string(),
         password_hash,
@@ -115,11 +114,13 @@ pub async fn create_user(
     username: &str,
     password: &str,
     user_type: UserType,
+    kv: &mut BKVTable,
 ) -> anyhow::Result<()> {
     validate_username(username)?;
     let user_path = path_user_file(username);
     let data = create_user_string(username, password, user_type).await?;
 
+    kv.put(username, data.as_str()).await;
     let mut file = fs::OpenOptions::new()
         .write(true)
         // Make sure to not overwrite an existing user
@@ -140,50 +141,37 @@ pub async fn create_user_folder(username: &str) -> anyhow::Result<()> {
 }
 
 /// Creates a "nobody" user which is used to resist user probing
-pub async fn create_nobody() -> anyhow::Result<()> {
-    let user_path = path_user_file(USER_NOBODY);
-    if !user_path.is_file() {
-        let password = nanoid!();
-        let data = create_user_string(USER_NOBODY, &password, UserType::default()).await?;
-        fs::write(user_path, format!("{}\n{}", NOBODY_USER_COMMENT, data)).await?;
-    }
+pub async fn create_nobody(kv: &mut BKVTable) -> anyhow::Result<()> {
+    let password = nanoid!();
+    let data = create_user_string(USER_NOBODY, &password, UserType::default()).await?;
+    let full_data = format!("{NOBODY_USER_COMMENT}\n{data}");
+    kv.put(USER_NOBODY, full_data.as_str()).await;
     Ok(())
 }
 
 #[tracing::instrument]
-pub async fn verify_pass(username: &str, password_input: &Password) -> Result<()> {
-    let mut path = path_user_file(username);
-    // Log any errors during reading and parsing, but otherwise blackhole the error details so attackers can't read error messages to probe
-    let contents = match fs::read(&path).await {
-        Ok(data) => data,
-        Err(error) => {
-            tracing::info!(
-                "Login attempt for user {} that doesn't exist: {}",
-                username,
-                error
-            );
-            path = path_user_file(USER_NOBODY);
-            fs::read(&path).await?
-        }
+pub async fn verify_pass(
+    username: &str,
+    password_input: &Password,
+    kv: &mut BKVTable,
+) -> Result<()> {
+    let contents = match kv.get(username).await {
+        Some(data) => data,
+        None => kv.get(USER_NOBODY).await.unwrap_or_log(),
     };
-    let user: UserData = toml::from_slice(&contents).map_err(|error| {
-        tracing::error!(
-            "Failed to parse user file {:?}: {:?}",
-            path.to_string_lossy(),
-            error
-        );
+
+    let user: UserData = toml::from_slice(contents.as_bytes()).map_err(|error| {
+        tracing::error!("Failed to parse user file {username}, {:?}", error);
         error
     })?;
     if user.username != username && user.username != USER_NOBODY {
         tracing::error!(
-            "File {} is for user {} but it should be for user {}",
-            path.to_string_lossy(),
-            user.username,
-            username
+            "File {username} is for user {:?} but it should be for user {username}",
+            user.username
         );
         return Err(ServerError::BadUserData {
             expected_user: username.to_string(),
-            file: path,
+            user: user.username.to_string(),
         }
         .into());
     }
@@ -284,7 +272,14 @@ pub async fn login(
     data: web::Json<Login>,
     state: web::Data<AppState>,
 ) -> Result<web::Json<LoginResponse>, LoginFailed> {
-    if verify_pass(&data.username, &data.password).await.is_ok() {
+    if verify_pass(
+        &data.username,
+        &data.password,
+        &mut state.kv.open(TABLE_USERS).await,
+    )
+    .await
+    .is_ok()
+    {
         let mut cache = state.token_cache.0.write().await;
         // generate and cache token
         let token = Token::new();

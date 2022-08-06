@@ -7,6 +7,7 @@ use actix_governor::{GovernorConfig, GovernorConfigBuilder, KeyExtractor};
 use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
     auth::{create_user, create_user_folder},
+    kv::table::TABLE_USERS,
     server::setup_app_deps,
     state::{AppState, Token, User},
 };
@@ -39,7 +40,7 @@ impl TestEnv<TestKeyExtractor> {
         let folder = temp_dir().join(format!("bulgur-cloud-{}", nanoid::nanoid!()));
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
-        let (state, _) = setup_app_deps()
+        let (state, _) = setup_app_deps(folder.clone())
             .await
             .expect("Failed to set up app dependencies");
         let login_governor = GovernorConfigBuilder::default()
@@ -66,9 +67,14 @@ impl TestEnv<TestKeyExtractor> {
 
     #[allow(dead_code)]
     pub async fn add_user(&self, user: &str, password: &str) {
-        create_user(user, password, bulgur_cloud::auth::UserType::User)
-            .await
-            .expect("Failed to create user");
+        create_user(
+            user,
+            password,
+            bulgur_cloud::auth::UserType::User,
+            &mut self.state.kv.open(TABLE_USERS).await,
+        )
+        .await
+        .expect("Failed to create user");
         create_user_folder(user)
             .await
             .expect("Failed to create user folder");
