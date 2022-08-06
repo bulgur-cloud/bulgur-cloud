@@ -22,7 +22,7 @@ use tracing_unwrap::{OptionExt, ResultExt};
 use typescript_type_def::TypeDef;
 
 use serde::{Deserialize, Serialize};
-use tokio::{fs, io::AsyncWriteExt};
+use tokio::fs;
 use tracing::instrument;
 
 #[derive(Serialize, Deserialize)]
@@ -117,19 +117,9 @@ pub async fn create_user(
     kv: &mut BKVTable,
 ) -> anyhow::Result<()> {
     validate_username(username)?;
-    let user_path = path_user_file(username);
     let data = create_user_string(username, password, user_type).await?;
-
-    kv.put(username, data.as_str()).await;
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        // Make sure to not overwrite an existing user
-        .create(true)
-        .truncate(true)
-        .open(user_path)
-        .await?;
-    file.write_all(data.as_bytes()).await?;
-
+    let key = format!("{username}.toml");
+    kv.put(key.as_str(), data.as_str()).await;
     Ok(())
 }
 
@@ -145,7 +135,8 @@ pub async fn create_nobody(kv: &mut BKVTable) -> anyhow::Result<()> {
     let password = nanoid!();
     let data = create_user_string(USER_NOBODY, &password, UserType::default()).await?;
     let full_data = format!("{NOBODY_USER_COMMENT}\n{data}");
-    kv.put(USER_NOBODY, full_data.as_str()).await;
+    let key = format!("{USER_NOBODY}.toml");
+    kv.put(key.as_str(), full_data.as_str()).await;
     Ok(())
 }
 
@@ -155,9 +146,13 @@ pub async fn verify_pass(
     password_input: &Password,
     kv: &mut BKVTable,
 ) -> Result<()> {
-    let contents = match kv.get(username).await {
+    let key = format!("{username}.toml");
+    let contents = match kv.get(key.as_str()).await {
         Some(data) => data,
-        None => kv.get(USER_NOBODY).await.unwrap_or_log(),
+        None => {
+            let key = format!("{USER_NOBODY}.toml");
+            kv.get(key.as_str()).await.unwrap_or_log()
+        }
     };
 
     let user: UserData = toml::from_slice(contents.as_bytes()).map_err(|error| {
