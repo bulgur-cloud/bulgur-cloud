@@ -1,0 +1,128 @@
+name: release
+on:
+  push:
+    tags:
+      - release/*
+jobs:
+  release-builds:
+    name: build ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - x86_64-pc-windows-gnu
+          - aarch64-unknown-linux-musl
+          - armv7-unknown-linux-musleabihf
+          - arm-unknown-linux-musleabihf
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/gallium
+          cache: yarn
+          cache-dependency-path: bulgur-cloud-frontend/yarn.lock
+      - name: Install UI deps
+        run: yarn install --frozen-lockfile
+        working-directory: bulgur-cloud-frontend
+      - name: Build UI
+        run: yarn build:web
+        working-directory: bulgur-cloud-frontend
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+      - name: Get final build
+        run: cross build --release --target ${{ matrix.target }}
+      - name: Upload build
+        uses: actions/upload-artifact@v3
+        with:
+          name: bulgur-cloud-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/bulgur-cloud*
+
+  # This block is from `e2e.yml`, make sure you change both together.
+  e2e-tests:
+    name: e2e ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "bulgur-cloud-frontend"
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/gallium
+          cache: "yarn"
+          cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
+      - run: yarn install --frozen-lockfile
+        # Get a build first, because otherwise playwright times out waiting for the build
+      - run: cargo build
+        working-directory: ""
+      - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
+      - run: yarn test --project=${{ matrix.browser }}
+
+  backend-tests:
+    name: backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run backend tests
+        run: cargo test -- --test-threads=1
+
+  compile-release:
+    name: Compile release
+    runs-on: ubuntu-latest
+    needs: [release-builds, e2e-tests, backend-tests]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        # Downloaded artifacts are put into awkward folders, and they lose their permissions.
+        # So let's collect them into a single directory and mark them as executable.
+      - name: Collect downloaded artifacts
+        run: |
+          VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
+          mkdir -p release-artifacts
+          cp bulgur-cloud-aarch64-unknown-linux-musl/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64
+          cp bulgur-cloud-arm-unknown-linux-musleabihf/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-armv6
+          cp bulgur-cloud-armv7-unknown-linux-musleabihf/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-armv7
+          cp bulgur-cloud-x86_64-pc-windows-gnu/bulgur-cloud.exe release-artifacts/bulgur-cloud.${VERSION}.windows-x86_64.exe
+          cp bulgur-cloud-x86_64-unknown-linux-musl/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64
+          chmod +x release-artifacts/*
+        # Sign the artifacts! Ensures any downloaded artifacts came from this build process.
+      - name: Sign artifacts
+        run: |
+          echo "${SIGNING_PRIVATE_KEY}" | gpg --import -
+
+          for file in release-artifacts/* ; do
+          gpg --detach-sign "$file"
+          done
+        env:
+          SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
+        # Create a draft release. The description can be manually created afterwards.
+      - name: Make release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: release-artifacts/bulgur-cloud.*
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          allowUpdates: true
+        # We need to put the binaries into specific folders then run the docker build with buildx
+      - name: Build and upload docker images
+        run: |
+          VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
+          mkdir -p Docker/binaries/linux/amd64 Docker/binaries/linux/arm64 Docker/binaries/linux/arm/v6 Docker/binaries/linux/arm/v7
+          cd Docker
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64 binaries/linux/arm64/
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv6 binaries/linux/arm/v6/
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv7 binaries/linux/arm/v7/
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64 binaries/linux/amd64/
+          echo "${DOCKERHUB_PASS}" | docker login --username seriousbug --password-stdin
+          docker buildx create --use
+          docker buildx build . --platform=linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7 --file "Dockerfile" --tag "seriousbug/bulgur-cloud:latest" --tag "seriousbug/bulgur-cloud:${VERSION}" --push
+        env:
+          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
