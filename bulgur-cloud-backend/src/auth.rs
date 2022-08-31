@@ -1,7 +1,10 @@
 use crate::{
     error::{CLIError, ServerError},
     folder::{STORAGE, USERS_DIR},
-    kv::{kv::BKVTable, table::TABLE_USERS},
+    kv::{
+        kv::BKVTable,
+        table::{TABLE_REFRESH_TOKENS, TABLE_USERS},
+    },
     state::{self, AppState, Token},
 };
 use std::{path::PathBuf, str::FromStr};
@@ -233,7 +236,8 @@ pub const TOKEN_VALID_SECS: u64 = 60 * 60 * 24;
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct LoginResponse {
-    pub token: Token,
+    pub access_token: Token,
+    pub refresh_token: Token,
     valid_for_seconds: u64,
 }
 
@@ -277,14 +281,69 @@ pub async fn login(
     {
         let mut cache = state.token_cache.0.write().await;
         // generate and cache token
-        let token = Token::new();
+        let access_token = Token::new();
         // Impossibly unlikely, but token collisions would be extremely bad so check it anyway
-        assert!(!cache.contains_key(&token));
-        cache.insert(token.clone(), state::User(data.username.clone()));
+        assert!(!cache.contains_key(&access_token));
+        cache.insert(access_token.clone(), state::User(data.username.clone()));
+        drop(cache);
+
+        // Save the refresh token
+        let refresh_token = Token::new();
+        state
+            .kv
+            .open(TABLE_REFRESH_TOKENS)
+            .await
+            .put(refresh_token.clone().reveal().as_str(), &data.username)
+            .await;
+
         return Ok(web::Json(LoginResponse {
-            token,
+            access_token,
+            refresh_token,
             valid_for_seconds: TOKEN_VALID_SECS,
         }));
     }
     Err(LoginFailed)
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
+pub struct Refresh {
+    pub username: String,
+    pub refresh_token: String,
+}
+
+#[post("/refresh")]
+#[instrument(skip(data, state))]
+pub async fn refresh(
+    data: web::Json<Refresh>,
+    state: web::Data<AppState>,
+) -> Result<web::Json<LoginResponse>, LoginFailed> {
+    let value = state
+        .kv
+        .open(TABLE_REFRESH_TOKENS)
+        .await
+        .get(data.refresh_token.as_str())
+        .await;
+    match value {
+        None => Err(LoginFailed),
+        Some(username) => {
+            if username.eq(data.username.as_str()) {
+                let mut cache = state.token_cache.0.write().await;
+                // generate and cache token
+                let access_token = Token::new();
+                // Impossibly unlikely, but token collisions would be extremely bad so check it anyway
+                assert!(!cache.contains_key(&access_token));
+                cache.insert(access_token.clone(), state::User(data.username.clone()));
+                drop(cache);
+
+                Ok(web::Json(LoginResponse {
+                    access_token,
+                    refresh_token: Token::read(data.refresh_token.as_str()),
+                    valid_for_seconds: TOKEN_VALID_SECS,
+                }))
+            } else {
+                Err(LoginFailed)
+            }
+        }
+    }
 }

@@ -8,7 +8,7 @@ import useSWR, { SWRConfiguration } from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
 import { HttpStatusCode } from "./base";
-import { useEnsureAuthInitialized, useLogin } from "./auth";
+import { useEnsureAuthInitialized, useRefresh } from "./auth";
 import { pick } from "../utils";
 
 export type RequestParams<D> = {
@@ -42,10 +42,10 @@ export type OnProgressCallback = (opts: {
  * The request function will automatically handle reauthentication if needed.
  */
 export function useRequest<D, R>() {
-  const { site, token, username, password } = useAppSelector(
+  const { site, access_token, username, refresh_token } = useAppSelector(
     (selector) => selector.auth,
   );
-  const { doLogin } = useLogin();
+  const { doRefresh } = useRefresh();
   useEnsureAuthInitialized();
 
   async function doRequest(
@@ -63,8 +63,8 @@ export function useRequest<D, R>() {
     }
 
     const headers: { [key: string]: string } = {};
-    if (token) {
-      headers.authorization = token;
+    if (access_token) {
+      headers.authorization = access_token;
     }
 
     const config: AxiosRequestConfig = {
@@ -102,11 +102,11 @@ export function useRequest<D, R>() {
 
     const response = await axiosThrowless<D, R>(config);
     if (response.status === HttpStatusCode.UNAUTHORIZED) {
-      if (!site || !username || !password) return response;
+      if (!site || !username || !refresh_token) return response;
       // Once we log in again, this request should automatically get retried
       // since the token will change, and the hooks depend on the token (plus a
       // token change invalidates the cached requests)
-      await doLogin({ site, username, password });
+      await doRefresh({ site, username, refresh_token });
     }
     return response;
   }

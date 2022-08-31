@@ -8,8 +8,8 @@ type LoadState = "done" | "loading" | "uninitialized";
 
 export type AuthState = {
   username?: string;
-  password?: string;
-  token?: string;
+  refresh_token?: string;
+  access_token?: string;
   state: LoadState;
   site?: string;
 };
@@ -18,9 +18,9 @@ const initialAuthState: AuthState = { state: "uninitialized" };
 
 export type LoginPayload = {
   username: string;
-  password: string;
   site: string;
-  token: string;
+  refresh_token: string;
+  access_token: string;
 };
 
 export const authSlice = createSlice({
@@ -33,8 +33,8 @@ export const authSlice = createSlice({
     login: (state, action: { payload: LoginPayload }) => {
       state.state = "done";
       state.username = action.payload.username;
-      state.password = action.payload.password;
-      state.token = action.payload.token;
+      state.refresh_token = action.payload.refresh_token;
+      state.access_token = action.payload.access_token;
       state.site = action.payload.site;
     },
     markLoading: (state) => {
@@ -43,8 +43,8 @@ export const authSlice = createSlice({
     logout: (state) => {
       state.state = "done";
       state.username = undefined;
-      state.password = undefined;
-      state.token = undefined;
+      state.access_token = undefined;
+      state.refresh_token = undefined;
     },
   },
 });
