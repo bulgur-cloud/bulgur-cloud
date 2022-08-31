@@ -8,7 +8,7 @@ import useSWR, { SWRConfiguration } from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
 import { HttpStatusCode } from "./base";
-import { useEnsureAuthInitialized, useLogin, useRefresh } from "./auth";
+import { useEnsureAuthInitialized, useRefresh } from "./auth";
 import { pick } from "../utils";
 
 export type RequestParams<D> = {
