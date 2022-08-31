@@ -1,7 +1,7 @@
 use std::{env, path::PathBuf};
 
 use crate::{
-    auth::{create_nobody, login, TOKEN_VALID_SECS},
+    auth::{create_nobody, login, refresh, TOKEN_VALID_SECS},
     auth_middleware, folder,
     kv::{kv_filesystem::KVFilesystem, table::TABLE_USERS},
     meta::{get_banner_login, get_banner_page, get_stats, head_stats, is_bulgur_cloud},
@@ -76,7 +76,8 @@ pub fn setup_app(
     // Login scope just handles logins. It is heavily throttled to resist brute force attacks.
     let login_scope = web::scope("/auth")
         .wrap(Governor::new(&login_governor))
-        .service(login);
+        .service(login)
+        .service(refresh);
     // API scope handles all api functionality (anything except storage)
     let api_scope = web::scope("/api")
         .wrap(api_guard.clone())
