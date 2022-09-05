@@ -17,8 +17,10 @@ const config: PlaywrightTestConfig = {
     timeout: 120 * 1000,
     reuseExistingServer: false,
   },
+  globalSetup: require.resolve("./tests/global-setup"),
   use: {
     baseURL: "http://localhost:8000/",
+    screenshot: "only-on-failure",
   },
   testDir: "./tests",
   /* Maximum time one test can run for. */
