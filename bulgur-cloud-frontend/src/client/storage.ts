@@ -6,8 +6,9 @@ import FormData from "form-data";
 import { joinURL, urlUp1Level } from "../fetch";
 import { isOkResponse, STORAGE } from "./base";
 import { RequestParams, useFetch, useRequest } from "./request";
-import { storageSlice, useAppDispatch } from "../store";
+import { storageSlice, useAppDispatch, useAppSelector } from "../store";
 import { LiveLimit } from "live-limit";
+import { pick } from "../utils";
 
 export function usePathExists(url: string) {
   const out = useFetch({
@@ -34,12 +35,20 @@ export function usePathToken(url: string) {
 
 function useMutateFolder() {
   const { mutate } = useSWRConfig();
+  const { access_token, site } = useAppSelector((selector) =>
+    pick(selector.auth, "access_token", "site"),
+  );
 
   function doMutateFolder(url: string) {
     console.log("Path being mutated", url);
-    const mutateParams: RequestParams<never> = {
+    const mutateParams: RequestParams<never> & {
+      access_token?: string;
+      site?: string;
+    } = {
       method: "GET",
       url,
+      access_token,
+      site,
     };
     mutate(mutateParams);
   }
