@@ -119,8 +119,8 @@ export function useFetch<D, R>(
   params: RequestParams<D>,
   swrConfig?: SWRConfiguration,
 ) {
-  const { token, site } = useAppSelector((selector) =>
-    pick(selector.auth, "token", "site"),
+  const { access_token, site } = useAppSelector((selector) =>
+    pick(selector.auth, "access_token", "site"),
   );
   const { doRequest } = useRequest<D, R>();
 
@@ -131,7 +131,7 @@ export function useFetch<D, R>(
       // cache will be invalidated if the token changes. This is necessary when
       // the page is refreshed, where there's a race between the page trying to
       // fetch results and the saved auth state being loaded.
-      token,
+      access_token,
       site,
     },
     doRequest,
