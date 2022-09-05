@@ -13,4 +13,5 @@ test("Logging in with the right password works", async ({ page }) => {
 
   expect(page.locator("text=testuser")).toBeTruthy();
   expect(page.locator("text=Logout")).toBeTruthy();
+  await expect(page).toHaveURL(/\/s\/testuser\/$/);
 });
