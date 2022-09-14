@@ -13,7 +13,7 @@ import { isString } from "../typeUtils";
 import { useEffect } from "react";
 import { HttpStatusCode, isOkResponse, runAsync } from "./base";
 import { axiosThrowless } from "./request";
-import { useAppNavigation } from "../routes";
+import { encodeRouteForRedirect, useAppNavigation } from "../routes";
 import { Platform } from "react-native";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
@@ -180,7 +180,7 @@ export function useLogout() {
   const { cache } = useSWRConfig();
   const navigation = useAppNavigation();
 
-  async function doLogout() {
+  async function doLogout({ noRedirect }: { noRedirect?: boolean } | undefined = {}) {
     // Delete any saved tokens, otherwise we'd re-log the user.
     await Persist.delete(PERSIST_AUTH_KEY);
     // Clear out any cached data. Not strictly necessary since they are keyed by
@@ -193,8 +193,17 @@ export function useLogout() {
     // Reset the redux auth state
     dispatch(authSlice.actions.logout());
 
-    // Go back to the login screen
-    navigation.navigate("Login");
+    // Go back to the login screen. If the user was looking at a page other than
+    // the login page, save the redirect so we can send them back there
+    // afterwards.
+    const navState = navigation.getState();
+    const route = navState.routes[navState.index];
+    if (route.name === "Login" || noRedirect) {
+      navigation.navigate("Login");
+    } else {
+      const redirect = encodeRouteForRedirect({ name: route.name, params: route.params });
+      navigation.navigate("Login", { redirect });
+    }
   }
 
   return { doLogout };
@@ -203,15 +212,14 @@ export function useLogout() {
 function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
   return (
     isString(data?.username) &&
-    isString(data?.password) &&
-    isString(data?.token)
+    isString(data?.access_token) &&
+    isString(data?.refresh_token)
   );
 }
 
 /** Ensures that if there's a saved auth token, the app is authenticated with the saved token. */
 export function useEnsureAuthInitialized() {
   const state = useAppSelector((selector) => selector.auth.state);
-  const navigation = useAppNavigation();
   const dispatch = useAppDispatch();
   const { doTokenCheck } = useTokenCheck();
   const { doRefresh } = useRefresh();
@@ -252,7 +260,7 @@ export function useEnsureAuthInitialized() {
           console.log("Saved state was bad or did not exist");
           Persist.delete(PERSIST_AUTH_KEY);
           await doLogout();
-          navigation.navigate("Login");
+        
         }
       });
     }
