@@ -10,4 +10,6 @@ fn main() {
             .join("web-build"),
     )
     .expect("Failed to create web build folder");
+    // We really only need this to run once, ever.
+    println!("cargo:rerun-if-changed=./Cargo.toml");
 }

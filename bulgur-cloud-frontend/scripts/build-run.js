@@ -17,9 +17,15 @@ fs.rmSync(path.join(projectRoot, "storage", "testuser"), {
 });
 
 console.log("Creating test user");
-execSync("cargo run user add --username testuser --password testpass", {
-  cwd: projectRoot,
-  stdio: "inherit",
-});
+execSync(
+  "cargo llvm-cov --all-features --workspace --lcov --output-path cli.info -- run user add --username testuser --password testpass",
+  {
+    cwd: projectRoot,
+    stdio: "inherit",
+  },
+);
 console.log("Starting the backend server");
-execSync("cargo run", { cwd: projectRoot, stdio: "inherit" });
+execSync(
+  "cargo llvm-cov --all-features --workspace --lcov --output-path e2e.info run",
+  { cwd: projectRoot, stdio: "inherit" },
+);

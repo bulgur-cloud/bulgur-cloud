@@ -25,8 +25,15 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
       - run: yarn install --frozen-lockfile
-        # Get a build first, because otherwise playwright times out waiting for the build
-      - run: cargo build
-        working-directory: ""
+      - name: Install Rust
+        run: rustup toolchain install stable --component llvm-tools-preview
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
       - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
+
       - run: yarn test --project=${{ matrix.browser }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: cli.info,e2e.info
+          fail_ci_if_error: true

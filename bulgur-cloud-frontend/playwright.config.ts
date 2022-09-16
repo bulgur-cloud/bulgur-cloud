@@ -14,7 +14,9 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: "yarn start:test",
     url: "http://localhost:8000/",
-    timeout: 120 * 1000,
+    // The debug build takes about 4 minutes on Github Actions.
+    // Adding a 50% overhad to be safe.
+    timeout: 6 * 60 * 1000,
     reuseExistingServer: false,
   },
   globalSetup: require.resolve("./tests/global-setup"),
