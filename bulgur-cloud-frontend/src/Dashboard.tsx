@@ -37,7 +37,7 @@ function BackButton(params: DashboardParams) {
       <Icon
         as={FontAwesome5}
         color="primary.400"
-        name="arrow-left"
+        name="arrow-up"
         size="md"
         accessibilityElementsHidden={true}
       />
@@ -47,9 +47,9 @@ function BackButton(params: DashboardParams) {
       <Icon
         as={FontAwesome5}
         color="primary.800"
-        name="arrow-left"
+        name="arrow-up"
         size="md"
-        accessibilityLabel="Go back"
+        accessibilityLabel="Go up"
         onPress={() => {
           navigation.navigate("Dashboard", {
             store,
@@ -80,7 +80,7 @@ export function Dashboard(params: DashboardParams) {
         justifyItems="left"
         alignItems="left"
       >
-        <Banner bannerKey="page"/>
+        <Banner bannerKey="page" />
         <HStack
           space={4}
           marginTop={12}
@@ -93,7 +93,12 @@ export function Dashboard(params: DashboardParams) {
           <MiddleSection />
           <HStack space={2}>
             <Text>{username}</Text>
-            <Text color="primary.400" onPress={doLogout}>
+            <Text
+              color="primary.400"
+              onPress={() => {
+                doLogout({ noRedirect: true });
+              }}
+            >
               (Logout)
             </Text>
           </HStack>

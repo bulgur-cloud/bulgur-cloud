@@ -6,20 +6,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLogin } from "./client/auth";
 import { runAsync } from "./client/base";
 import { FullPageLoading } from "./Loading";
-import { RoutingStackParams } from "./routes";
+import { decodeRedirectForRoute, RoutingStackParams } from "./routes";
 import { useAppSelector } from "./store";
 import { pick } from "./utils";
 import { Banner } from "./components/Banner";
 
 type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
 
-export function Login({ navigation }: LoginParams) {
+export function Login({ navigation, route }: LoginParams) {
   const {
     username: loggedInUsername,
-    token,
+    access_token,
     state: authState,
   } = useAppSelector((selector) =>
-    pick(selector.auth, "token", "username", "state"),
+    pick(selector.auth, "access_token", "username", "state"),
   );
   const { doLogin } = useLogin();
   const [username, setUsername] = useState("");
@@ -39,28 +39,38 @@ export function Login({ navigation }: LoginParams) {
   }, []);
 
   useEffect(() => {
-    if (loggedInUsername && token && authState === "done") {
+    if (loggedInUsername && access_token && authState === "done") {
       navigation.replace("Dashboard", {
         store: loggedInUsername,
         path: "",
         isFile: false,
       });
     }
-  }, [site, loggedInUsername, token, authState]);
+    // We only want this to run ONCE at the start, otherwise it will re-trigger
+    // after we login and override the login redirect, if any.
+  }, []);
 
   if (!site) {
     return <FullPageLoading />;
   }
 
+  const redirect = route.params?.redirect;
   const onLogin = () => {
     runAsync(async () => {
       await doLogin({ username, password, site });
 
-      navigation.replace("Dashboard", {
-        store: username,
-        path: "",
-        isFile: false,
-      });
+      if (redirect) {
+        const redirectRoute = decodeRedirectForRoute(redirect);
+        console.log("parameter redirect", redirectRoute);
+        navigation.replace(redirectRoute.name, redirectRoute.params);
+      } else {
+        console.log("default redirect");
+        navigation.replace("Dashboard", {
+          store: username,
+          path: "",
+          isFile: false,
+        });
+      }
     });
   };
 
@@ -70,7 +80,7 @@ export function Login({ navigation }: LoginParams) {
     <Center justifyContent="center" flexGrow={1}>
       <SafeAreaView>
         <VStack space={3}>
-          <Banner bannerKey="login"/>
+          <Banner bannerKey="login" />
           <Text fontSize="7xl">Bulgur Cloud</Text>
           <Text>Simple and delicious cloud storage and sharing.</Text>
           <Spacer />

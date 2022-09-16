@@ -17,10 +17,9 @@ test("creating a folder works", async ({ page }) => {
   // Click span:has-text("hi")
   await page.locator('span:has-text("hi")').click();
   await expect(page).toHaveURL(/\/s\/testuser\/hi\/$/);
-  // Click text=testuser(Logout)This folder is empty. >> [aria-label="Go back"]
   await page
     .locator(
-      'text=testuser(Logout)This folder is empty. >> [aria-label="Go back"]',
+      '[aria-label="Go up"]',
     )
     .click();
   await expect(page).toHaveURL("http://localhost:8000/s/testuser/");

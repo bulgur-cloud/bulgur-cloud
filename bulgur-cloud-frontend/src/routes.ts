@@ -9,9 +9,12 @@ import {
   createNativeStackNavigator,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
+import { Base64 } from "js-base64";
 
 export type RoutingStackParams = {
-  Login: undefined;
+  Login: undefined | {
+    redirect: string;
+  };
   Dashboard: {
     store: string;
     path: string;
@@ -31,6 +34,7 @@ export const LINKING = {
     },
   },
   getStateFromPath: (path: string, config: any) => {
+    console.log("getStateFromPath", path);
     if (path.startsWith("/s/")) {
       const matches =
         /^[/]s[/](?<store>[^/]+)[/](?<path>.*?)(?<trailingSlash>[/]?)$/.exec(
@@ -54,10 +58,12 @@ export const LINKING = {
       return out;
     }
     const state = getStateFromPath(path, config);
+    console.log("getStateFromPath state", state);
     return state;
   },
   getPathFromState: (state: any, config: any) => {
-    const route = state.routes[state.routes.length - 1];
+    const route = state.routes[state.index ?? (state.routes.length - 1)];
+    console.log("getPathFromState", state, config);
     if (isDashboardRoute(route)) {
       const params = route.params;
       let path = params.path;
@@ -88,4 +94,18 @@ export function isDashboardRoute(
 
 export function useAppNavigation() {
   return useNavigation<NavigationProp<RoutingStackParams>>();
+}
+
+export function encodeRouteForRedirect(route: { name: string; params: object | undefined}) {
+  return Base64.encode(
+    JSON.stringify(route)
+  );
+}
+
+export function decodeRedirectForRoute(redirect: string): { name: keyof RoutingStackParams; params: RoutingStackParams[keyof RoutingStackParams] } {
+  // TODO: Add some validation here. Not critical, but would be nice to catch
+  // any bad redirects early in case someone partially copies and pastes a URL
+  // with a redirect or routes change between versions and someone had the old
+  // version.
+  return JSON.parse(Base64.decode(redirect));
 }
