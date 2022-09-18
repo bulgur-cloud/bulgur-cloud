@@ -20,6 +20,7 @@
     "@react-navigation/native-stack": "^6.6.2",
     "@reduxjs/toolkit": "^1.8.2",
     "axios": "^0.27.2",
+    "debounce": "^1.2.1",
     "expo": "~45.0.4",
     "expo-app-loading": "~2.0.0",
     "expo-file-system": "~14.0.0",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@babel/core": "^7.18.2",
     "@playwright/test": "^1.22.2",
+    "@types/debounce": "^1.2.1",
     "@types/react": "^17.0.2",
     "@types/react-native": "~0.67.8",
     "@types/react-native-video": "^5.0.13",

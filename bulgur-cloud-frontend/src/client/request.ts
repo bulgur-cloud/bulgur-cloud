@@ -10,6 +10,7 @@ import { useAppSelector } from "../store";
 import { HttpStatusCode } from "./base";
 import { useEnsureAuthInitialized, useRefresh } from "./auth";
 import { pick, shallowEquals } from "../utils";
+import debounce from "debounce";
 
 export type RequestParams<D> = {
   method: Method;
@@ -85,7 +86,7 @@ export function useRequest<D, R>() {
     }
 
     if (onUploadProgress) {
-      config.onUploadProgress = (progress) => {
+      config.onUploadProgress = debounce((progress: any) => {
         // For XMLHttpRequest on the web
         if (
           progress &&
@@ -97,7 +98,8 @@ export function useRequest<D, R>() {
             done: progress.loaded,
           });
         }
-      };
+        // TODO: Implement for mobile
+      }, 200);
     }
 
     const response = await axiosThrowless<D, R>(config);
