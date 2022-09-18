@@ -9,7 +9,7 @@ import { BError } from "../error";
 import { useAppSelector } from "../store";
 import { HttpStatusCode } from "./base";
 import { useEnsureAuthInitialized, useRefresh } from "./auth";
-import { pick } from "../utils";
+import { pick, shallowEquals } from "../utils";
 
 export type RequestParams<D> = {
   method: Method;
@@ -121,7 +121,9 @@ export function useFetch<D, R>(
 ) {
   const { access_token, site } = useAppSelector((selector) =>
     pick(selector.auth, "access_token", "site"),
+  shallowEquals,
   );
+
   const { doRequest } = useRequest<D, R>();
 
   return useSWR<AxiosResponse<R, any>, any, any>(

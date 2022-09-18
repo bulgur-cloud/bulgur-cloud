@@ -8,7 +8,7 @@ import { isOkResponse, STORAGE } from "./base";
 import { RequestParams, useFetch, useRequest } from "./request";
 import { storageSlice, useAppDispatch, useAppSelector } from "../store";
 import { LiveLimit } from "live-limit";
-import { pick } from "../utils";
+import { pick, shallowEquals } from "../utils";
 
 export function usePathExists(url: string) {
   const out = useFetch({
@@ -37,6 +37,7 @@ function useMutateFolder() {
   const { mutate } = useSWRConfig();
   const { access_token, site } = useAppSelector((selector) =>
     pick(selector.auth, "access_token", "site"),
+  shallowEquals
   );
 
   function doMutateFolder(url: string) {
