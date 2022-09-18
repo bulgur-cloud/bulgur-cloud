@@ -8,7 +8,7 @@ import { runAsync } from "./client/base";
 import { FullPageLoading } from "./Loading";
 import { decodeRedirectForRoute, RoutingStackParams } from "./routes";
 import { useAppSelector } from "./store";
-import { pick } from "./utils";
+import { pick, shallowEquals } from "./utils";
 import { Banner } from "./components/Banner";
 
 type LoginParams = NativeStackScreenProps<RoutingStackParams, "Login">;
@@ -18,8 +18,9 @@ export function Login({ navigation, route }: LoginParams) {
     username: loggedInUsername,
     access_token,
     state: authState,
-  } = useAppSelector((selector) =>
-    pick(selector.auth, "access_token", "username", "state"),
+  } = useAppSelector(
+    (selector) => pick(selector.auth, "access_token", "username", "state"),
+    shallowEquals,
   );
   const { doLogin } = useLogin();
   const [username, setUsername] = useState("");

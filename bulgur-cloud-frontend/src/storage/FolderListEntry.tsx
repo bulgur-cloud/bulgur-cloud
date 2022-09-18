@@ -46,6 +46,9 @@ export function FolderListEntry(
 
   const { store, path } = route.params;
 
+  // TODO: These modals get rendered for each item, which is expensive.
+  // They should be rendered once, and access some sort of shared state.
+  // Probably use redux.
   const [isDeleteModalOpen, setDeleteModelOpen] = useState<boolean>(false);
 
   const [openRenameModal, RenameModal] = useRenameModal({
@@ -120,13 +123,15 @@ export function FolderListEntry(
         }}
       />
       {RenameModal}
-      <DeleteConfirmModal
-        itemName={item.name}
-        isFile={item.is_file}
-        isOpen={isDeleteModalOpen}
-        onClose={() => setDeleteModelOpen(false)}
-        {...params}
-      />
+      {
+        <DeleteConfirmModal
+          itemName={item.name}
+          isFile={item.is_file}
+          isOpen={isDeleteModalOpen}
+          onClose={() => setDeleteModelOpen(false)}
+          {...params}
+        />
+      }
     </HStack>
   );
 }
