@@ -1,12 +1,14 @@
 import { HStack, Icon, Spacer, Text } from "native-base";
-import { useState } from "react";
 import { joinURL } from "../fetch";
 import { FillSpacer } from "../FillSpacer";
-import { storageSlice, useAppDispatch, useAppSelector } from "../store";
-import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import {
+  StorageAction,
+  storageSlice,
+  useAppDispatch,
+  useAppSelector,
+} from "../store";
 import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { useRenameModal } from "./RenameModal";
 import api from "../api";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
@@ -46,17 +48,6 @@ export function FolderListEntry(
 
   const { store, path } = route.params;
 
-  // TODO: These modals get rendered for each item, which is expensive.
-  // They should be rendered once, and access some sort of shared state.
-  // Probably use redux.
-  const [isDeleteModalOpen, setDeleteModelOpen] = useState<boolean>(false);
-
-  const [openRenameModal, RenameModal] = useRenameModal({
-    ...params,
-    itemName: item.name,
-    isFile: item.is_file,
-  });
-
   return (
     <HStack space={4} key={item.name} alignItems="center">
       <Icon
@@ -88,7 +79,15 @@ export function FolderListEntry(
         height="100%"
         size={4}
         onPress={() => {
-          openRenameModal();
+          dispatch(
+            storageSlice.actions.promptAction({
+              type: StorageAction.Rename,
+              name: item.name,
+              path,
+              store,
+              isFile: item.is_file,
+            }),
+          );
         }}
       />
       <Spacer flexGrow={0} />
@@ -119,19 +118,17 @@ export function FolderListEntry(
         height="100%"
         size={4}
         onPress={() => {
-          setDeleteModelOpen(true);
+          dispatch(
+            storageSlice.actions.promptAction({
+              type: StorageAction.Delete,
+              name: item.name,
+              store,
+              path,
+              isFile: item.is_file,
+            }),
+          );
         }}
       />
-      {RenameModal}
-      {
-        <DeleteConfirmModal
-          itemName={item.name}
-          isFile={item.is_file}
-          isOpen={isDeleteModalOpen}
-          onClose={() => setDeleteModelOpen(false)}
-          {...params}
-        />
-      }
     </HStack>
   );
 }

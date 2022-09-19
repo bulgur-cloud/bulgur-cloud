@@ -2,26 +2,36 @@ import { Button, Center, HStack, Modal, Text } from "native-base";
 import { runAsync, STORAGE } from "../client/base";
 import { useDelete } from "../client/storage";
 import { joinURL } from "../fetch";
-import { DashboardParams } from "../routes";
+import {
+  StorageAction,
+  storageSlice,
+  useAppDispatch,
+  useAppSelector,
+} from "../store";
 
-export function DeleteConfirmModal(
-  props: Parameters<typeof Modal>[0] & {
-    itemName: string;
-    isFile: boolean;
-  } & DashboardParams,
-) {
+export function DeleteModal() {
   const { doDelete } = useDelete();
-  const params = props.route.params;
+  const action = useAppSelector(({ storage: { action } }) =>
+    action?.type !== StorageAction.Delete ? undefined : action,
+  );
+  const dispatch = useAppDispatch();
+
+  if (action === undefined) return <></>;
+  const { store, path, name, isFile } = action;
 
   let titleMessage: string;
-  if (props.isFile) {
-    titleMessage = `Delete file ${props.itemName}`;
+  if (isFile) {
+    titleMessage = `Delete file ${name}`;
   } else {
-    titleMessage = `Delete folder ${props.itemName}`;
+    titleMessage = `Delete folder ${name}`;
+  }
+
+  function dismissPrompt() {
+    dispatch(storageSlice.actions.dismissPrompt());
   }
 
   return (
-    <Modal {...props}>
+    <Modal isOpen={true}>
       <Modal.Content maxWidth={96}>
         <Modal.Header>
           <Text>{titleMessage}</Text>
@@ -34,15 +44,8 @@ export function DeleteConfirmModal(
                 maxWidth={48}
                 onPress={() => {
                   runAsync(async () => {
-                    await doDelete(
-                      joinURL(
-                        STORAGE,
-                        params.store,
-                        params.path,
-                        props.itemName,
-                      ),
-                    );
-                    props.onClose();
+                    await doDelete(joinURL(STORAGE, store, path, name));
+                    dismissPrompt();
                   });
                 }}
                 bgColor={"primary.800"}
@@ -55,7 +58,7 @@ export function DeleteConfirmModal(
                 flexGrow={2}
                 maxWidth={48}
                 onPress={() => {
-                  props.onClose();
+                  dismissPrompt();
                 }}
                 bgColor={"primary.600"}
               >

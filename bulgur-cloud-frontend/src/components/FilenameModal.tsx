@@ -47,40 +47,15 @@ export type FilenameModalProps<
   cancel?: Cancel;
 };
 
-/** Returns the filename modal element, and a hook that can be used to open the
- * element.
- */
-export function useFilenameModal<
-  Actions extends FilenameModalActionMap,
-  Primary extends keyof Actions,
-  Cancel extends keyof Actions,
->(
-  props: FilenameModalProps<Actions, Primary, Cancel>,
-): [() => void, JSX.Element] {
-  const [isOpen, setOpen] = useState(false);
-  return [
-    () => {
-      setOpen(true);
-    },
-    <FilenameModal
-      // Not actually necessary but trips up the linter
-      key={props.title}
-      {...props}
-      openState={[isOpen, setOpen]}
-    />,
-  ];
-}
-
-function FilenameModal<
+export function FilenameModal<
   Actions extends FilenameModalActionMap,
   Primary extends keyof Actions,
   Cancel extends keyof Actions,
 >(
   props: FilenameModalProps<Actions, Primary, Cancel> & {
-    openState: [boolean, (set: boolean) => void];
+    onDismiss: () => void;
   },
 ) {
-  const [isOpen, setOpen] = props.openState;
   const [newName, setNewName] = useState(props.initialValue ?? "");
 
   const safety = isSafeFilename(newName);
@@ -117,17 +92,17 @@ function FilenameModal<
     } else {
       console.log("submit");
       if (primary.action) primary.action(newName);
-      setOpen(false);
+      props.onDismiss();
     }
   };
-  const onDismiss = () => {
+  const onClose = () => {
     console.log("cancel");
     if (cancel.action) cancel.action(newName);
-    setOpen(false);
+    props.onDismiss();
   };
 
   return (
-    <Modal onClose={onDismiss} avoidKeyboard={true} isOpen={isOpen}>
+    <Modal onClose={onClose} avoidKeyboard={true} isOpen={true}>
       <Modal.Content maxWidth={96}>
         <Modal.Header>
           <Text>{props.title}</Text>
@@ -167,7 +142,10 @@ function FilenameModal<
                     message={action.message}
                   />
                 ))}
-                <ModalButton onPress={onDismiss} message={cancel.message} />
+                <ModalButton
+                  onPress={props.onDismiss}
+                  message={cancel.message}
+                />
               </HStack>
             </Center>
           </VStack>
