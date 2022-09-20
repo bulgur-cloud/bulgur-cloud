@@ -49,6 +49,12 @@ export const authSlice = createSlice({
   },
 });
 
+export enum StorageAction {
+  Rename = "Rename",
+  Delete = "Delete",
+  CreateFolder = "Create Folder",
+}
+
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
   markedForMove: {
@@ -66,11 +72,19 @@ export type StorageState = {
       done: number;
     };
   };
+  action?: {
+    type: StorageAction;
+    isFile: boolean;
+    name: string;
+    store: string;
+    path: string;
+  };
 };
 
 const initialStorageState: StorageState = {
   markedForMove: {},
   uploadProgress: {},
+  action: undefined,
 };
 
 export type LoadFolderPayload = api.FolderResults;
@@ -117,6 +131,14 @@ export const storageSlice = createSlice({
         delete state.uploadProgress[name];
       }
     },
+    promptAction: (state, action: { payload: Required<StorageState>["action"] }) => {
+      state.action = {
+        ...action.payload
+      };
+    },
+    dismissPrompt: (state) => {
+      state.action = undefined;
+    }
   },
 });
 

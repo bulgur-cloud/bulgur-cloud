@@ -5,7 +5,7 @@ import { BError } from "../error";
 import { joinURL } from "../fetch";
 import { Loading } from "../Loading";
 import { DashboardParams } from "../routes";
-import { CreateNewDirectory, MoveItems, UploadButton } from "../Upload";
+import { CreateNewFolder, MoveItems, UploadButton } from "../Upload";
 import { FolderListEntry } from "./FolderListEntry";
 
 function ErrorDisplay({ error }: { error: unknown }) {
@@ -84,7 +84,7 @@ export function FABs(params: DashboardParams) {
   return (
     <View height={32}>
       <UploadButton {...params} />
-      <CreateNewDirectory {...params} />
+      <CreateNewFolder {...params} />
       <MoveItems {...params} />
     </View>
   );

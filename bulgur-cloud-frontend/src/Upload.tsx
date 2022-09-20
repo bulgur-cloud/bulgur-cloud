@@ -4,10 +4,15 @@ import { runAsync, STORAGE } from "./client/base";
 import { useCreateFolder, useRename, useUpload } from "./client/storage";
 import { ERR_NOT_IMPLEMENTED } from "./error";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import { storageSlice, useAppDispatch, useAppSelector } from "./store";
+import {
+  StorageAction,
+  storageSlice,
+  useAppDispatch,
+  useAppSelector,
+} from "./store";
 import { DashboardParams } from "./routes";
 import { joinURL } from "./fetch";
-import { useFilenameModal } from "./components/FilenameModal";
+import { FilenameModal } from "./components/FilenameModal";
 
 function selectFiles(): Promise<null | File[]> {
   if (Platform.OS === "web") {
@@ -68,8 +73,9 @@ export function UploadButton(props: DashboardParams) {
   );
 }
 
-export function CreateNewDirectory(props: DashboardParams) {
-  const [openNewFolderModal, NewFolderModal] = useCreateNewFolderModal(props);
+export function CreateNewFolder(props: DashboardParams) {
+  const dispatch = useAppDispatch();
+  const { store, path } = props.route.params;
 
   return (
     <View>
@@ -82,36 +88,49 @@ export function CreateNewDirectory(props: DashboardParams) {
           <Icon as={FontAwesome5} name="folder-plus" height="100%" size={4} />
         }
         onPress={() => {
-          openNewFolderModal();
+          dispatch(
+            storageSlice.actions.promptAction({
+              type: StorageAction.CreateFolder,
+              isFile: false,
+              name: "",
+              store,
+              path,
+            }),
+          );
         }}
       ></Fab>
-      {NewFolderModal}
     </View>
   );
 }
 
-export function useCreateNewFolderModal(props: DashboardParams) {
+export function CreateFolderModal() {
   const { doCreateFolder } = useCreateFolder();
-  const params = props.route.params;
+  const action = useAppSelector(({ storage: { action } }) =>
+    action?.type !== StorageAction.CreateFolder ? undefined : action,
+  );
+  const dispatch = useAppDispatch();
+
+  if (action === undefined) return <></>;
+  const { store, path } = action;
 
   function runCreateFolder(name: string) {
     runAsync(async () => {
       // An empty upload will just create the folder in the path
-      await doCreateFolder(joinURL(STORAGE, params.store, params.path, name));
+      await doCreateFolder(joinURL(STORAGE, store, path, name));
     });
   }
 
-  return useFilenameModal({
-    title: "Create new folder",
-    primary: "Create",
-    placeHolder: "Enter a name for the new folder",
-    actions: {
-      Create: {
-        message: "Create",
-        action: runCreateFolder,
-      },
-    },
-  });
+  return (
+    <FilenameModal
+      onDismiss={() => {
+        dispatch(storageSlice.actions.dismissPrompt());
+      }}
+      title="Create new folder"
+      placeHolder="Enter a name for the new folder"
+      primary="Create"
+      actions={{ Create: { message: "Create", action: runCreateFolder } }}
+    />
+  );
 }
 
 export function MoveItems(props: DashboardParams) {

@@ -20,6 +20,9 @@ import { useEnsureAuthInitialized, useLogout } from "./client/auth";
 import { FullPageLoading } from "./Loading";
 import { Banner } from "./components/Banner";
 import { UploadProgress } from "./UploadProgress";
+import { RenameModal } from "./storage/RenameModal";
+import { CreateFolderModal } from "./Upload";
+import { DeleteModal } from "./storage/DeleteModal";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -115,6 +118,9 @@ export function Dashboard(params: DashboardParams) {
         </VStack>
       </Center>
       <UploadProgress />
+      <RenameModal />
+      <CreateFolderModal />
+      <DeleteModal />
     </Box>
   );
 }

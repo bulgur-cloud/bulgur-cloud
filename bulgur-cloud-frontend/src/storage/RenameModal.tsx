@@ -1,39 +1,45 @@
 import { runAsync, STORAGE } from "../client/base";
 import { useRename } from "../client/storage";
-import { useFilenameModal } from "../components/FilenameModal";
+import { FilenameModal } from "../components/FilenameModal";
 import { joinURL } from "../fetch";
-import { DashboardParams } from "../routes";
+import {
+  StorageAction,
+  storageSlice,
+  useAppDispatch,
+  useAppSelector,
+} from "../store";
 
-export function useRenameModal(
-  props: {
-    itemName: string;
-    isFile: boolean;
-  } & DashboardParams,
-) {
+export function RenameModal() {
   const { doRename } = useRename();
-  const { path, store } = props.route.params;
+  const action = useAppSelector(({ storage: { action } }) =>
+    action?.type !== StorageAction.Rename ? undefined : action,
+  );
+  const dispatch = useAppDispatch();
+
+  if (action === undefined) return <></>;
+  const { store, path, name, isFile } = action;
 
   function runRename(newName: string) {
     runAsync(async () => {
       await doRename(
-        joinURL(STORAGE, store, path, props.itemName),
+        joinURL(STORAGE, store, path, name),
         joinURL(store, path, newName),
       );
     });
   }
 
-  return useFilenameModal({
-    title: props.isFile ? "Rename file" : "Rename folder",
-    placeHolder: props.isFile
-      ? "New name for file including extension"
-      : "New name for folder",
-    initialValue: props.itemName,
-    primary: "Rename",
-    actions: {
-      Rename: {
-        message: "Rename",
-        action: runRename,
-      },
-    },
-  });
+  return (
+    <FilenameModal
+      onDismiss={() => {
+        dispatch(storageSlice.actions.dismissPrompt());
+      }}
+      title={isFile ? "Rename file" : "Rename folder"}
+      placeHolder={
+        isFile ? "New name for file including extension" : "New name for folder"
+      }
+      initialValue={name}
+      primary="Rename"
+      actions={{ Rename: { message: "Rename", action: runRename } }}
+    />
+  );
 }
