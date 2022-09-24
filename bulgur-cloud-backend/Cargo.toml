@@ -31,7 +31,7 @@ actix-multipart = "0.4"
 qstring = "0.7"
 futures = "0.3"
 tokio = { version = "1.20", features = ["full"] }
-chrono = "0.4"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 actix-governor = "0.3.0"
 async-trait = "0.1"
 # Verifying file names
