@@ -106,6 +106,42 @@ async fn test_get_basic_folder_listing() {
 }
 
 #[actix_web::test]
+async fn test_upload_file() {
+    let ctx = TestEnv::setup().await;
+    let token = ctx.setup_user_token("testuser", "testpass").await;
+    let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
+
+    let req = test::TestRequest::post()
+    .uri("/basic/testuser/")
+    .insert_header((header::AUTHORIZATION, token.clone().reveal()))
+    .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nAutem tempore\r\n--zzz--\r\n\r\n")
+    .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
+    .to_request();
+
+    let resp = test::call_service(&app, req).await;
+    assert_eq!(resp.status(), 303, "Responds with a redirect");
+    assert_eq!(
+        resp.headers()
+            .get("Location")
+            .expect("responds with a redirect location"),
+        "/basic/testuser/",
+        "Redirects back to the folder after upload"
+    );
+
+    let req = test::TestRequest::get()
+        .uri("/basic/testuser/")
+        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .to_request();
+    let resp = test::call_and_read_body(&app, req).await;
+    let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
+
+    assert!(
+        resp_str.contains("test.txt"),
+        "basic UI lists the file uploaded"
+    );
+}
+
+#[actix_web::test]
 async fn test_basic_login() {
     let ctx = TestEnv::setup().await;
     ctx.add_user("testuser", "testpass").await;

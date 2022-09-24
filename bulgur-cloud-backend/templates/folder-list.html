@@ -17,5 +17,12 @@
     </li>
     {% endfor %}
   </ul>
+  <form method="post" id="file-upload" enctype="multipart/form-data">
+    <label>
+      Select files to upload
+      <input id="files" name="files" type="file" multiple />
+    </label>
+    <input type="submit" value="Upload" />
+  </form>
 </main>
 {% endblock %}

@@ -270,7 +270,7 @@ async fn put_storage(
 static MAX_RENAME_ATTEMPTS: u32 = 100;
 
 #[tracing::instrument(skip(payload))]
-async fn write_files(
+pub async fn write_files(
     payload: &mut Multipart,
     store_path: &Path,
 ) -> Result<Vec<PathBuf>, StorageError> {

@@ -69,3 +69,11 @@ header {
   height: 1rem;
   margin-right: 1rem;
 }
+
+#file-upload {
+  margin-top: 3rem;
+}
+
+#file-upload input {
+  margin: 0 -2rem 0 2rem;
+}
