@@ -8,6 +8,7 @@ use actix_web::{
     Either, HttpResponse,
 };
 
+use actix_multipart::Multipart;
 use askama_actix::Template;
 use serde::{Deserialize, Serialize};
 use tracing_unwrap::ResultExt;
@@ -17,7 +18,7 @@ use crate::{
     auth_middleware::AUTH_COOKIE_NAME,
     kv::table::TABLE_USERS,
     state::{self, AppState, Authorized, Token},
-    storage::{get_storage_internal, FolderEntry, StorageError},
+    storage::{get_authorized_path, get_storage_internal, write_files, FolderEntry, StorageError},
 };
 
 #[derive(Template)]
@@ -97,6 +98,40 @@ pub struct FolderListPage {
     username: String,
     path: String,
     folder_list: Vec<FolderEntry>,
+}
+
+#[derive(Template)]
+#[template(path = "error.html")]
+pub struct ErrorPage {
+    error_text: Option<String>,
+    redirect_link: String,
+}
+
+#[tracing::instrument(skip(payload))]
+#[post("/{store}/{path:.*}")]
+pub async fn page_folder_upload(
+    params: web::Path<(String, String)>,
+    authorized: Option<ReqData<Authorized>>,
+    mut payload: Multipart,
+) -> Result<HttpResponse, StorageError> {
+    let (store, path) = params.as_ref();
+    let store_path = get_authorized_path(&authorized, store, Some(path))?;
+
+    match write_files(&mut payload, &store_path).await {
+        // If upload was successful, get the browser to refresh the page with a get request.
+        Ok(_) => Ok(HttpResponse::SeeOther()
+            .append_header(("Location", format!("/basic/{store}/{path}")))
+            .finish()),
+        // If upload failed, then we'll display an error page. A bit crude, but will work.
+        Err(err) => Ok(HttpResponse::BadRequest().body(
+            ErrorPage {
+                error_text: Some(err.to_string()),
+                redirect_link: format!("{store}/{path}"),
+            }
+            .render()
+            .unwrap_or_log(),
+        )),
+    }
 }
 
 #[tracing::instrument]

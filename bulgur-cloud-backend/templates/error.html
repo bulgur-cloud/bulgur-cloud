@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block main %}
+<main class="error">
+  <h1>There was an error</h1>
+  {% if let Some(error_text) = error_text %}
+  <pre>
+    {{ error_text }}
+  </pre>
+  {% endif %}
+  <a href="{{- redirect_link -}}">Click here to go back</a>
+</main>
+{% endblock %}
