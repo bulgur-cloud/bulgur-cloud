@@ -6,6 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: rustup component add clippy
+        # Required for opentelemetry, at least as of 0.18
+      - uses: arduino/setup-protoc@v1.1.2
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
