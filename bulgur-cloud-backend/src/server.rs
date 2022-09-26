@@ -6,8 +6,8 @@ use crate::{
     kv::{kv_filesystem::KVFilesystem, table::TABLE_USERS},
     meta::{get_banner_login, get_banner_page, get_stats, head_stats, is_bulgur_cloud},
     pages::{
-        not_found, page_folder_list, page_folder_upload, page_login_get, page_login_post,
-        page_logout,
+        not_found, page_create_folder, page_delete, page_folder_list, page_folder_upload,
+        page_login_get, page_login_post, page_logout,
     },
     state::{AppState, PathTokenCache, TokenCache},
     static_files::{get_basic_assets, get_ui, get_ui_index, head_ui_index},
@@ -24,11 +24,13 @@ use actix_governor::{
 use actix_web::{
     body::MessageBody,
     dev::{ServiceRequest, ServiceResponse},
-    http, middleware,
+    http::{self, Method},
+    middleware,
     web::{self, Data},
     App, Error,
 };
 
+use actix_web_query_method_middleware::QueryMethod;
 use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
@@ -97,8 +99,14 @@ pub fn setup_app(
     // Basic HTML scopes are for the javascript-free basic interface.
     let authenticated_basic_html_scope = web::scope("/basic")
         .wrap(storage_guard)
+        .wrap(QueryMethod::new())
         .service(page_folder_list)
-        .service(page_folder_upload);
+        .service(page_folder_upload)
+        .service(page_delete)
+        .route(
+            "",
+            web::method(Method::try_from("CREATE").unwrap()).to(page_create_folder),
+        );
     let basic_html_scope = web::scope("")
         .service(page_login_get)
         .service(page_login_post)

@@ -23,7 +23,7 @@ generate_types = []
 
 [dependencies]
 # Server
-actix-web = "4.1"
+actix-web = "4.2"
 actix-cors = "0.6"
 actix-service = "2.0"
 actix-files = "0.6"
@@ -69,6 +69,9 @@ rpassword = "7.0"
 # Error management
 thiserror = "1.0"
 anyhow = "1.0"
+# Middleware for simple pages that allows 
+actix-web-query-method-middleware = { git = "https://github.com/SeriousBug/actix-web-query-method-middleware.git", rev = "269c1d5f179b979b27747b9744ec1516f10774b9" }
+
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"
 

@@ -70,10 +70,10 @@ header {
   margin-right: 1rem;
 }
 
-#file-upload {
+.folder-list-action {
   margin-top: 3rem;
 }
 
-#file-upload input {
+.folder-list-action input {
   margin: 0 -2rem 0 2rem;
 }

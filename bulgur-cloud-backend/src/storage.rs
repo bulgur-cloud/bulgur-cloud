@@ -189,15 +189,40 @@ async fn delete_storage(
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
 
-    let store_path = get_authorized_path(&authorized, store, Some(path))?;
-    if fs::metadata(&store_path).await?.is_file() {
-        tracing::debug!("Deleting file {:?}", store_path);
-        fs::remove_file(&store_path).await?;
-    } else {
-        tracing::debug!("Deleting folder {:?}", store_path);
-        fs::remove_dir_all(&store_path).await?;
-    }
+    common_delete(&authorized, store, Some(path)).await?;
     Ok(empty_ok_response())
+}
+
+/// Checks that the user is authorized to delete this path, and then deletes it.
+///
+/// Returns the deleted path.
+pub async fn common_delete(
+    authorized: &Option<ReqData<Authorized>>,
+    store: &str,
+    path: Option<&str>,
+) -> Result<PathBuf, StorageError> {
+    let store_path = get_authorized_path(&authorized, store, path)?;
+    match path {
+        Some(path) => {
+            if path.is_empty() {
+                // Don't allow empty paths, otherwise the store itself will get
+                // deleted
+                Err(StorageError::BadPath)
+            } else {
+                if fs::metadata(&store_path).await?.is_file() {
+                    tracing::debug!("Deleting file {:?}", store_path);
+                    fs::remove_file(&store_path).await?;
+                } else {
+                    tracing::debug!("Deleting folder {:?}", store_path);
+                    fs::remove_dir_all(&store_path).await?;
+                }
+                Ok(store_path)
+            }
+        }
+        // Don't allow missing paths, otherwise the store itself will get
+        // deleted
+        None => Err(StorageError::BadPath),
+    }
 }
 
 #[tracing::instrument]

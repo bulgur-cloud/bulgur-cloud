@@ -1,9 +1,9 @@
-use std::{ops::Deref, path::PathBuf};
+use std::{ops::Deref, path::PathBuf, str::FromStr};
 
 use actix_files::NamedFile;
 use actix_web::{
     cookie::Cookie,
-    get, post,
+    delete, get, post, put,
     web::{self, ReqData},
     Either, HttpResponse,
 };
@@ -18,7 +18,10 @@ use crate::{
     auth_middleware::AUTH_COOKIE_NAME,
     kv::table::TABLE_USERS,
     state::{self, AppState, Authorized, Token},
-    storage::{get_authorized_path, get_storage_internal, write_files, FolderEntry, StorageError},
+    storage::{
+        common_delete, get_authorized_path, get_storage_internal, write_files, FolderEntry,
+        StorageError,
+    },
 };
 
 #[derive(Template)]
@@ -108,7 +111,7 @@ pub struct ErrorPage {
 }
 
 #[tracing::instrument(skip(payload))]
-#[post("/{store}/{path:.*}")]
+#[put("/{store}/{path:.*}")]
 pub async fn page_folder_upload(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
@@ -116,22 +119,56 @@ pub async fn page_folder_upload(
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
+    let folder_path = format!("/basic/{store}/{path}");
 
     match write_files(&mut payload, &store_path).await {
         // If upload was successful, get the browser to refresh the page with a get request.
         Ok(_) => Ok(HttpResponse::SeeOther()
-            .append_header(("Location", format!("/basic/{store}/{path}")))
+            .append_header(("Location", folder_path))
             .finish()),
         // If upload failed, then we'll display an error page. A bit crude, but will work.
         Err(err) => Ok(HttpResponse::BadRequest().body(
             ErrorPage {
                 error_text: Some(err.to_string()),
-                redirect_link: format!("{store}/{path}"),
+                redirect_link: folder_path,
             }
             .render()
             .unwrap_or_log(),
         )),
     }
+}
+
+#[tracing::instrument]
+#[delete("/{store}/{path:.*}")]
+pub async fn page_delete(
+    params: web::Path<(String, String)>,
+    authorized: Option<ReqData<Authorized>>,
+) -> Result<HttpResponse, StorageError> {
+    let (store, path) = params.as_ref();
+    common_delete(&authorized, store, Some(path)).await?;
+    // We want to redirect the user back to the folder they were in.
+    let mut path = PathBuf::from(path);
+    path.pop();
+
+    Ok(HttpResponse::SeeOther()
+        .append_header((
+            "Location",
+            format!("/basic/{store}/{}", path.to_string_lossy()),
+        ))
+        .finish())
+}
+
+#[tracing::instrument]
+pub async fn page_create_folder(
+    params: web::Path<(String, String)>,
+    authorized: Option<ReqData<Authorized>>,
+) -> Result<HttpResponse, StorageError> {
+    let (store, path) = params.as_ref();
+
+    common_delete(&authorized, store, Some(path)).await?;
+    Ok(HttpResponse::SeeOther()
+        .append_header(("Location", format!("/basic/{store}/{path}")))
+        .finish())
 }
 
 #[tracing::instrument]
