@@ -39,6 +39,21 @@
       "problemMatcher": []
     },
     {
+      "label": "Watch backend with bunyan",
+      "type": "shell",
+      "command": "cargo watch -s 'cargo run | bunyan'",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "RUST_LOG": "debug",
+          "RUST_BACKTRACE": "1"
+        }
+      },
+      "detail": "Runs the backend server with bunyan, which makes logs easier to read.",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
       "label": "Run backend with bunyan",
       "type": "shell",
       "command": "cargo run | bunyan",

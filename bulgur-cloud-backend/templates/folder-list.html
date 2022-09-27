@@ -7,7 +7,11 @@
 </header>
 <main class="folder-list">
   <ul>
-    {% for item in folder_list %}
+    {% if let Some(parent_path) = parent_path %}
+    <li class="folder">
+      <a href="/basic/{{- parent_path -}}/">... Go up</a>
+    </li>
+    {% endif %} {% for item in folder_list %}
     <li class="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}">
       <img
         aria-label="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}"
@@ -21,13 +25,6 @@
           method="post"
         >
           <input type="submit" value="Delete" />
-        </form>
-        <form
-          action="/basic/{{- path -}}/{{- item.name -}}?_method=RENAME"
-          class="folder-list-item-action"
-          method="post"
-        >
-          <input type="submit" value="Rename" />
         </form>
       </div>
     </li>

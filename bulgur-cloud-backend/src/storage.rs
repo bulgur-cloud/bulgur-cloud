@@ -1,4 +1,5 @@
 use std::{
+    cmp::Ordering,
     io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -162,6 +163,18 @@ pub async fn get_storage_internal(
                 size: meta.len(),
             })
         }
+        // Sort them folders first, then files. Sorted by name within these
+        // groups. The react UI does it's own sorting internally on top of this,
+        // but this is helpful for the basic UI.
+        folder_contents.sort_by(|a, b| {
+            if !a.is_file && b.is_file {
+                return Ordering::Less;
+            }
+            if !b.is_file && a.is_file {
+                return Ordering::Greater;
+            }
+            return a.name.cmp(&b.name);
+        });
         Ok(Either::Right(web::Json(FolderResults {
             entries: folder_contents,
         })))

@@ -104,7 +104,7 @@ pub fn setup_app(
         .service(page_folder_upload)
         .service(page_delete)
         .route(
-            "",
+            "/{store}/{path:.*}",
             web::method(Method::try_from("CREATE").unwrap()).to(page_create_folder),
         );
     let basic_html_scope = web::scope("")

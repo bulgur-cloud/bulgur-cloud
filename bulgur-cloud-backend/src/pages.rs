@@ -1,4 +1,4 @@
-use std::{ops::Deref, path::PathBuf, str::FromStr};
+use std::{ops::Deref, path::PathBuf};
 
 use actix_files::NamedFile;
 use actix_web::{
@@ -11,6 +11,7 @@ use actix_web::{
 use actix_multipart::Multipart;
 use askama_actix::Template;
 use serde::{Deserialize, Serialize};
+use tokio::fs;
 use tracing_unwrap::ResultExt;
 
 use crate::{
@@ -100,6 +101,7 @@ pub async fn page_logout() -> HttpResponse {
 pub struct FolderListPage {
     username: String,
     path: String,
+    parent_path: Option<String>,
     folder_list: Vec<FolderEntry>,
 }
 
@@ -158,16 +160,26 @@ pub async fn page_delete(
         .finish())
 }
 
+#[derive(Deserialize, Debug)]
+pub struct CreateFolderForm {
+    pub folder: String,
+}
+
 #[tracing::instrument]
 pub async fn page_create_folder(
     params: web::Path<(String, String)>,
     authorized: Option<ReqData<Authorized>>,
+    form: web::Form<CreateFolderForm>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
+    let mut store_path = get_authorized_path(&authorized, store, Some(path))?;
 
-    common_delete(&authorized, store, Some(path)).await?;
+    let folder_name = sanitize_filename::sanitize(&form.folder);
+    store_path.push(&folder_name);
+    fs::create_dir(&store_path).await?;
+
     Ok(HttpResponse::SeeOther()
-        .append_header(("Location", format!("/basic/{store}/{path}")))
+        .append_header(("Location", format!("/basic/{store}/{path}{folder_name}/")))
         .finish())
 }
 
@@ -201,11 +213,23 @@ pub async fn page_folder_list(
                 }
             }
             .to_string();
+            let parent_path = store_path
+                .parent()
+                .map(|parent| parent.to_string_lossy().to_string())
+                .and_then(|parent| {
+                    // If parent is an empty string, then there is no parent to go up to
+                    if parent.len() == 0 {
+                        None
+                    } else {
+                        Some(parent)
+                    }
+                });
+            tracing::debug!(parent_path, "parent_path");
             Ok(Either::Right(FolderListPage {
                 username,
-                // TODO This is the right thing to do I guess? Not sure how else to handle "bad" characters if they exist
                 path: store_path.to_string_lossy().to_string(),
                 folder_list: folder_list.0.entries,
+                parent_path,
             }))
         }
     }
