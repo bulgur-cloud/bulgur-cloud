@@ -56,6 +56,7 @@ header {
 
 .folder-list {
   align-self: flex-start;
+  flex-grow: 1;
 }
 
 .folder-list li {
@@ -70,10 +71,20 @@ header {
   margin-right: 1rem;
 }
 
-#file-upload {
+.folder-list-action {
   margin-top: 3rem;
 }
 
-#file-upload input {
+.folder-list-action input {
   margin: 0 -2rem 0 2rem;
+}
+
+.folder-list > ul > li {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.folder-list > ul > li > a {
+  flex-grow: 1;
 }

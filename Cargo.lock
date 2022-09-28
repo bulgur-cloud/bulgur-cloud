@@ -250,6 +250,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-web-query-method-middleware"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b361a0995f15b432b2ead6812e225eec7d367d4ebd252d24d1c6bba902460a6e"
+dependencies = [
+ "actix-service",
+ "actix-web",
+ "futures",
+ "qstring",
+ "tracing",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -534,6 +547,7 @@ dependencies = [
  "actix-multipart",
  "actix-service",
  "actix-web",
+ "actix-web-query-method-middleware",
  "anyhow",
  "askama",
  "askama_actix",

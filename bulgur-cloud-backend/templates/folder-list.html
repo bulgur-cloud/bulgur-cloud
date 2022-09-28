@@ -7,22 +7,53 @@
 </header>
 <main class="folder-list">
   <ul>
-    {% for item in folder_list %}
+    {% if let Some(parent_path) = parent_path %}
+    <li class="folder">
+      <a href="/basic/{{- parent_path -}}/">... Go up</a>
+    </li>
+    {% endif %} {% for item in folder_list %}
     <li class="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}">
       <img
         aria-label="{%- if item.is_file -%} file {%- else -%} folder {%- endif -%}"
         src="{%- if item.is_file -%} /basic/assets/file.svg {%- else -%} /basic/assets/folder.svg {%- endif -%}"
       />
       <a href="/basic/{{- path -}}/{{- item.name -}}">{{- item.name -}}</a>
+      <div class="folder-list-item-action-container">
+        <form
+          action="/basic/{{- path -}}/{{- item.name -}}?_method=DELETE"
+          class="folder-list-item-action"
+          method="post"
+        >
+          <input type="submit" value="Delete" />
+        </form>
+      </div>
     </li>
     {% endfor %}
   </ul>
-  <form method="post" id="file-upload" enctype="multipart/form-data">
+  <form
+    action="/basic/{{- path -}}/?_method=PUT"
+    class="folder-list-action"
+    method="post"
+    id="file-upload"
+    enctype="multipart/form-data"
+  >
     <label>
       Select files to upload
       <input id="files" name="files" type="file" multiple />
     </label>
     <input type="submit" value="Upload" />
+  </form>
+  <form
+    action="/basic/{{- path -}}/?_method=CREATE"
+    class="folder-list-action"
+    method="post"
+    id="create-folder"
+  >
+    <label>
+      Create folder
+      <input id="folder" name="folder" type="text" />
+    </label>
+    <input type="submit" value="Create" />
   </form>
 </main>
 {% endblock %}
