@@ -160,7 +160,7 @@ pub async fn page_delete(
         .finish())
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CreateFolderForm {
     pub folder: String,
 }
