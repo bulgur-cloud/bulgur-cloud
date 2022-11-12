@@ -233,7 +233,7 @@ dependencies = [
  "serde_urlencoded",
  "smallvec",
  "socket2",
- "time",
+ "time 0.3.14",
  "url",
 ]
 
@@ -260,6 +260,21 @@ dependencies = [
  "futures",
  "qstring",
  "tracing",
+]
+
+[[package]]
+name = "actix-web-rust-embed-responder"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c5ab3dd5ab61a325fbc0264c49300d2ec7b4cd3ba080e3542d4fa83f400a068"
+dependencies = [
+ "actix-web",
+ "brotli",
+ "flate2",
+ "futures-core",
+ "lazy_static",
+ "regex",
+ "rust-embed-for-web",
 ]
 
 [[package]]
@@ -502,6 +517,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea2b2456fd614d856680dcd9fcc660a51a820fa09daef2e49772b56a193c8474"
 
 [[package]]
+name = "base85rs"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7b7172542a3d446ca7b2be4e28e4f4c119a89c396712f7ca1ad2822bfc54ca2"
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -538,6 +559,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bstr"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba3569f383e8f1598449f1a423e72e99569137b47740b1da11ef19af3d5c3223"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "bulgur-cloud"
 version = "0.2.1"
 dependencies = [
@@ -548,6 +578,7 @@ dependencies = [
  "actix-service",
  "actix-web",
  "actix-web-query-method-middleware",
+ "actix-web-rust-embed-responder",
  "anyhow",
  "askama",
  "askama_actix",
@@ -565,7 +596,7 @@ dependencies = [
  "pathdiff",
  "qstring",
  "rpassword",
- "rust-embed",
+ "rust-embed-for-web",
  "sanitize-filename",
  "scrypt",
  "serde",
@@ -635,8 +666,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfd4d1b31faaa3a89d7934dbded3111da0d2ef28e3ebccdb4f0179f5929d1ef1"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-integer",
  "num-traits",
+ "time 0.1.43",
+ "wasm-bindgen",
  "winapi",
 ]
 
@@ -703,7 +737,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94d4706de1b0fa5b132270cddffa8585166037822e260a944fe161acd137ca05"
 dependencies = [
  "percent-encoding",
- "time",
+ "time 0.3.14",
  "version_check",
 ]
 
@@ -841,6 +875,26 @@ dependencies = [
  "block-buffer",
  "crypto-common",
  "subtle",
+]
+
+[[package]]
+name = "dirs"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca3aa72a6f96ea37bbc5aa912f6788242832f75369bdfdadcb0e38423f100059"
+dependencies = [
+ "dirs-sys",
+]
+
+[[package]]
+name = "dirs-sys"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b1d1d91c932ef41c0f2663aa8b0ca0342d444d842c06914aa0a7e352d0bada6"
+dependencies = [
+ "libc",
+ "redox_users",
+ "winapi",
 ]
 
 [[package]]
@@ -1043,6 +1097,19 @@ dependencies = [
  "cfg-if",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "globset"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a1e17342619edbc21a964c2afbeb6c820c6a2560032872f397bb97ea127bd0a"
+dependencies = [
+ "aho-corasick",
+ "bstr",
+ "fnv",
+ "log",
+ "regex",
 ]
 
 [[package]]
@@ -1448,6 +1515,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ffa00dec017b5b1a8b7cf5e2c008bfda1aa7e0697ac1508b491fdf2622fb4d8"
 dependencies = [
  "rand",
+]
+
+[[package]]
+name = "new_mime_guess"
+version = "4.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2d684d1b59e0dc07b37e2203ef576987473288f530082512aff850585c61b1f"
+dependencies = [
+ "mime",
+ "unicase",
 ]
 
 [[package]]
@@ -1896,6 +1973,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox_users"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b033d837a7cf162d7993aded9304e30a83213c648b6e389db233191f891e5c2b"
+dependencies = [
+ "getrandom",
+ "redox_syscall",
+ "thiserror",
+]
+
+[[package]]
 name = "regex"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1956,35 +2044,43 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-embed"
-version = "6.4.1"
+name = "rust-embed-for-web"
+version = "11.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e26934cd67a1da1165efe61cba4047cc1b4a526019da609fcce13a1000afb5fa"
+checksum = "315ba69a3ecad03d3c99629d7190993599e7e2612b6e4b27bd3c769969f5eec1"
 dependencies = [
- "rust-embed-impl",
- "rust-embed-utils",
+ "rust-embed-for-web-impl",
+ "rust-embed-for-web-utils",
  "walkdir",
 ]
 
 [[package]]
-name = "rust-embed-impl"
-version = "6.3.0"
+name = "rust-embed-for-web-impl"
+version = "11.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e35d7b402e273544cc08e0824aa3404333fab8a90ac43589d3d5b72f4b346e12"
+checksum = "b6c181b631a5952c043c187d396778db3a56ec0df4abad6e34c5e1753d6e7631"
 dependencies = [
+ "brotli",
+ "flate2",
+ "globset",
  "proc-macro2",
  "quote",
- "rust-embed-utils",
+ "rust-embed-for-web-utils",
+ "shellexpand",
  "syn",
  "walkdir",
 ]
 
 [[package]]
-name = "rust-embed-utils"
-version = "7.3.0"
+name = "rust-embed-for-web-utils"
+version = "11.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1669d81dfabd1b5f8e2856b8bbe146c6192b0ba22162edc738ac0a5de18f054"
+checksum = "03a1a7f864975b56e94ea5258076d5bdca4920cfbc7eaabc68d85eb524cd217f"
 dependencies = [
+ "base85rs",
+ "chrono",
+ "globset",
+ "new_mime_guess",
  "sha2",
  "walkdir",
 ]
@@ -2222,6 +2318,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "shellexpand"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ccc8076840c4da029af4f87e4e8daeb0fca6b87bbb02e10cb60b791450e11e4"
+dependencies = [
+ "dirs",
+]
+
+[[package]]
 name = "signal-hook-registry"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2368,6 +2473,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5516c27b78311c50bf42c071425c560ac799b11c30b31f87e3081965fe5e0180"
 dependencies = [
  "once_cell",
+]
+
+[[package]]
+name = "time"
+version = "0.1.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca8a50ef2360fbd1eeb0ecd46795a87a19024eb4b53c5dc916ca1fd95fe62438"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]
@@ -2635,7 +2750,7 @@ dependencies = [
  "log",
  "serde",
  "serde_json",
- "time",
+ "time 0.3.14",
  "tracing",
  "tracing-core",
  "tracing-log",
