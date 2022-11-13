@@ -10,7 +10,7 @@ use crate::{
         page_login_get, page_login_post, page_logout,
     },
     state::{AppState, PathTokenCache, TokenCache},
-    static_files::{get_basic_assets, get_ui, get_ui_index, head_ui_index},
+    static_files::{get_basic_assets, ui_pages},
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
 
@@ -113,9 +113,7 @@ pub fn setup_app(
         .service(page_logout)
         .service(get_basic_assets)
         .service(authenticated_basic_html_scope)
-        .service(get_ui_index)
-        .service(head_ui_index)
-        .service(get_ui);
+        .service(ui_pages);
     let banner_auth_scope = web::scope("").wrap(api_guard).service(get_banner_page);
     let banner_scope = web::scope("banner")
         .service(get_banner_login)
