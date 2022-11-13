@@ -43,7 +43,7 @@ atomic-rename = { path = "../atomic-rename" }
 askama = "0.11"
 askama_actix = "0.13"
 # Include asset files
-actix-web-rust-embed-responder = { version = "2.1.0", default-features = false, features = [
+actix-web-rust-embed-responder = { version = "2.1.1", default-features = false, features = [
   "support-rust-embed-for-web",
 ] }
 rust-embed-for-web = "11.1"
