@@ -1,10 +1,6 @@
-use std::path::PathBuf;
-
-use actix_web::{get, route, web, HttpResponse};
+use actix_web::{route, web};
 use actix_web_rust_embed_responder::{EmbedResponse, EmbedableFileResponse, IntoResponse};
-use rust_embed_for_web::{EmbeddedFile, RustEmbed};
-
-use crate::pages::not_found;
+use rust_embed_for_web::RustEmbed;
 
 /// Serves the web UI.
 #[derive(RustEmbed)]
@@ -18,7 +14,7 @@ pub async fn ui_pages(path: web::Path<String>) -> EmbedResponse<EmbedableFileRes
     let path = if path.is_empty() || path.starts_with("s/") {
         "index.html"
     } else {
-        path
+        path.as_str()
     };
     UI::get(path).into_response()
 }
@@ -30,7 +26,7 @@ pub async fn ui_pages(path: web::Path<String>) -> EmbedResponse<EmbedableFileRes
 struct Basic;
 
 #[tracing::instrument]
-#[get("/basic/assets/{path:.*}")]
+#[route("/basic/assets/{path:.*}", method = "GET", method = "HEAD")]
 pub async fn get_basic_assets(params: web::Path<String>) -> EmbedResponse<EmbedableFileResponse> {
     Basic::get(params.as_str()).into_response()
 }

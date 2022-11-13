@@ -264,12 +264,13 @@ dependencies = [
 
 [[package]]
 name = "actix-web-rust-embed-responder"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c5ab3dd5ab61a325fbc0264c49300d2ec7b4cd3ba080e3542d4fa83f400a068"
+checksum = "72d75679673b3a0ba86cbaa097d74f8be1f00c4c1ed099050ffa8819d2fcebb6"
 dependencies = [
  "actix-web",
  "brotli",
+ "chrono",
  "flate2",
  "futures-core",
  "lazy_static",
