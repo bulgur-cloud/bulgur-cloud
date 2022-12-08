@@ -10,10 +10,11 @@ import {
   Spacer,
 } from "native-base";
 import { errorSlice, useAppDispatch, useAppSelector } from "./store";
+import { shallowEquals } from "./utils";
 
 export function ErrorDisplay() {
   const dispatch = useAppDispatch();
-  const errors = useAppSelector((state) => state.error.errors);
+  const errors = useAppSelector((state) => state.error.errors, shallowEquals);
 
   return (
     <Center>

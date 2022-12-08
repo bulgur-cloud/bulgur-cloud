@@ -135,7 +135,7 @@ export function CreateFolderModal() {
 
 export function MoveItems(props: DashboardParams) {
   const dispatch = useAppDispatch();
-  const markedForMove = useAppSelector((state) => state.storage.markedForMove);
+  const markedForMove = useAppSelector((state) => state.storage.selected);
   const { doRename } = useRename();
   const params = props.route.params;
 

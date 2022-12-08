@@ -1,20 +1,9 @@
-import {
-  Center,
-  Box,
-  CloseIcon,
-  HStack,
-  Icon,
-  IconButton,
-  Spacer,
-  Text,
-  VStack,
-} from "native-base";
+import { Center, Box, HStack, Icon, Spacer, Text, VStack } from "native-base";
 import { File } from "./storage/File";
-import { storageSlice, useAppDispatch, useAppSelector } from "./store";
+import { useAppSelector } from "./store";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { urlUp1Level } from "./fetch";
 import { FolderList, FABs } from "./storage/FolderList";
-import { FillSpacer } from "./FillSpacer";
 import { DashboardParams, useAppNavigation } from "./routes";
 import { useEnsureAuthInitialized, useLogout } from "./client/auth";
 import { FullPageLoading } from "./Loading";
@@ -23,6 +12,7 @@ import { UploadProgress } from "./UploadProgress";
 import { RenameModal } from "./storage/RenameModal";
 import { CreateFolderModal } from "./Upload";
 import { DeleteModal } from "./storage/DeleteModal";
+import { SelectionPanel } from "./SelectionPanel";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -82,7 +72,7 @@ export function Dashboard(params: DashboardParams) {
   }
 
   return (
-    <Box style={{ overflow: "hidden" }}>
+    <Box overflow="hidden" width="100vw" height="100vh">
       <Center>
         <VStack
           width="100%"
@@ -101,7 +91,7 @@ export function Dashboard(params: DashboardParams) {
             borderBottomWidth={2}
           >
             <BackButton {...params} />
-            <MiddleSection />
+            <Spacer />
             <HStack space={2}>
               <Text>{username}</Text>
               <Text
@@ -118,40 +108,10 @@ export function Dashboard(params: DashboardParams) {
         </VStack>
       </Center>
       <UploadProgress />
+      <SelectionPanel />
       <RenameModal />
       <CreateFolderModal />
       <DeleteModal />
     </Box>
-  );
-}
-
-function MiddleSection() {
-  const dispatch = useAppDispatch();
-  const numMarkedForMove = useAppSelector(
-    (state) => Object.keys(state.storage.markedForMove).length,
-  );
-
-  if (numMarkedForMove === 0) return <FillSpacer />;
-  return (
-    <FillSpacer>
-      <Center>
-        <HStack space={2}>
-          {numMarkedForMove === 1 ? (
-            <Text>{numMarkedForMove} item is marked to be moved</Text>
-          ) : (
-            <Text>{numMarkedForMove} items are marked to be moved</Text>
-          )}
-          <Spacer />
-          <IconButton
-            variant="unstyled"
-            accessibilityLabel="Cancel move"
-            onPress={() => {
-              dispatch(storageSlice.actions.clearMarksForMove());
-            }}
-            icon={<CloseIcon size="2" color="darkText" />}
-          />
-        </HStack>
-      </Center>
-    </FillSpacer>
   );
 }

@@ -75,7 +75,7 @@ function Base() {
   return (
     <SafeAreaProvider>
       <NativeBaseProvider theme={theme}>
-        <View paddingX={8} paddingY={4}>
+        <View>
           <Provider store={store}>
             <NavigationContainer
               linking={LINKING}
@@ -124,7 +124,7 @@ function App() {
   }
 
   return (
-    <Stack.Navigator initialRouteName="Login">
+    <Stack.Navigator key="foo" initialRouteName="Login">
       <Stack.Screen name="Login" component={Login} />
       <Stack.Screen name="Dashboard" component={Dashboard} />
       <Stack.Screen name="NotFound" component={NotFound} />

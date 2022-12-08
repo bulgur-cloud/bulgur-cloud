@@ -57,11 +57,12 @@ export enum StorageAction {
 
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
-  markedForMove: {
+  selected: {
     [fullpath: string]: {
       store: string;
       path: string;
       name: string;
+      isFile: boolean;
     };
   };
   /** Maps file names to their current upload progress. */
@@ -82,7 +83,7 @@ export type StorageState = {
 };
 
 const initialStorageState: StorageState = {
-  markedForMove: {},
+  selected: {},
   uploadProgress: {},
   action: undefined,
 };
@@ -100,7 +101,7 @@ export const storageSlice = createSlice({
     ) => {
       const { store, path, name } = action.payload;
       const fullPath = joinURL(store, path, name);
-      state.markedForMove[fullPath] = {
+      state.selected[fullPath] = {
         store,
         path,
         name,
@@ -112,10 +113,10 @@ export const storageSlice = createSlice({
     ) => {
       const { store, path, name } = action.payload;
       const fullPath = joinURL(store, path, name);
-      if (state.markedForMove[fullPath]) delete state.markedForMove[fullPath];
+      if (state.selected[fullPath]) delete state.selected[fullPath];
     },
     clearMarksForMove: (state) => {
-      state.markedForMove = {};
+      state.selected = {};
     },
     uploadProgress: (
       state,
@@ -131,14 +132,17 @@ export const storageSlice = createSlice({
         delete state.uploadProgress[name];
       }
     },
-    promptAction: (state, action: { payload: Required<StorageState>["action"] }) => {
+    promptAction: (
+      state,
+      action: { payload: Required<StorageState>["action"] },
+    ) => {
       state.action = {
-        ...action.payload
+        ...action.payload,
       };
     },
     dismissPrompt: (state) => {
       state.action = undefined;
-    }
+    },
   },
 });
 

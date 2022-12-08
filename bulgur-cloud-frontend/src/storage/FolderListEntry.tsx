@@ -40,7 +40,7 @@ export function FolderListEntry(
   const dispatch = useAppDispatch();
   const isMarkedForMove = useAppSelector(
     (state) =>
-      state.storage.markedForMove[
+      state.storage.selected[
         joinURL(route.params.store, route.params.path, item.name)
       ] !== undefined,
   );
