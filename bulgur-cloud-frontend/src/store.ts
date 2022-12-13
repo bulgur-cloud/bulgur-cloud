@@ -57,11 +57,12 @@ export enum StorageAction {
 
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
-  markedForMove: {
+  selected: {
     [fullpath: string]: {
       store: string;
       path: string;
       name: string;
+      isFile: boolean;
     };
   };
   /** Maps file names to their current upload progress. */
@@ -72,17 +73,19 @@ export type StorageState = {
       done: number;
     };
   };
-  action?: {
-    type: StorageAction;
-    isFile: boolean;
-    name: string;
-    store: string;
-    path: string;
-  };
+  action?:
+    | {
+        type: StorageAction;
+        isFile: boolean;
+        name: string;
+        store: string;
+        path: string;
+      }
+    | { type: "BulkDelete" };
 };
 
 const initialStorageState: StorageState = {
-  markedForMove: {},
+  selected: {},
   uploadProgress: {},
   action: undefined,
 };
@@ -94,28 +97,31 @@ export const storageSlice = createSlice({
   name: "storage",
   initialState: initialStorageState,
   reducers: {
-    markForMove: (
+    markSelected: (
       state,
-      action: { payload: { store: string; path: string; name: string } },
+      action: {
+        payload: { store: string; path: string; name: string; isFile: boolean };
+      },
     ) => {
-      const { store, path, name } = action.payload;
+      const { store, path, name, isFile } = action.payload;
       const fullPath = joinURL(store, path, name);
-      state.markedForMove[fullPath] = {
+      state.selected[fullPath] = {
         store,
         path,
         name,
+        isFile,
       };
     },
-    unmarkForMove: (
+    unmarkSelected: (
       state,
       action: { payload: { store: string; path: string; name: string } },
     ) => {
       const { store, path, name } = action.payload;
       const fullPath = joinURL(store, path, name);
-      if (state.markedForMove[fullPath]) delete state.markedForMove[fullPath];
+      if (state.selected[fullPath]) delete state.selected[fullPath];
     },
-    clearMarksForMove: (state) => {
-      state.markedForMove = {};
+    clearAllSelected: (state) => {
+      state.selected = {};
     },
     uploadProgress: (
       state,
@@ -131,14 +137,19 @@ export const storageSlice = createSlice({
         delete state.uploadProgress[name];
       }
     },
-    promptAction: (state, action: { payload: Required<StorageState>["action"] }) => {
+    promptAction: (
+      state,
+      action: {
+        payload: Required<StorageState>["action"];
+      },
+    ) => {
       state.action = {
-        ...action.payload
+        ...action.payload,
       };
     },
     dismissPrompt: (state) => {
       state.action = undefined;
-    }
+    },
   },
 });
 

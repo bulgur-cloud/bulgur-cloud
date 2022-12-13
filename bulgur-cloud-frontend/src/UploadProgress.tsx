@@ -7,33 +7,18 @@ import {
   Heading,
   Spacer,
 } from "native-base";
-import { useRef, useEffect } from "react";
-import { Animated } from "react-native";
+import { SidePanel } from "./components/SidePanel";
 import { useAppSelector } from "./store";
 
 export function UploadProgress() {
   const isEmpty = useAppSelector(
     (selector) => Object.entries(selector.storage.uploadProgress).length === 0,
   );
-  const positionRight = useRef(new Animated.Value(-520)).current;
-  useEffect(() => {
-    Animated.timing(positionRight, {
-      toValue: isEmpty ? -520 : -40,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [isEmpty]);
 
   return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        top: 120,
-        right: positionRight,
-      }}
-    >
+    <SidePanel side="right" isOpen={!isEmpty}>
       <UploadProgressItems />
-    </Animated.View>
+    </SidePanel>
   );
 }
 
