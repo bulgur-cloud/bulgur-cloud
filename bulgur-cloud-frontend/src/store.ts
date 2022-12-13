@@ -73,13 +73,15 @@ export type StorageState = {
       done: number;
     };
   };
-  action?: {
-    type: StorageAction;
-    isFile: boolean;
-    name: string;
-    store: string;
-    path: string;
-  };
+  action?:
+    | {
+        type: StorageAction;
+        isFile: boolean;
+        name: string;
+        store: string;
+        path: string;
+      }
+    | { type: "BulkDelete" };
 };
 
 const initialStorageState: StorageState = {
@@ -95,19 +97,22 @@ export const storageSlice = createSlice({
   name: "storage",
   initialState: initialStorageState,
   reducers: {
-    markForMove: (
+    markSelected: (
       state,
-      action: { payload: { store: string; path: string; name: string } },
+      action: {
+        payload: { store: string; path: string; name: string; isFile: boolean };
+      },
     ) => {
-      const { store, path, name } = action.payload;
+      const { store, path, name, isFile } = action.payload;
       const fullPath = joinURL(store, path, name);
       state.selected[fullPath] = {
         store,
         path,
         name,
+        isFile,
       };
     },
-    unmarkForMove: (
+    unmarkSelected: (
       state,
       action: { payload: { store: string; path: string; name: string } },
     ) => {
@@ -115,7 +120,7 @@ export const storageSlice = createSlice({
       const fullPath = joinURL(store, path, name);
       if (state.selected[fullPath]) delete state.selected[fullPath];
     },
-    clearMarksForMove: (state) => {
+    clearAllSelected: (state) => {
       state.selected = {};
     },
     uploadProgress: (
@@ -134,7 +139,9 @@ export const storageSlice = createSlice({
     },
     promptAction: (
       state,
-      action: { payload: Required<StorageState>["action"] },
+      action: {
+        payload: Required<StorageState>["action"];
+      },
     ) => {
       state.action = {
         ...action.payload,

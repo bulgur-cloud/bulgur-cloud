@@ -1,9 +1,9 @@
 import { Fab, Icon, View } from "native-base";
 import { Platform } from "react-native";
 import { runAsync, STORAGE } from "./client/base";
-import { useCreateFolder, useRename, useUpload } from "./client/storage";
+import { useCreateFolder, useUpload } from "./client/storage";
 import { ERR_NOT_IMPLEMENTED } from "./error";
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import {
   StorageAction,
   storageSlice,
@@ -130,44 +130,5 @@ export function CreateFolderModal() {
       primary="Create"
       actions={{ Create: { message: "Create", action: runCreateFolder } }}
     />
-  );
-}
-
-export function MoveItems(props: DashboardParams) {
-  const dispatch = useAppDispatch();
-  const markedForMove = useAppSelector((state) => state.storage.selected);
-  const { doRename } = useRename();
-  const params = props.route.params;
-
-  if (Object.keys(markedForMove).length === 0) return <View />;
-
-  return (
-    <Fab
-      placement="bottom-right"
-      right="290px"
-      label="Move here"
-      position="fixed"
-      icon={
-        <Icon
-          as={MaterialCommunityIcons}
-          name="select-place"
-          height="100%"
-          size={4}
-        />
-      }
-      onPress={() => {
-        runAsync(async () => {
-          await Promise.all(
-            Object.values(markedForMove).map(async ({ store, path, name }) => {
-              await doRename(
-                joinURL(STORAGE, store, path, name),
-                joinURL(params.store, params.path, name),
-              );
-            }),
-          );
-          dispatch(storageSlice.actions.clearMarksForMove());
-        });
-      }}
-    ></Fab>
   );
 }

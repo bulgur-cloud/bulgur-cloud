@@ -13,6 +13,7 @@ import { RenameModal } from "./storage/RenameModal";
 import { CreateFolderModal } from "./Upload";
 import { DeleteModal } from "./storage/DeleteModal";
 import { SelectionPanel } from "./SelectionPanel";
+import { BulkDeleteModal } from "./BulkDeleteModal";
 
 function StorageItem(params: DashboardParams) {
   if (params.route.params.isFile) {
@@ -112,6 +113,7 @@ export function Dashboard(params: DashboardParams) {
       <RenameModal />
       <CreateFolderModal />
       <DeleteModal />
+      <BulkDeleteModal />
     </Box>
   );
 }

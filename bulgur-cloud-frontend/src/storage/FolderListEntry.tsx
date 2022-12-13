@@ -1,4 +1,4 @@
-import { HStack, Icon, Spacer, Text } from "native-base";
+import { HStack, Icon, Text } from "native-base";
 import { joinURL } from "../fetch";
 import { FillSpacer } from "../FillSpacer";
 import {
@@ -48,6 +48,21 @@ export function FolderListEntry(
 
   const { store, path } = route.params;
 
+  const selectEntry = () => {
+    console.log("selecting");
+    const params = {
+      store: route.params.store,
+      path: route.params.path,
+      name: item.name,
+      isFile: item.is_file,
+    };
+    if (isMarkedForMove) {
+      dispatch(storageSlice.actions.unmarkSelected(params));
+    } else {
+      dispatch(storageSlice.actions.markSelected(params));
+    }
+  };
+
   return (
     <HStack space={4} key={item.name} alignItems="center">
       <Icon
@@ -60,6 +75,7 @@ export function FolderListEntry(
         })}
         color="darkText"
         opacity={isHidden ? 40 : 100}
+        onPress={selectEntry}
       />
       <BLink
         screen="Dashboard"
@@ -67,6 +83,16 @@ export function FolderListEntry(
           store,
           path: path === "" ? item.name : joinURL(path, item.name),
           isFile: item.is_file,
+        }}
+        onPress={(e) => {
+          const { ctrlKey, shiftKey } = e.nativeEvent as {
+            ctrlKey?: boolean;
+            shiftKey?: boolean;
+          };
+          if (ctrlKey || shiftKey) {
+            e.preventDefault();
+            selectEntry();
+          }
         }}
       >
         <Text opacity={isHidden ? 40 : 100}>{item.name}</Text>
@@ -85,45 +111,6 @@ export function FolderListEntry(
               name: item.name,
               path,
               store,
-              isFile: item.is_file,
-            }),
-          );
-        }}
-      />
-      <Spacer flexGrow={0} />
-      <Icon
-        as={FontAwesome5}
-        name="arrows-alt"
-        accessibilityLabel="move"
-        height="100%"
-        size={4}
-        onPress={() => {
-          const params = {
-            store: route.params.store,
-            path: route.params.path,
-            name: item.name,
-          };
-          if (isMarkedForMove) {
-            dispatch(storageSlice.actions.unmarkForMove(params));
-          } else {
-            dispatch(storageSlice.actions.markForMove(params));
-          }
-        }}
-      />
-      <Spacer flexGrow={0} />
-      <Icon
-        as={FontAwesome5}
-        name="trash-alt"
-        accessibilityLabel="delete"
-        height="100%"
-        size={4}
-        onPress={() => {
-          dispatch(
-            storageSlice.actions.promptAction({
-              type: StorageAction.Delete,
-              name: item.name,
-              store,
-              path,
               isFile: item.is_file,
             }),
           );

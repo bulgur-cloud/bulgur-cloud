@@ -1,22 +1,22 @@
 import { Link, StackActions } from "@react-navigation/native";
-import { TextProps } from "react-native";
 import { RoutingStackParams } from "./routes";
 
-export function BLink<Route extends keyof RoutingStackParams>(
-  props: TextProps & {
-    screen: Route;
-    params: RoutingStackParams[Route];
-  },
-) {
+export function BLink<Route extends keyof RoutingStackParams>({
+  screen,
+  params,
+  ...rest
+}: {
+  screen: Route;
+  params: RoutingStackParams[Route];
+} & Omit<Parameters<typeof Link>[0], "to" | "action">) {
   return (
     <Link
       to={{
-        screen: props.screen,
-        params: props.params,
+        screen,
+        params,
       }}
-      action={StackActions.push(props.screen, props.params)}
-    >
-      {props.children}
-    </Link>
+      action={StackActions.push(screen, params)}
+      {...rest}
+    />
   );
 }
