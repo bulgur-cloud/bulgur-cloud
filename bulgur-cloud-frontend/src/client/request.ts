@@ -76,7 +76,7 @@ export function useRequest<D, R>() {
     };
 
     if (params.data) {
-      if ("getHeaders" in params.data) {
+      if (typeof params.data === "object" && "getHeaders" in params.data) {
         config.headers = {
           ...config.headers,
           ...config.data.getHeaders(),

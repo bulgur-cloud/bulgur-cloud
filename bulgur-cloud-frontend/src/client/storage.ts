@@ -35,13 +35,12 @@ export function usePathToken(url: string) {
 
 function useMutateFolder() {
   const { mutate } = useSWRConfig();
-  const { access_token, site } = useAppSelector((selector) =>
-    pick(selector.auth, "access_token", "site"),
-  shallowEquals
+  const { access_token, site } = useAppSelector(
+    (selector) => pick(selector.auth, "access_token", "site"),
+    shallowEquals,
   );
 
   function doMutateFolder(url: string) {
-    console.log("Path being mutated", url);
     const mutateParams: RequestParams<never> & {
       access_token?: string;
       site?: string;
@@ -73,7 +72,6 @@ export function useCreateFolder() {
         action: "CreateFolder",
       },
     });
-    console.log(url);
     doMutateContainingFolder(url);
   }
 
@@ -85,7 +83,7 @@ export function useDelete() {
   const { doMutateContainingFolder } = useMutateFolder();
 
   async function doDelete(url: string) {
-    doRequest({
+    await doRequest({
       url,
       method: "DELETE",
     });
