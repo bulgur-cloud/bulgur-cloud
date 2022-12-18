@@ -198,7 +198,7 @@ pub async fn get_storage(
 fn empty_ok_response() -> HttpResponse {
     // If we return no body, Firefox gets angry and puts "XML Parsing Error: no
     // root element found" messages in the console for no reason. So we are adding a dummy response to quiet that.
-    HttpResponse::Ok().json(EmptySuccess { status: "ok"})
+    HttpResponse::Ok().json(EmptySuccess { status: "ok" })
 }
 
 #[tracing::instrument]
