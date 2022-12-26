@@ -60,7 +60,7 @@ urlencoding = "2.1.0"
 # Logging
 tracing = "0.1"
 tracing-unwrap = { version = "0.9", default-features = false }
-tracing-actix-web = "0.6"
+tracing-actix-web = "0.7"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-bunyan-formatter = "0.3"
 # Password hashing
