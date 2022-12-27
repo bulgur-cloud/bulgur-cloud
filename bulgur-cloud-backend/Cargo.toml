@@ -79,14 +79,14 @@ actix-web-query-method-middleware = "1.0"
 typescript-type-def = "0.5"
 
 # Tracing (optional, enabled with `telemetry_opentelemetry` option)
-opentelemetry = { version = "0.18", features = [
+opentelemetry = { version = "0.17", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
-opentelemetry-otlp = { version = "0.11", features = [
+opentelemetry-otlp = { version = "0.10", features = [
   "tonic",
   "tls",
   "tls-roots",
 ], optional = true }
-tonic = { version = "0.8.1", optional = true }
-tracing-opentelemetry = { version = "0.18", optional = true }
+tonic = { version = "0.6.2", optional = true }
+tracing-opentelemetry = { version = "0.17", optional = true }
