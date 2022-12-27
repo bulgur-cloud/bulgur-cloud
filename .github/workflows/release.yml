@@ -119,10 +119,10 @@ jobs:
           VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
           mkdir -p Docker/binaries/linux/amd64 Docker/binaries/linux/arm64 Docker/binaries/linux/arm/v6 Docker/binaries/linux/arm/v7
           cd Docker
-          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64 binaries/linux/arm64/
-          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv6 binaries/linux/arm/v6/
-          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv7 binaries/linux/arm/v7/
-          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64 binaries/linux/amd64/
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64 binaries/linux/arm64/bulgur-cloud
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv6 binaries/linux/arm/v6/bulgur-cloud
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv7 binaries/linux/arm/v7/bulgur-cloud
+          cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64 binaries/linux/amd64/bulgur-cloud
           echo "${DOCKERHUB_PASS}" | docker login --username seriousbug --password-stdin
           docker buildx create --use
           docker buildx build . --platform=linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7 --file "Dockerfile" --tag "seriousbug/bulgur-cloud:latest" --tag "seriousbug/bulgur-cloud:${VERSION}" --push
