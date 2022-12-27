@@ -1,4 +1,5 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "./api";
 import { BError } from "./error";
@@ -169,6 +170,18 @@ export const errorSlice = createSlice({
       let error: BError;
       if (action.payload.error instanceof BError) {
         error = action.payload.error;
+      } else if (
+        // Probably a network connection error
+        axios.isAxiosError(action.payload.error) &&
+        action.payload.error.request !== undefined &&
+        action.payload.error.response === undefined
+      ) {
+        error = new BError({
+          code: "network_failure",
+          description:
+            "Failed to connect to the server. Make sure you have an internet connection, otherwise notify your admin.\n\nIf you are the admin, check that the server is running and accessible from this device.",
+          title: "Failed to connect to the server",
+        });
       } else {
         error = new BError({
           code: "unknown_error",

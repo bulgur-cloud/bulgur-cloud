@@ -1,0 +1,9 @@
+[advisories]
+ignore = [
+  # This is about a potential issue with the time crate. bulgur-cloud gets this
+  # dependency transitively through chrono. chrono does not use the vulnerable
+  # APIs, so this advisory can be safely ignored.
+  #
+  # https://github.com/chronotope/chrono/issues/602#issuecomment-1075915577
+  "RUSTSEC-2020-0071"
+]
