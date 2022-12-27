@@ -30,7 +30,9 @@ jobs:
         run: yarn build:web
         working-directory: bulgur-cloud-frontend
       - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
       - name: Get final build
         run: cross build --release --target ${{ matrix.target }}
       - name: Upload build
