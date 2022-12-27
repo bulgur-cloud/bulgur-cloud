@@ -8,6 +8,7 @@ export function runAsync(
 ) {
   fn().catch((error) => {
     console.error(error);
+
     store.dispatch(
       errorSlice.actions.addError({
         key: `${new Date().getTime()}`,
