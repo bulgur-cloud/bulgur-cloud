@@ -96,12 +96,20 @@ jobs:
           cp bulgur-cloud-x86_64-unknown-linux-musl/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64
           chmod +x release-artifacts/*
         # Sign the artifacts! Ensures any downloaded artifacts came from this build process.
-      - name: Sign artifacts
+      - name: Sign and prepare artifacts
         run: |
           echo "${SIGNING_PRIVATE_KEY}" | gpg --import -
 
-          for file in release-artifacts/* ; do
-          gpg --detach-sign "$file"
+          cd release-artifacts
+          for file in * ; do
+            gpg --detach-sign "$file"
+          done
+
+          for file in *.linux-* ; do
+            tar -acf "${file}.tar.xz" "$file"
+          done
+          for file in *.windows-* ; do
+            zip "${file}.zip" "$file"
           done
         env:
           SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
@@ -109,7 +117,7 @@ jobs:
       - name: Make release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: release-artifacts/bulgur-cloud.*
+          artifacts: release-artifacts/*.tar.xz,release-artifacts/*.zip,release-artifacts/*.sig
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           allowUpdates: true
