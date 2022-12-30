@@ -5,7 +5,7 @@
 Bulgur cloud is a cloud storage and sharing option, designed to be easy to self
 host. It depends on no databases or services, and uses little resources.
 
-![Login scren](https://bgenc.net/img/2022-03-29-00-17-38.png)
+![Login scren](https://bgenc.net/img/bulgur-cloud-2022-12-30.png)
 
 ## Demo
 
