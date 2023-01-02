@@ -16,7 +16,9 @@
     // Deps for the frontend need to be installed before any of the tools run
     "frontend-deps": "cd bulgur-cloud-frontend && yarn install",
     // Bunyan is used to view the logs of the backend
-    "bunyan": "npm install --location=global bunyan"
+    "bunyan": "npm install --location=global bunyan",
+    // Add a test user to Bulgur Cloud
+    "add-user": "cargo run -- user add --username test --password test"
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
