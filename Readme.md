@@ -1,6 +1,12 @@
 # Bulgur Cloud - simple and delicious cloud storage and sharing
 
-[![tests](https://img.shields.io/github/actions/workflow/status/SeriousBug/bulgur-cloud/coverage.yml?label=tests&branch=main)](https://github.com/SeriousBug/bulgur-cloud/actions/workflows/coverage.yml) [![Test coverage report](https://img.shields.io/codecov/c/github/SeriousBug/bulgur-cloud)](https://codecov.io/gh/SeriousBug/bulgur-cloud) [![lint checks](https://img.shields.io/github/actions/workflow/status/SeriousBug/bulgur-cloud/lint.yml?label=lint&branch=main)](https://github.com/SeriousBug/bulgur-cloud/actions/workflows/lint.yml) [![Audit status](https://img.shields.io/github/actions/workflow/status/SeriousBug/bulgur-cloud/audit.yml?label=audit&branch=main)](https://github.com/SeriousBug/bulgur-cloud/actions/workflows/audit.yml) [![Releases](https://img.shields.io/github/v/release/SeriousBug/bulgur-cloud?include_prereleases)](https://github.com/SeriousBug/bulgur-cloud/releases) [![Docker Image Size](https://img.shields.io/docker/image-size/seriousbug/bulgur-cloud)](https://hub.docker.com/r/seriousbug/bulgur-cloud) [![AGPL-3.0 license](https://img.shields.io/github/license/SeriousBug/bulgur-cloud)](https://github.com/SeriousBug/bulgur-cloud/blob/main/LICENSE.txt)
+[![tests](https://img.shields.io/github/actions/workflow/status/bulgur-cloud/bulgur-cloud/coverage.yml?label=tests&branch=main)](https://github.com/bulgur-cloud/bulgur-cloud/actions/workflows/coverage.yml)
+[![Test coverage report](https://img.shields.io/codecov/c/github/bulgur-cloud/bulgur-cloud)](https://codecov.io/gh/bulgur-cloud/bulgur-cloud)
+[![lint checks](https://img.shields.io/github/actions/workflow/status/bulgur-cloud/bulgur-cloud/lint.yml?label=lint&branch=main)](https://github.com/bulgur-cloud/bulgur-cloud/actions/workflows/lint.yml)
+[![Audit status](https://img.shields.io/github/actions/workflow/status/bulgur-cloud/bulgur-cloud/audit.yml?label=audit&branch=main)](https://github.com/bulgur-cloud/bulgur-cloud/actions/workflows/audit.yml)
+[![Releases](https://img.shields.io/github/v/release/bulgur-cloud/bulgur-cloud?include_prereleases)](https://github.com/bulgur-cloud/bulgur-cloud/releases)
+[![Docker Image Size](https://img.shields.io/docker/image-size/seriousbug/bulgur-cloud)](https://hub.docker.com/r/seriousbug/bulgur-cloud)
+[![AGPL-3.0 license](https://img.shields.io/github/license/bulgur-cloud/bulgur-cloud)](https://github.com/bulgur-cloud/bulgur-cloud/blob/main/LICENSE.txt)
 
 Bulgur cloud is a cloud storage and sharing option, designed to be easy to self
 host. It depends on no databases or services, and uses little resources.
