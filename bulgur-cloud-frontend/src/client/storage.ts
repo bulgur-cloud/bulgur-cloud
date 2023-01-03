@@ -109,7 +109,8 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export function useFolderListing(url: string) {
   const resp = useFetch<never, api.FolderResults>({
-    url,
+    // Normalize the path, it should be in the form of storage/foo/bar/
+    url: url.replace(/[/]+$/, "") + "/",
     method: "GET",
   });
 
