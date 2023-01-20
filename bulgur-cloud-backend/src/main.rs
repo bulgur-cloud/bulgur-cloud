@@ -5,19 +5,21 @@ use bulgur_cloud::{
 
 use clap::StructOpt;
 
-use opentelemetry_otlp::WithExportConfig;
 #[cfg(feature = "telemetry_opentelemetry")]
+use opentelemetry_otlp::WithExportConfig;
+
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
-use tracing_unwrap::ResultExt;
 
-use std::{env, str::FromStr};
+#[cfg(feature = "telemetry_opentelemetry")]
+use std::str::FromStr;
 
 use actix_web::HttpServer;
-
+use std::env;
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
+use tracing_unwrap::ResultExt;
 
 fn setup_logging() {
     // Wow, thanks Luca Palmieri! https://www.lpalmieri.com/posts/2020-09-27-zero-to-production-4-are-we-observable-yet/
@@ -31,6 +33,7 @@ fn setup_logging() {
         std::io::stdout,
     );
 
+    #[allow(unused_variables, unused_mut)]
     let mut telemetry_enabled = false;
 
     // The `with` method is provided by `SubscriberExt`, an extension
