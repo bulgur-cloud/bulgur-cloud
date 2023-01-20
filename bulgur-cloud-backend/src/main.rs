@@ -5,8 +5,8 @@ use bulgur_cloud::{
 
 use clap::StructOpt;
 
-#[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
+#[cfg(feature = "telemetry_opentelemetry")]
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
 use tracing_unwrap::ResultExt;
@@ -31,6 +31,8 @@ fn setup_logging() {
         std::io::stdout,
     );
 
+    let mut telemetry_enabled = false;
+
     // The `with` method is provided by `SubscriberExt`, an extension
     // trait for `Subscriber` exposed by `tracing_subscriber`
     let subscriber = Registry::default()
@@ -41,6 +43,7 @@ fn setup_logging() {
     #[cfg(feature = "telemetry_opentelemetry")]
     {
         if env::var("OTEL_SERVICE_NAME").is_ok() {
+            telemetry_enabled = true;
             const OTEL_HEADER_PREFIX: &str = "OTEL_META_";
 
             let mut meta = MetadataMap::new();
@@ -77,6 +80,12 @@ fn setup_logging() {
     #[cfg(not(feature = "telemetry_opentelemetry"))]
     {
         set_global_default(subscriber).expect("Failed to set up logging");
+        if env::var("OTEL_SERVICE_NAME").is_ok() {
+            tracing::warn!("This server was built with telemetry disabled, but telemetry environment variables have been found. Telemetry will not work.")
+        }
+    }
+    if telemetry_enabled {
+        tracing::debug!("Telemetry has been enabled");
     }
 }
 
