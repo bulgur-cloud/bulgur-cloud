@@ -8,3 +8,6 @@
 Docker
 .envrc
 refresh_tokens
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

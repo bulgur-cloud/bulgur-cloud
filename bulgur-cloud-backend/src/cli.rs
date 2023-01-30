@@ -1,15 +1,16 @@
 use std::{env, path::PathBuf};
 
+use cuttlestore::CuttlestoreBuilder;
 use rpassword::prompt_password;
 
 use clap::{Parser, Subcommand};
 use tokio::fs;
 
 use crate::{
-    auth::{create_user, create_user_folder, validate_username, UserType},
-    folder::{STORAGE, USERS_DIR},
-    kv::table::TABLE_USERS,
+    auth::{add_new_user, create_user_folder, validate_username},
+    folder::STORAGE,
     server::setup_app_deps,
+    state::UserType,
 };
 
 #[derive(Parser, Debug)]
@@ -23,8 +24,8 @@ pub struct UserAdd {
     /// Instead, run the command and let it prompt for the password.
     pub password: Option<String>,
 
-    #[clap(long, name = "type")]
-    pub user_type: Option<UserType>,
+    #[clap(long, name = "type", default_value = "user")]
+    pub user_type: UserType,
 }
 
 #[derive(Parser, Debug)]
@@ -64,6 +65,28 @@ pub struct Opt {
     /// By default this is set to `0.0.0.0:8000` which will bind to all interfaces on port 8000.
     pub bind: String,
 
+    #[clap(long, default_value = "sqlite://data.sqlite")]
+    /// The data store where important information such as user data is stored.
+    /// This must be in one of the following forms:
+    ///
+    /// - sqlite://relative/path/to/file.sqlite
+    /// - sqlite:///absolute/path/to/file.sqlite
+    /// - redis://127.0.0.1
+    /// - redis://127.0.0.1:5678
+    /// - redis://127.0.0.1?username=bulgur&password=cloud
+    ///
+    /// Sqlite is a great choice for small deployments. For large ones, Redis
+    /// offers better performance and allows scalability as it can run as a
+    /// cluster.
+    ///
+    /// For sqlite, you put in `sqlite://` followed by a relative or absolute
+    /// path.
+    ///
+    /// For Redis, you put in `redis://` followed by the IP address for the
+    /// redis server, optionally a port, and also optionally username and
+    /// password for ACL authentication if needed.
+    pub datastore: String,
+
     #[clap(long, default_value_t = num_cpus::get())]
     /// The number of workers to launch, must be larger than 0. By default this
     /// is set to the number of CPU threads. The actual number of threads
@@ -82,35 +105,42 @@ impl CLIContext for CLITerminalContext {
     }
 }
 
-pub async fn cli_command<Ctx: CLIContext>(command: Commands) -> anyhow::Result<()> {
-    match command {
-        Commands::User(user) => match user {
-            User::UserAdd(add) => {
-                validate_username(&add.username)?;
-                let password = match add.password {
-                    Some(password) => password,
-                    None => Ctx::prompt_password()?,
-                };
-                let state = setup_app_deps(env::current_dir().unwrap()).await.unwrap();
-                create_user(
-                    &add.username,
-                    &password,
-                    add.user_type.unwrap_or_default(),
-                    &mut state.0.kv.open(TABLE_USERS).await,
-                )
-                .await?;
-                create_user_folder(&add.username).await?;
-                Ok(())
-            }
-            User::UserRemove(remove) => {
-                let path = PathBuf::from(USERS_DIR).join(format!("{}.toml", &remove.username));
-                fs::remove_file(path).await?;
-                if remove.delete_files {
-                    let store = PathBuf::from(STORAGE).join(&remove.username);
-                    fs::remove_dir_all(store).await?;
+pub async fn cli_command<Ctx: CLIContext>(opt: Opt) -> anyhow::Result<()> {
+    match opt.command {
+        None => (),
+        Some(command) => match command {
+            Commands::User(user) => match user {
+                User::UserAdd(add) => {
+                    validate_username(&add.username)?;
+                    let password = match add.password {
+                        Some(password) => password,
+                        None => Ctx::prompt_password()?,
+                    };
+                    let connection = CuttlestoreBuilder::new(&opt.datastore)
+                        .finish_connection()
+                        .await?;
+                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), &connection)
+                        .await
+                        .unwrap();
+
+                    add_new_user(&add.username, &password, add.user_type, &state.users).await?;
+                    create_user_folder(&add.username).await?;
                 }
-                Ok(())
-            }
+                User::UserRemove(remove) => {
+                    let connection = CuttlestoreBuilder::new(&opt.datastore)
+                        .finish_connection()
+                        .await?;
+                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), &connection)
+                        .await
+                        .unwrap();
+                    state.users.delete(&remove.username).await?;
+                    if remove.delete_files {
+                        let store = PathBuf::from(STORAGE).join(&remove.username);
+                        fs::remove_dir_all(store).await?;
+                    }
+                }
+            },
         },
-    }
+    };
+    Ok(())
 }

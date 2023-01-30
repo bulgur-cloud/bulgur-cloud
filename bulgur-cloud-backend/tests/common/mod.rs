@@ -6,14 +6,15 @@ use std::{
 use actix_governor::{GovernorConfig, GovernorConfigBuilder, KeyExtractor};
 use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
-    auth::{create_user, create_user_folder},
-    kv::table::TABLE_USERS,
+    auth::{add_new_user, create_user_folder, make_token},
     server::setup_app_deps,
-    state::{AppState, Token, User},
+    state::{AppState, Token},
 };
+use cuttlestore::CuttlestoreBuilder;
 use tokio::fs;
 
 pub struct TestEnv<T: KeyExtractor> {
+    datastore: String,
     folder: PathBuf,
     state: Data<AppState>,
     login_governor: GovernorConfig<T>,
@@ -40,7 +41,15 @@ impl TestEnv<TestKeyExtractor> {
         let folder = temp_dir().join(format!("bulgur-cloud-{}", nanoid::nanoid!()));
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
-        let (state, _) = setup_app_deps(folder.clone())
+        let datastore = format!(
+            "sqlite://{}/data.sqlite",
+            folder.to_string_lossy().to_string()
+        );
+        let connection = CuttlestoreBuilder::new(&datastore)
+            .finish_connection()
+            .await
+            .unwrap();
+        let (state, _) = setup_app_deps(folder.clone(), &connection)
             .await
             .expect("Failed to set up app dependencies");
         let login_governor = GovernorConfigBuilder::default()
@@ -52,6 +61,7 @@ impl TestEnv<TestKeyExtractor> {
             folder,
             state,
             login_governor,
+            datastore,
         }
     }
 
@@ -66,12 +76,17 @@ impl TestEnv<TestKeyExtractor> {
     }
 
     #[allow(dead_code)]
+    pub fn datastore(&self) -> String {
+        self.datastore.clone()
+    }
+
+    #[allow(dead_code)]
     pub async fn add_user(&self, user: &str, password: &str) {
-        create_user(
+        add_new_user(
             user,
             password,
-            bulgur_cloud::auth::UserType::User,
-            &mut self.state.kv.open(TABLE_USERS).await,
+            bulgur_cloud::state::UserType::User,
+            &self.state.users,
         )
         .await
         .expect("Failed to create user");
@@ -83,19 +98,17 @@ impl TestEnv<TestKeyExtractor> {
     #[allow(dead_code)]
     pub async fn setup_user_token(&self, username: &str, password: &str) -> Token {
         self.add_user(username, password).await;
-
-        let user = User(username.to_string());
-        let mut cache = self.state.token_cache.0.write().await;
-        let token = Token::new();
-        cache.insert(token.clone(), user);
-        token
+        make_token(&self.state, username).await.unwrap()
     }
 
     #[allow(dead_code)]
     pub async fn setup_path_token(&self, path: &str) -> Token {
-        let mut cache = self.state.path_token_cache.0.write().await;
         let token = Token::new();
-        cache.insert(path.to_string(), token.clone());
+        self.state
+            .path_tokens
+            .put(path.to_string(), &token)
+            .await
+            .unwrap();
         token
     }
 }

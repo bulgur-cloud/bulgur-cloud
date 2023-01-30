@@ -1,15 +1,14 @@
 use std::{env, path::PathBuf};
 
 use crate::{
-    auth::{create_nobody, login, refresh, TOKEN_VALID_SECS},
+    auth::{create_nobody, login},
     auth_middleware, folder,
-    kv::{kv_filesystem::KVFilesystem, table::TABLE_USERS},
     meta::{get_banner_login, get_banner_page, get_stats, head_stats, is_bulgur_cloud},
     pages::{
         not_found, page_create_folder, page_delete, page_folder_list, page_folder_upload,
         page_login_get, page_login_post, page_logout,
     },
-    state::{AppState, PathTokenCache, TokenCache},
+    state::AppState,
     static_files::{get_basic_assets, ui_pages},
     storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
 };
@@ -31,6 +30,7 @@ use actix_web::{
 };
 
 use actix_web_query_method_middleware::QueryMethod;
+use cuttlestore::CuttleConnection;
 use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
@@ -81,8 +81,7 @@ pub fn setup_app(
     // Login scope just handles logins. It is heavily throttled to resist brute force attacks.
     let login_scope = web::scope("/auth")
         .wrap(Governor::new(&login_governor))
-        .service(login)
-        .service(refresh);
+        .service(login);
     // API scope handles all api functionality (anything except storage)
     let api_scope = web::scope("/api")
         .wrap(api_guard.clone())
@@ -147,21 +146,17 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
 /// For release, we strictly throttle login attempts to resist brute force attacks
 const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 
-/// Store up to this many path tokens. Path tokens are needed to authorize
-/// read-only access to specific paths.
-const MAX_PATH_TOKEN_CACHE: usize = 100000;
-
 pub async fn setup_app_deps(
     base_folder: PathBuf,
+    connection: &CuttleConnection,
 ) -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)> {
     // Make sure the needed folders are available
     fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
     let state = web::Data::new(AppState {
         started_at: chrono::Local::now(),
-        // Auth tokens are cached for 24 hours
-        token_cache: TokenCache::new(TOKEN_VALID_SECS),
-        path_token_cache: PathTokenCache::new(MAX_PATH_TOKEN_CACHE),
-        kv: Box::new(KVFilesystem::new(base_folder).await),
+        access_tokens: connection.make("access-token").await?,
+        path_tokens: connection.make("path-token").await?,
+        users: connection.make("user").await?,
     });
 
     let login_governor = GovernorConfigBuilder::default()
@@ -170,7 +165,7 @@ pub async fn setup_app_deps(
         .finish()
         .expect("Unable to setup login governor");
     // Make sure the nobody user is created if it doesn't exist
-    create_nobody(&mut state.kv.open(TABLE_USERS).await).await?;
+    create_nobody(&state.users).await?;
 
     Ok((state, login_governor))
 }

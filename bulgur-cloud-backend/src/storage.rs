@@ -429,9 +429,11 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
     let token = Token::new();
     let full_path = format!("/{}", path.to_string_lossy());
     tracing::debug!("Creating a token for {}", full_path);
-    let mut path_token_cache = state.path_token_cache.0.write().await;
-    path_token_cache.insert(full_path, token.clone());
-    drop(path_token_cache);
+    state
+        .path_tokens
+        .put(full_path, &token)
+        .await
+        .unwrap_or_log();
     HttpResponse::Ok().json(PathTokenResponse { token })
 }
 

@@ -8,6 +8,7 @@ use actix_web::{http, web, Error, HttpMessage, HttpRequest, HttpResponse};
 use futures::future::LocalBoxFuture;
 use qstring::QString;
 use serde::Serialize;
+use tracing_unwrap::ResultExt;
 
 use crate::state::{AppState, Authorized, Token};
 
@@ -111,11 +112,14 @@ async fn verify_auth(
 ) -> AuthMiddlewareResult<Authorized> {
     tracing::trace!("Starting to verify user");
 
-    let user = if let Some(user_token) = user_token {
+    let username = if let Some(user_token) = user_token {
         tracing::debug!("Found user token attached to request");
-        let user_cache = state.token_cache.0.read().await;
-        let user = user_cache.peek(&user_token);
-        user.cloned()
+        let username = state
+            .access_tokens
+            .get(user_token.reveal())
+            .await
+            .unwrap_or_log();
+        username
     } else {
         None
     };
@@ -123,9 +127,8 @@ async fn verify_auth(
     let path_authorized = (if let Some(path_token) = path_token {
         if let Ok(path) = urlencoding::decode(path) {
             tracing::debug!("Found path token attached to request {:?}", path);
-            let path_cache = state.path_token_cache.0.read().await;
-            let known_token = path_cache.peek(path.as_ref());
-            tracing::debug!("Token exists for path {:?}", &known_token);
+            let known_token = state.path_tokens.get(&path).await.unwrap_or_log();
+            tracing::debug!("Token exists for path {:?}", &path);
             known_token.map(|known_token| known_token.eq(&path_token))
         } else {
             None
@@ -135,13 +138,13 @@ async fn verify_auth(
     })
     .unwrap_or(false);
 
-    if let Some(user) = user {
+    if let Some(username) = username {
         if path_authorized {
             tracing::debug!("Authorized path and user");
-            Ok(Authorized::Both(user))
+            Ok(Authorized::Both(username))
         } else {
             tracing::debug!("Authorized user");
-            Ok(Authorized::User(user))
+            Ok(Authorized::User(username))
         }
     } else if path_authorized {
         tracing::debug!("Authorized path");
