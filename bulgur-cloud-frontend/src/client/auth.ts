@@ -19,9 +19,7 @@ import { Platform } from "react-native";
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
 function isLoginResponse(data: any): data is api.LoginResponse {
-  return (
-    isString(data?.access_token) && Number.isInteger(data?.valid_for_seconds)
-  );
+  return isString(data?.access_token);
 }
 
 export function useTokenCheck() {
