@@ -43,7 +43,7 @@ impl TestEnv<TestKeyExtractor> {
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
         let datastore = format!(
             "sqlite://{}/data.sqlite",
-            folder.to_string_lossy().to_string()
+            folder.to_string_lossy()
         );
         let connection = CuttlestoreBuilder::new(&datastore)
             .finish_connection()

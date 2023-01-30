@@ -48,7 +48,7 @@ fn setup_cors() -> Cors {
         tracing::info!("Allowing any origin");
         cors.allow_any_origin()
     } else {
-        origin.split(",").fold(cors, |cors, origin| {
+        origin.split(',').fold(cors, |cors, origin| {
             tracing::info!("Allowing origin {origin}");
             cors.allowed_origin(origin)
         })
@@ -147,7 +147,7 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
 const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 
 pub async fn setup_app_deps(
-    base_folder: PathBuf,
+    _base_folder: PathBuf,
     connection: &CuttleConnection,
 ) -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)> {
     // Make sure the needed folders are available

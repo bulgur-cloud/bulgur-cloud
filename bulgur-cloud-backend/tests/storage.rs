@@ -322,7 +322,7 @@ async fn test_make_path_token() {
         .to_request();
     let resp: PathTokenResponse = test::call_and_read_body_json(&app, req).await;
     let path_token = resp.token.reveal();
-    assert!(path_token.len() > 0, "Got the path token");
+    assert!(!path_token.is_empty(), "Got the path token");
 
     let uri = format!("/storage/testuser/test.txt?token={}", path_token);
     let req_path_token = test::TestRequest::get().uri(&uri).to_request();

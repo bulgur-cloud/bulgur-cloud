@@ -68,21 +68,6 @@ async fn create_user(
     })
 }
 
-const NOBODY_USER_COMMENT: &str = "#
-# DO NOT DELETE THIS FILE!
-#
-# This user is a placeholder that is used to resist user probing.
-# If anyone tries to log in as a user that doesn't exist, it will
-# be mapped to this user instead. This user has a randomly generated
-# password that is impossible to guess, so all login attempts will fail.
-#
-# Without this user, an attacker could probe the users on this server
-# by trying to log in. If the login attempt takes very little time,
-# it means the user doesn't exist. if the login attempt takes longer,
-# it means they hit a real user. Thanks to the nobody user, the attempts
-# for users that don't exist take just as long, making probing harder.
-#
-";
 const USER_NOBODY: &str = "nobody";
 
 #[derive(thiserror::Error, Debug)]
@@ -135,7 +120,7 @@ pub async fn verify_pass(
     let user = match kv.get(username).await? {
         Some(data) => data,
         None => {
-            let key = format!("{USER_NOBODY}.toml");
+            let _key = format!("{USER_NOBODY}.toml");
             kv.get(USER_NOBODY).await?.unwrap_or_log()
         }
     };
@@ -209,7 +194,7 @@ impl actix_web::error::ResponseError for LoginFailed {
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponseBuilder::new(self.status_code()).json(&self)
+        HttpResponseBuilder::new(self.status_code()).json(self)
     }
 }
 
@@ -219,11 +204,11 @@ pub async fn make_token(state: &web::Data<AppState>, username: &str) -> anyhow::
     // generate and save token
     let access_token = Token::new();
     // Impossibly unlikely, but token collisions would be extremely bad so check it anyway
-    assert!(!state
+    assert!(state
         .access_tokens
         .get(access_token.reveal())
         .await?
-        .is_some());
+        .is_none());
     state
         .access_tokens
         .put(

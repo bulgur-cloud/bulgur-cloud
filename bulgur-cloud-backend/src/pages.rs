@@ -182,7 +182,7 @@ pub async fn page_folder_list(
 ) -> Result<Either<NamedFile, FolderListPage>, StorageError> {
     let (store, path) = params.clone();
     let mut store_path = PathBuf::from(&store);
-    if !(&path).is_empty() {
+    if !path.is_empty() {
         store_path.push(&path);
     }
     tracing::debug!("{:?}, {:?}, {:?}", &store, &path, &store_path);
@@ -208,7 +208,7 @@ pub async fn page_folder_list(
                 .map(|parent| parent.to_string_lossy().to_string())
                 .and_then(|parent| {
                     // If parent is an empty string, then there is no parent to go up to
-                    if parent.len() == 0 {
+                    if parent.is_empty() {
                         None
                     } else {
                         Some(parent)

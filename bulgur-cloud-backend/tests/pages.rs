@@ -267,7 +267,7 @@ async fn test_basic_login() {
         "basic login responded with the auth cookie"
     );
     assert!(
-        auth_cookie.unwrap().value().len() > 0,
+        !auth_cookie.unwrap().value().is_empty(),
         "auth cookie actually exists"
     );
 }
@@ -293,7 +293,7 @@ async fn test_basic_logout() {
         "basic logout responded with the logout cookie"
     );
     assert!(
-        logout_cookie.unwrap().value().len() == 0,
+        logout_cookie.unwrap().value().is_empty(),
         "logout cookie erases the contents"
     );
 }
