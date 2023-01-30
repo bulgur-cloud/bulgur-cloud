@@ -7,8 +7,7 @@ import axios, {
 import useSWR, { SWRConfiguration } from "swr";
 import { BError } from "../error";
 import { useAppSelector } from "../store";
-import { HttpStatusCode } from "./base";
-import { useEnsureAuthInitialized, useRefresh } from "./auth";
+import { useEnsureAuthInitialized } from "./auth";
 import { pick, shallowEquals } from "../utils";
 import debounce from "debounce";
 
@@ -43,10 +42,7 @@ export type OnProgressCallback = (opts: {
  * The request function will automatically handle reauthentication if needed.
  */
 export function useRequest<D, R>() {
-  const { site, access_token, username, refresh_token } = useAppSelector(
-    (selector) => selector.auth,
-  );
-  const { doRefresh } = useRefresh();
+  const { site, access_token } = useAppSelector((selector) => selector.auth);
   useEnsureAuthInitialized();
 
   async function doRequest(
@@ -102,15 +98,7 @@ export function useRequest<D, R>() {
       }, 200);
     }
 
-    const response = await axiosThrowless<D, R>(config);
-    if (response.status === HttpStatusCode.UNAUTHORIZED) {
-      if (!site || !username || !refresh_token) return response;
-      // Once we log in again, this request should automatically get retried
-      // since the token will change, and the hooks depend on the token (plus a
-      // token change invalidates the cached requests)
-      await doRefresh({ site, username, refresh_token });
-    }
-    return response;
+    return await axiosThrowless<D, R>(config);
   }
 
   return { doRequest };
@@ -121,9 +109,9 @@ export function useFetch<D, R>(
   params: RequestParams<D>,
   swrConfig?: SWRConfiguration,
 ) {
-  const { access_token, site } = useAppSelector((selector) =>
-    pick(selector.auth, "access_token", "site"),
-  shallowEquals,
+  const { access_token, site } = useAppSelector(
+    (selector) => pick(selector.auth, "access_token", "site"),
+    shallowEquals,
   );
 
   const { doRequest } = useRequest<D, R>();
