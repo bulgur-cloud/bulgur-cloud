@@ -41,10 +41,7 @@ impl TestEnv<TestKeyExtractor> {
         let folder = temp_dir().join(format!("bulgur-cloud-{}", nanoid::nanoid!()));
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
-        let datastore = format!(
-            "sqlite://{}/data.sqlite",
-            folder.to_string_lossy()
-        );
+        let datastore = format!("sqlite://{}/data.sqlite", folder.to_string_lossy());
         let connection = CuttlestoreBuilder::new(&datastore)
             .finish_connection()
             .await
