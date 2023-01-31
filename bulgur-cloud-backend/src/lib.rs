@@ -6,7 +6,6 @@ pub mod auth_middleware;
 pub mod cli;
 pub mod error;
 pub mod folder;
-pub mod kv;
 pub mod meta;
 pub mod pages;
 pub mod server;

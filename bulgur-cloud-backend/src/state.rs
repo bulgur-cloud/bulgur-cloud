@@ -1,14 +1,15 @@
-use lru_time_cache::LruCache;
+use std::str::FromStr;
+
+use cuttlestore::Cuttlestore;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
 
 use simple_secrecy;
 
 #[cfg(feature = "generate_types")]
 use typescript_type_def::TypeDef;
 
-use crate::kv::kv::KVDatabase;
+use crate::error::CLIError;
 
 #[derive(
     Serialize,
@@ -34,7 +35,11 @@ impl Token {
     }
 
     /// Drop the token, and reveal the secret inside.
-    pub fn reveal(self) -> String {
+    pub fn reveal(&self) -> &str {
+        self.0.as_str()
+    }
+
+    pub fn unwrap(self) -> String {
         self.0
     }
 }
@@ -52,42 +57,56 @@ pub struct PathTokenResponse {
 }
 
 #[derive(std::fmt::Debug, Serialize, Deserialize, derive_more::Display, Clone)]
-pub struct User(pub String);
-
-#[derive(simple_secrecy::Debug, simple_secrecy::Display)]
-pub struct TokenCache(pub RwLock<LruCache<Token, User>>);
-
-impl TokenCache {
-    pub fn new(cache_secs: u64) -> TokenCache {
-        TokenCache(RwLock::new(LruCache::with_expiry_duration(
-            std::time::Duration::from_secs(cache_secs),
-        )))
-    }
-}
-
-#[derive(simple_secrecy::Debug, simple_secrecy::Display)]
-pub struct PathTokenCache(pub RwLock<LruCache<String, Token>>);
-
-impl PathTokenCache {
-    pub fn new(cache_capacity: usize) -> PathTokenCache {
-        PathTokenCache(RwLock::new(LruCache::with_capacity(cache_capacity)))
-    }
-}
+pub struct Username(pub String);
 
 #[derive(Debug)]
 pub struct AppState {
     pub started_at: chrono::DateTime<chrono::Local>,
-    /// Maps tokens to usernames
-    pub token_cache: TokenCache,
-    /// Maps paths to tokens
-    pub path_token_cache: PathTokenCache,
-    /// The KV storage for metadata
-    pub kv: Box<dyn KVDatabase + Send + Sync>,
+    /// User data
+    pub users: Cuttlestore<UserData>,
+    /// Maps access tokens to users
+    pub access_tokens: Cuttlestore<Username>,
+    /// Maps file paths to access tokens
+    pub path_tokens: Cuttlestore<Token>,
 }
 
 #[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]
 pub enum Authorized {
-    User(User),
+    User(Username),
     Path,
-    Both(User),
+    Both(Username),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+/// The user data stored in files
+pub struct UserData {
+    pub username: String,
+    pub password_hash: String,
+    pub user_type: UserType,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+/// Type of user. Admins can add and remove users.
+pub enum UserType {
+    User,
+    Admin,
+}
+
+impl Default for UserType {
+    fn default() -> Self {
+        UserType::User
+    }
+}
+
+impl FromStr for UserType {
+    type Err = CLIError;
+
+    fn from_str(from: &str) -> Result<Self, Self::Err> {
+        let from_lower = from.to_lowercase();
+        match from_lower.as_str() {
+            "user" => Ok(UserType::User),
+            "admin" => Ok(UserType::Admin),
+            s => Err(CLIError::BadUserType(s.to_string())),
+        }
+    }
 }

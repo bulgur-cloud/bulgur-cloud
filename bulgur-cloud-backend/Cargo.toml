@@ -48,7 +48,6 @@ actix-web-rust-embed-responder = { version = "2.1.1", default-features = false, 
 ] }
 rust-embed-for-web = "11.1"
 # Auth
-lru_time_cache = "0.11"
 nanoid = "0.4"
 derive_more = "0.99"
 simple-secrecy = { path = "../simple-secrecy" }
@@ -74,6 +73,11 @@ thiserror = "1.0"
 anyhow = "1.0"
 # Middleware for simple pages that allows 
 actix-web-query-method-middleware = "1.0"
+cuttlestore = { version = "0.2", default-features = false, features = [
+  "backend-redis",
+  "backend-sqlite",
+  "logging-tracing",
+] } # Data storage
 
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"

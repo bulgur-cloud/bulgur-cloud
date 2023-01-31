@@ -3,8 +3,9 @@ mod common;
 use std::path::PathBuf;
 
 use bulgur_cloud::{
-    cli::{cli_command, CLIContext, Commands, User, UserAdd, UserRemove},
-    folder::{STORAGE, USERS_DIR},
+    cli::{cli_command, CLIContext, Commands, Opt, User, UserAdd, UserRemove},
+    folder::STORAGE,
+    state::UserType,
 };
 use common::TestEnv;
 use tokio::fs;
@@ -21,22 +22,20 @@ async fn test_cli_user_add() {
     let ctx = TestEnv::setup().await;
 
     let command = Commands::User(User::UserAdd(UserAdd {
-        user_type: None,
+        user_type: UserType::User,
         password: None,
         username: "testuser".to_string(),
     }));
-    cli_command::<CLITestContext>(command)
+    let opt = Opt {
+        command: Some(command),
+        bind: Default::default(),
+        datastore: ctx.datastore(),
+        workers: 1,
+    };
+    cli_command::<CLITestContext>(opt)
         .await
         .expect("Failed to run command");
 
-    let user_file = PathBuf::from(USERS_DIR).join("testuser.toml");
-    assert!(
-        fs::metadata(&user_file)
-            .await
-            .expect("User config file is missing")
-            .is_file(),
-        "User config file exists"
-    );
     let user_store = PathBuf::from(STORAGE).join("testuser");
     assert!(
         fs::metadata(&user_store)
@@ -57,15 +56,16 @@ async fn test_cli_user_remove() {
         username: "testuser".to_string(),
         delete_files: false,
     }));
-    cli_command::<CLITestContext>(command)
+    let opt = Opt {
+        command: Some(command),
+        bind: Default::default(),
+        datastore: ctx.datastore(),
+        workers: 1,
+    };
+    cli_command::<CLITestContext>(opt)
         .await
         .expect("Failed to run command");
 
-    let user_file = PathBuf::from(USERS_DIR).join("testuser.toml");
-    assert!(
-        fs::metadata(&user_file).await.is_err(),
-        "User config has been deleted"
-    );
     let user_store = PathBuf::from(STORAGE).join("testuser");
     assert!(
         fs::metadata(&user_store)
@@ -88,15 +88,16 @@ async fn test_cli_user_remove_delete_files() {
         username: "testuser".to_string(),
         delete_files: true,
     }));
-    cli_command::<CLITestContext>(command)
+    let opt = Opt {
+        command: Some(command),
+        bind: Default::default(),
+        datastore: ctx.datastore(),
+        workers: 1,
+    };
+    cli_command::<CLITestContext>(opt)
         .await
         .expect("Failed to run command");
 
-    let user_file = PathBuf::from(USERS_DIR).join("testuser.toml");
-    assert!(
-        fs::metadata(&user_file).await.is_err(),
-        "User config has been deleted"
-    );
     let user_store = PathBuf::from(STORAGE).join("testuser");
     assert!(
         fs::metadata(&user_store).await.is_err(),

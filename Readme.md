@@ -25,12 +25,13 @@ Please see our docs here: [bulgur-cloud.github.io](https://bulgur-cloud.github.i
 
 ## Development
 
-If you'd like to help with development, use Visual Studio Code to open the
-project folder. You must have a working rust and nodejs setup. There are tasks
-set up to build and run the backend and frontend. The backend requires a bit of
-setup as you need to create a user for testing. There is no documentation for
-this right now, but let me know if you are interested and I'll help with the
-setup.
+[![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/bulgur-cloud/bulgur-cloud)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=458418034)
+
+Please see the [developer documentation](https://bulgur-cloud.github.io/docs/developers/dev-docs/dev-env) to get started.
+You can use Dev Containers to start up immediately if you have VSCode and Docker installed.
+Otherwise you can set up a local development environment.
 
 ### Tests
 

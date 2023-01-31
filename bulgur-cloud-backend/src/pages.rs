@@ -15,10 +15,9 @@ use tokio::fs;
 use tracing_unwrap::ResultExt;
 
 use crate::{
-    auth::{verify_pass, Password},
+    auth::{make_token, verify_pass, Password},
     auth_middleware::AUTH_COOKIE_NAME,
-    kv::table::TABLE_USERS,
-    state::{self, AppState, Authorized, Token},
+    state::{AppState, Authorized},
     storage::{
         common_delete, get_authorized_path, get_storage_internal, write_files, FolderEntry,
         StorageError,
@@ -57,20 +56,11 @@ pub async fn page_login_post(
     form: web::Form<LoginFormData>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    if verify_pass(
-        &form.username,
-        &form.password,
-        &mut state.kv.open(TABLE_USERS).await,
-    )
-    .await
-    .is_ok()
+    if verify_pass(&form.username, &form.password, &state.users)
+        .await
+        .is_ok()
     {
-        let mut cache = state.token_cache.0.write().await;
-        // generate and cache token
-        let token = Token::new();
-        // Impossibly unlikely, but token collisions would be extremely bad so check it anyway
-        assert!(!cache.contains_key(&token));
-        cache.insert(token.clone(), state::User(form.username.clone()));
+        let token = make_token(&state, &form.username).await.unwrap_or_log();
 
         HttpResponse::SeeOther()
             .cookie(Cookie::new(
@@ -192,7 +182,7 @@ pub async fn page_folder_list(
 ) -> Result<Either<NamedFile, FolderListPage>, StorageError> {
     let (store, path) = params.clone();
     let mut store_path = PathBuf::from(&store);
-    if !(&path).is_empty() {
+    if !path.is_empty() {
         store_path.push(&path);
     }
     tracing::debug!("{:?}, {:?}, {:?}", &store, &path, &store_path);
@@ -218,7 +208,7 @@ pub async fn page_folder_list(
                 .map(|parent| parent.to_string_lossy().to_string())
                 .and_then(|parent| {
                     // If parent is an empty string, then there is no parent to go up to
-                    if parent.len() == 0 {
+                    if parent.is_empty() {
                         None
                     } else {
                         Some(parent)

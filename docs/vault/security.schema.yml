@@ -1,8 +1,0 @@
-version: 1
-imports: []
-schemas:
-  - id: security
-    title: security
-    parent: root
-    namespace: true
-    template: template.security

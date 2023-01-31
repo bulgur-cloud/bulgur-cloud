@@ -68,7 +68,7 @@ impl actix_web::error::ResponseError for StorageError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        HttpResponseBuilder::new(self.status_code()).json(&self)
+        HttpResponseBuilder::new(self.status_code()).json(self)
     }
 }
 
@@ -79,6 +79,7 @@ pub fn get_authorized_path(
     store: &str,
     path: Option<&str>,
 ) -> Result<PathBuf, StorageError> {
+    #[allow(clippy::single_match)]
     match authorized {
         Some(authorized) => {
             let is_authorized = match authorized.deref() {
@@ -173,7 +174,7 @@ pub async fn get_storage_internal(
             if !b.is_file && a.is_file {
                 return Ordering::Greater;
             }
-            return a.name.cmp(&b.name);
+            a.name.cmp(&b.name)
         });
         Ok(Either::Right(web::Json(FolderResults {
             entries: folder_contents,
@@ -221,7 +222,7 @@ pub async fn common_delete(
     store: &str,
     path: Option<&str>,
 ) -> Result<PathBuf, StorageError> {
-    let store_path = get_authorized_path(&authorized, store, path)?;
+    let store_path = get_authorized_path(authorized, store, path)?;
     match path {
         Some(path) => {
             if path.is_empty() {
@@ -429,9 +430,11 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
     let token = Token::new();
     let full_path = format!("/{}", path.to_string_lossy());
     tracing::debug!("Creating a token for {}", full_path);
-    let mut path_token_cache = state.path_token_cache.0.write().await;
-    path_token_cache.insert(full_path, token.clone());
-    drop(path_token_cache);
+    state
+        .path_tokens
+        .put(full_path, &token)
+        .await
+        .unwrap_or_log();
     HttpResponse::Ok().json(PathTokenResponse { token })
 }
 

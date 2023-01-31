@@ -9,7 +9,6 @@ type LoadState = "done" | "loading" | "uninitialized";
 
 export type AuthState = {
   username?: string;
-  refresh_token?: string;
   access_token?: string;
   state: LoadState;
   site?: string;
@@ -20,7 +19,6 @@ const initialAuthState: AuthState = { state: "uninitialized" };
 export type LoginPayload = {
   username: string;
   site: string;
-  refresh_token: string;
   access_token: string;
 };
 
@@ -34,7 +32,6 @@ export const authSlice = createSlice({
     login: (state, action: { payload: LoginPayload }) => {
       state.state = "done";
       state.username = action.payload.username;
-      state.refresh_token = action.payload.refresh_token;
       state.access_token = action.payload.access_token;
       state.site = action.payload.site;
     },
@@ -45,7 +42,6 @@ export const authSlice = createSlice({
       state.state = "done";
       state.username = undefined;
       state.access_token = undefined;
-      state.refresh_token = undefined;
     },
   },
 });

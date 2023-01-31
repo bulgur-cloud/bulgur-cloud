@@ -5,6 +5,7 @@ use bulgur_cloud::{
 
 use clap::StructOpt;
 
+use cuttlestore::CuttlestoreBuilder;
 #[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
 
@@ -95,16 +96,18 @@ fn setup_logging() {
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let opts = Opt::parse();
-    match opts.command {
-        Some(command) => {
+    match &opts.command {
+        Some(_) => {
             // Running a CLI command
-            cli_command::<CLITerminalContext>(command).await?;
-            Ok(())
+            cli_command::<CLITerminalContext>(opts).await?;
         }
         None => {
             // Running the server
+            let connections = CuttlestoreBuilder::new(opts.datastore)
+                .finish_connection()
+                .await?;
             let (state, login_governor) =
-                setup_app_deps(env::current_dir().unwrap_or_log()).await?;
+                setup_app_deps(env::current_dir().unwrap_or_log(), &connections).await?;
             setup_logging();
 
             HttpServer::new(move || setup_app(state.clone(), login_governor.clone()))
@@ -112,7 +115,7 @@ async fn main() -> anyhow::Result<()> {
                 .workers(opts.workers)
                 .run()
                 .await?;
-            Ok(())
         }
-    }
+    };
+    Ok(())
 }
