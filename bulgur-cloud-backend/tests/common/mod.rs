@@ -3,7 +3,10 @@ use std::{
     path::PathBuf,
 };
 
-use actix_governor::{GovernorConfig, GovernorConfigBuilder, KeyExtractor};
+use actix_governor::{
+    governor::middleware::StateInformationMiddleware, GovernorConfig, GovernorConfigBuilder,
+    KeyExtractor,
+};
 use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
     auth::{add_new_user, create_user_folder, make_token},
@@ -17,7 +20,7 @@ pub struct TestEnv<T: KeyExtractor> {
     datastore: String,
     folder: PathBuf,
     state: Data<AppState>,
-    login_governor: GovernorConfig<T>,
+    login_governor: GovernorConfig<T, StateInformationMiddleware>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -25,8 +28,8 @@ pub struct TestKeyExtractor {}
 
 impl KeyExtractor for TestKeyExtractor {
     type Key = ();
-
-    type KeyExtractionError = &'static str;
+    // dummy, we never extract any actual keys anyway
+    type KeyExtractionError = actix_web::http::Error;
 
     fn extract(
         &self,
@@ -52,6 +55,7 @@ impl TestEnv<TestKeyExtractor> {
         let login_governor = GovernorConfigBuilder::default()
             .key_extractor(TestKeyExtractor {})
             .burst_size(u32::MAX)
+            .use_headers()
             .finish()
             .expect("Failed to create login governor for tests");
         TestEnv {
@@ -68,7 +72,7 @@ impl TestEnv<TestKeyExtractor> {
     }
 
     #[allow(dead_code)]
-    pub fn login_governor(&self) -> GovernorConfig<TestKeyExtractor> {
+    pub fn login_governor(&self) -> GovernorConfig<TestKeyExtractor, StateInformationMiddleware> {
         self.login_governor.clone()
     }
 

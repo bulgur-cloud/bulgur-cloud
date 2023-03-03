@@ -75,9 +75,12 @@ anyhow = "1.0"
 actix-web-query-method-middleware = "1.0"
 cuttlestore = { version = "0.2.1", default-features = false, features = [
   "backend-redis",
-  "backend-sqlite-rustls",
+  "backend-sqlite",
   "logging-tracing",
 ] } # Data storage
+# We don't use openssl directly, we need it through cuttlestore.
+# This enables vendored openssl so we can cross compile.
+openssl = { version = "0.10", features = ["vendored"] }
 
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"
