@@ -86,7 +86,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 typescript-type-def = "0.5"
 
 # Tracing (optional, enabled with `telemetry_opentelemetry` option)
-opentelemetry = { version = "0.17", features = [
+opentelemetry = { version = "0.18", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
