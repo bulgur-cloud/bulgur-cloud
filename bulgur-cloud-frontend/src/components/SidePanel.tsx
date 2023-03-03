@@ -26,6 +26,10 @@ function SlideWeb(props: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const offsetWhenOpen = props.side === "left" ? 540 : -540;
 
+  useEffect(() => {
+    setIsCollapsed(false);
+  }, [props.isOpen]);
+
   let offset = 0;
   if (props.isOpen) {
     offset = offsetWhenOpen;
