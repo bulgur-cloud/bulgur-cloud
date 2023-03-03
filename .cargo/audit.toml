@@ -5,5 +5,10 @@ ignore = [
   # APIs, so this advisory can be safely ignored.
   #
   # https://github.com/chronotope/chrono/issues/602#issuecomment-1075915577
-  "RUSTSEC-2020-0071"
+  "RUSTSEC-2020-0071",
+  # An issue with sqlite that can only be triggered by calling the `printf`
+  # function of Sqlite. We do not use the `printf` function, directly or
+  # indirectly, and we don't pass user input directly to Sqlite. Through
+  # Cuttlestore, sqlite only receives serialized data blobs.
+  "RUSTSEC-2022-0090",
 ]
