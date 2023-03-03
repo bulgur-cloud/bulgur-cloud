@@ -1,5 +1,7 @@
-import { useRef, useEffect } from "react";
+import {  Icon, IconButton } from "native-base";
+import { useRef, useEffect, useState } from "react";
 import { Animated, Platform } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export type SidePanelProps = {
   children?: JSX.Element | JSX.Element[] | string;
@@ -21,7 +23,16 @@ export function SidePanel(props: SidePanelProps) {
 }
 
 function SlideWeb(props: SidePanelProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const offsetWhenOpen = props.side === "left" ? 540 : -540;
+
+  let offset = 0;
+  if (props.isOpen) {
+    offset = offsetWhenOpen;
+    if (isCollapsed) {
+      offset = (props.side === "left" ? 115 : -115);
+    }
+  }
 
   return (
     <div
@@ -29,12 +40,34 @@ function SlideWeb(props: SidePanelProps) {
         position: "absolute",
         top: 120,
         [props.side]: -540,
-        transform: `translateX(${props.isOpen ? offsetWhenOpen : 0}px)`,
+        transform: `translateX(${offset}px)`,
         transitionDuration: "0.5s",
         transitionProperty: "transform",
         transitionTimingFunction: "ease-out",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          [props.side]: 420,
+          padding: "1rem",
+          zIndex: 99,
+          transform: `rotate(${isCollapsed ? 0.5 : 0}turn)`,
+          transitionDuration: "0.5s",
+          transitionProperty: "transform",
+          transitionTimingFunction: "ease-out",
+        }}
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
+        <Icon
+          as={MaterialIcons}
+          name="chevron-left"
+
+          color="black"
+          size={8}
+        />
+      </div>
       {props.children}
     </div>
   );
@@ -49,6 +82,8 @@ function SlideNative(props: SidePanelProps) {
       useNativeDriver: true,
     }).start();
   }, [props.isOpen]);
+
+  // TODO: Collapse functionality!
 
   return (
     <Animated.View
