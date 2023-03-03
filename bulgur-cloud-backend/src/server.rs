@@ -17,7 +17,8 @@ use actix_service::ServiceFactory;
 
 use actix_cors::Cors;
 use actix_governor::{
-    Governor, GovernorConfig, GovernorConfigBuilder, KeyExtractor, PeerIpKeyExtractor,
+    governor::middleware::StateInformationMiddleware, Governor, GovernorConfig,
+    GovernorConfigBuilder, KeyExtractor, PeerIpKeyExtractor,
 };
 
 use actix_web::{
@@ -57,7 +58,7 @@ fn setup_cors() -> Cors {
 
 pub fn setup_app(
     state: Data<AppState>,
-    login_governor: GovernorConfig<impl KeyExtractor + 'static>,
+    login_governor: GovernorConfig<impl KeyExtractor + 'static, StateInformationMiddleware>,
 ) -> App<
     impl ServiceFactory<
         ServiceRequest,
@@ -149,7 +150,10 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 pub async fn setup_app_deps(
     _base_folder: PathBuf,
     connection: &CuttleConnection,
-) -> anyhow::Result<(Data<AppState>, GovernorConfig<PeerIpKeyExtractor>)> {
+) -> anyhow::Result<(
+    Data<AppState>,
+    GovernorConfig<PeerIpKeyExtractor, StateInformationMiddleware>,
+)> {
     // Make sure the needed folders are available
     fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
     let state = web::Data::new(AppState {
@@ -160,8 +164,9 @@ pub async fn setup_app_deps(
     });
 
     let login_governor = GovernorConfigBuilder::default()
-        .per_second(60)
+        .per_second(10)
         .burst_size(MAX_LOGIN_ATTEMPTS_PER_MIN)
+        .use_headers()
         .finish()
         .expect("Unable to setup login governor");
     // Make sure the nobody user is created if it doesn't exist
