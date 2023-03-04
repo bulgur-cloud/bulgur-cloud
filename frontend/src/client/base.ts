@@ -1,22 +1,27 @@
-import { errorSlice, store } from "../utils/store";
+import { errorSlice, useAppDispatch } from "../utils/store";
 
 export const STORAGE = "storage";
 
-export function runAsync(
-  fn: () => Promise<void>,
-  onError?: (error: unknown) => Promise<void>,
-) {
-  fn().catch((error) => {
-    console.error(error);
+export function useRunAsync() {
+  const dispatch = useAppDispatch();
 
-    store.dispatch(
-      errorSlice.actions.addError({
-        key: `${new Date().getTime()}`,
-        error,
-      }),
-    );
-    if (onError) onError(error);
-  });
+  /** Runs an async function, catching and storing any errors. */
+  function runAsync(
+    fn: () => Promise<void>,
+    onError?: (error: unknown) => Promise<void>,
+  ) {
+    fn().catch((error) => {
+      console.error(error);
+      dispatch(
+        errorSlice.actions.addError({
+          key: `${new Date().getTime()}`,
+          error,
+        }),
+      );
+      if (onError) onError(error);
+    });
+  }
+  return { runAsync };
 }
 
 export enum HttpStatusCode {

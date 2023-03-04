@@ -4,6 +4,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "../client/api";
 import { BError } from "./error";
 import { joinURL } from "./url";
+import { createWrapper } from "next-redux-wrapper";
 
 type LoadState = "done" | "loading" | "uninitialized";
 
@@ -195,29 +196,35 @@ export const errorSlice = createSlice({
   },
 });
 
-export const store = configureStore({
-  reducer: {
-    auth: authSlice.reducer,
-    storage: storageSlice.reducer,
-    error: errorSlice.reducer,
-  },
-  middleware: [
-    // Log all actions for debugging
-    (store: any) => (next: any) => (action: any) => {
-      console.group(action?.type);
-      console.info("dispatching", action);
-      const result = next(action);
-      console.log("next state", store.getState());
-      console.groupEnd();
-      return result;
+function makeStore() {
+  return configureStore({
+    reducer: {
+      auth: authSlice.reducer,
+      storage: storageSlice.reducer,
+      error: errorSlice.reducer,
     },
-  ],
-});
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+    middleware: [
+      // Log all actions for debugging
+      (store: any) => (next: any) => (action: any) => {
+        console.group(action?.type);
+        console.info("dispatching", action);
+        const result = next(action);
+        console.log("next state", store.getState());
+        console.groupEnd();
+        return result;
+      },
+    ],
+  });
+}
+
+type Store = ReturnType<typeof makeStore>;
+export type RootState = Store["getState"];
+export type AppDispatch = Store["dispatch"];
 
 // Added to get Typescript to recognize the right type with `typeof ...`
 const useAppDispatchWrap = () => useDispatch<AppDispatch>();
 export const useAppDispatch: typeof useAppDispatchWrap = useDispatch;
 
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export const storeWrapper = createWrapper<Store>(makeStore);
