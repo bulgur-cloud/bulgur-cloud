@@ -11,3 +11,4 @@ refresh_tokens
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+.pnpm-store

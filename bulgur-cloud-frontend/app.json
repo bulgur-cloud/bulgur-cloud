@@ -1,6 +1,5 @@
 {
   "expo": {
-    "entryPoint": "./src/App.tsx",
     "name": "Bulgur Cloud",
     "slug": "bulgur-cloud",
     "scheme": "bulgur-cloud",
@@ -29,6 +28,7 @@
       }
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png",
       "name": "Bulgur Cloud",
       "lang": "en"
