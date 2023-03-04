@@ -1,4 +1,4 @@
-import {  Icon, IconButton } from "native-base";
+import {  Icon } from "native-base";
 import { useRef, useEffect, useState } from "react";
 import { Animated, Platform } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
