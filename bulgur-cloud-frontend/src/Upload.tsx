@@ -2,7 +2,7 @@ import { Fab, Icon, View } from "native-base";
 import { Platform } from "react-native";
 import { runAsync, STORAGE } from "./client/base";
 import { useCreateFolder, useUpload } from "./client/storage";
-import { ERR_NOT_IMPLEMENTED } from "./error";
+import { ERR_NOT_IMPLEMENTED } from "../../frontend/src/utils/error";
 import { FontAwesome5 } from "@expo/vector-icons";
 import {
   StorageAction,

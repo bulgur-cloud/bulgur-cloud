@@ -5,10 +5,10 @@ import axios, {
   Method,
 } from "axios";
 import useSWR, { SWRConfiguration } from "swr";
-import { BError } from "../error";
-import { useAppSelector } from "../store";
+import { BError } from "../utils/error";
+import { useAppSelector } from "../utils/store";
 import { useEnsureAuthInitialized } from "./auth";
-import { pick, shallowEquals } from "../utils";
+import { pick, shallowEquals } from "../utils/object";
 import debounce from "debounce";
 
 export type RequestParams<D> = {

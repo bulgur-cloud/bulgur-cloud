@@ -1,9 +1,9 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import type { api } from "./api";
+import type { api } from "../client/api";
 import { BError } from "./error";
-import { joinURL } from "./fetch";
+import { joinURL } from "./url";
 
 type LoadState = "done" | "loading" | "uninitialized";
 

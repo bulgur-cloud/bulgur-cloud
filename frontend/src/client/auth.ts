@@ -1,20 +1,19 @@
 import { useSWRConfig } from "swr";
-import api from "../api";
-import { BError } from "../error";
-import { Persist } from "../persist";
+import api from "./api";
+import { BError } from "../utils/error";
+import { Persist } from "../utils/persist";
 import {
   authSlice,
   AuthState,
   LoginPayload,
   useAppDispatch,
   useAppSelector,
-} from "../store";
-import { isString } from "../typeUtils";
+} from "../utils/store";
+import { isString } from "../utils/type";
 import { useEffect } from "react";
 import { HttpStatusCode, isOkResponse, runAsync } from "./base";
 import { axiosThrowless } from "./request";
-import { encodeRouteForRedirect, useAppNavigation } from "../routes";
-import { Platform } from "react-native";
+import { useRouter } from "next/router";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -114,7 +113,7 @@ export function useLogin() {
 export function useLogout() {
   const dispatch = useAppDispatch();
   const { cache } = useSWRConfig();
-  const navigation = useAppNavigation();
+  const router = useRouter();
 
   async function doLogout({
     noRedirect,
@@ -134,16 +133,10 @@ export function useLogout() {
     // Go back to the login screen. If the user was looking at a page other than
     // the login page, save the redirect so we can send them back there
     // afterwards.
-    const navState = navigation.getState();
-    const route = navState.routes[navState.index];
-    if (route.name === "Login" || noRedirect) {
-      navigation.navigate("Login");
-    } else {
-      const redirect = encodeRouteForRedirect({
-        name: route.name,
-        params: route.params,
-      });
-      navigation.navigate("Login", { redirect });
+    const currentRoute = router.route;
+    if (currentRoute !== "/login" || noRedirect) {
+      // TODO: Encode state and restore in redirect
+      router.replace("/login");
     }
   }
 
@@ -162,10 +155,10 @@ export function useEnsureAuthInitialized() {
   const { doLogout } = useLogout();
 
   useEffect(() => {
-    if (state === "uninitialized" && Platform.OS === "web") {
-      // On web platforms, immediately set the site since it's known to be the
-      // current page.
-      if (__DEV__) {
+    if (state === "uninitialized") {
+      if (process.env.NODE_ENV === "development") {
+        // During development, the UI is served from the nextjs dev server while
+        // the backend server is doing its own thing
         dispatch(authSlice.actions.setSite("http://localhost:8000"));
       } else {
         dispatch(

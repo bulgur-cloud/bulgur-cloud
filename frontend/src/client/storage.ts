@@ -1,14 +1,14 @@
 import { useSWRConfig } from "swr";
-import api from "../api";
-import { BError } from "../error";
-import { isBoolean, isString } from "../typeUtils";
+import api from "../client/api";
+import { BError } from "../utils/error";
+import { isBoolean, isString } from "../utils/type";
 import FormData from "form-data";
-import { joinURL, urlUp1Level } from "../fetch";
+import { joinURL, urlUp1Level } from "../utils/url";
 import { isOkResponse, STORAGE } from "./base";
 import { RequestParams, useFetch, useRequest } from "./request";
-import { storageSlice, useAppDispatch, useAppSelector } from "../store";
+import { storageSlice, useAppDispatch, useAppSelector } from "../utils/store";
 import { LiveLimit } from "live-limit";
-import { pick, shallowEquals } from "../utils";
+import { pick, shallowEquals } from "../utils/object";
 
 export function usePathExists(url: string) {
   const out = useFetch({

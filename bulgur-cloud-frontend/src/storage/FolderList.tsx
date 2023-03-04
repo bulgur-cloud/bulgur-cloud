@@ -1,7 +1,7 @@
 import { Center, Text, View, VStack, Spacer, Heading } from "native-base";
 import { STORAGE } from "../client/base";
 import { useFolderListing } from "../client/storage";
-import { BError } from "../error";
+import { BError } from "../../../frontend/src/utils/error";
 import { joinURL } from "../fetch";
 import { Loading } from "../Loading";
 import { DashboardParams } from "../routes";

@@ -1,4 +1,4 @@
-import { errorSlice, store } from "../store";
+import { errorSlice, store } from "../utils/store";
 
 export const STORAGE = "storage";
 

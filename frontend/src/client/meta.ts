@@ -1,5 +1,5 @@
-import { joinURL } from "../fetch";
-import { isString } from "../typeUtils";
+import { joinURL } from "../utils/url";
+import { isString } from "../utils/type";
 import { useFetch } from "./request";
 
 export const BANNER = "banner";

@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-
 export class BError {
   private _code: string;
   public get code(): string {
@@ -20,16 +18,3 @@ export class BError {
     this._description = opts.description;
   }
 }
-
-export const ERR_NOT_IMPLEMENTED = new BError({
-  code: "not_implemented",
-  title: "Not implemented",
-  description: `This functionality has not been implemented yet for ${Platform.OS}.`,
-});
-
-export const ERR_DATA_AND_FORM_DATA = new BError({
-  code: "data_and_form_data",
-  title: "Internal Implementation Error",
-  description:
-    "Both the data and the form data fields have been provided for the request.",
-});

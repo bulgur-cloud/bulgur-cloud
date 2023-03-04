@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Link from "next/link";
 import { ReactNode } from "react";
 
 function ProseSection({
@@ -34,7 +35,9 @@ export default function Home() {
           <p className="text-xl mt-2">Simple and delicious cloud sharing.</p>
         </section>
         <section className="max-w-prose mx-auto mt-8">
-          <a className="btn btn-primary px-8">Log in</a>
+          <Link href="/login" className="btn btn-primary px-8">
+            Log in
+          </Link>
         </section>
         <ProseSection heading="What is Bulgur Cloud?">
           Bulgur Cloud is a self-hostable cloud storage solution. You can upload
