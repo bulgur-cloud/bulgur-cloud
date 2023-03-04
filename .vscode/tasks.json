@@ -21,7 +21,7 @@
       "type": "shell",
       "command": "cargo watch -s 'cargo run | bunyan'",
       "options": {
-        "cwd": "${workspaceFolder}",
+        "cwd": "${workspaceFolder}/bulgur-cloud-backend",
         "env": {
           "RUST_LOG": "debug",
           "RUST_BACKTRACE": "1"
