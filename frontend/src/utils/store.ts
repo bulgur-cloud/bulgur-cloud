@@ -1,7 +1,12 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import type { api } from "../client/api";
+import {
+  EqualityFn,
+  TypedUseSelectorHook,
+  useDispatch,
+  useSelector,
+} from "react-redux";
+import type { api } from "../hooks/api";
 import { BError } from "./error";
 import { joinURL } from "./url";
 import { createWrapper } from "next-redux-wrapper";
@@ -218,10 +223,10 @@ function makeStore() {
 }
 
 type Store = ReturnType<typeof makeStore>;
-export type RootState = Store["getState"];
+export type RootState = ReturnType<Store["getState"]>;
 export type AppDispatch = Store["dispatch"];
 
-// Added to get Typescript to recognize the right type with `typeof ...`
+// Not actually used, we just need this to get Typescript to recognize the right type
 const useAppDispatchWrap = () => useDispatch<AppDispatch>();
 export const useAppDispatch: typeof useAppDispatchWrap = useDispatch;
 

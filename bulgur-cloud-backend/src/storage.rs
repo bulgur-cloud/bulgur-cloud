@@ -9,7 +9,11 @@ use actix_files::NamedFile;
 use actix_multipart::{Multipart, MultipartError};
 use actix_web::{
     delete, get, head,
-    http::{self, StatusCode},
+    http::{
+        self,
+        header::{HeaderName, HeaderValue},
+        StatusCode,
+    },
     post, put,
     web::{self, ReqData},
     Either, HttpResponse, HttpResponseBuilder,
@@ -142,10 +146,10 @@ pub struct FolderEntry {
 }
 
 pub async fn get_storage_internal(
-    params: web::Path<(String, String)>,
+    params: (&str, &str),
     authorized: &Option<ReqData<Authorized>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
-    let (store, path) = params.as_ref();
+    let (store, path) = params;
 
     let store_path = get_authorized_path(authorized, store, Some(path))?;
     tracing::debug!("Requested path {}", store_path.to_string_lossy());
@@ -188,12 +192,17 @@ pub struct EmptySuccess {
 }
 
 #[tracing::instrument]
-#[get("/{store}/{path:.*}")]
+#[get("/{store_and_path:.*}")]
 pub async fn get_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
-    get_storage_internal(params, &authorized).await
+    let (store, path) = params
+        .as_ref()
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params.as_str(), ""));
+    get_storage_internal((store, path), &authorized).await
 }
 
 fn empty_ok_response() -> HttpResponse {
@@ -247,12 +256,16 @@ pub async fn common_delete(
 }
 
 #[tracing::instrument]
-#[head("/{store}/{path:.*}")]
+#[head("/{store_and_path:.*}")]
 async fn head_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> HttpResponse {
-    let (store, path) = params.as_ref();
+    let (store, path) = params
+        .as_ref()
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params.as_str(), ""));
 
     let check = async {
         let store_path = get_authorized_path(&authorized, store, Some(path))?;
@@ -260,7 +273,7 @@ async fn head_storage(
 
         let meta = fs::metadata(store_path).await?;
         if meta.is_file() || meta.is_dir() {
-            Ok::<(), StorageError>(())
+            Ok::<bool, StorageError>(meta.is_file())
         } else {
             Err(std::io::Error::new(std::io::ErrorKind::NotFound, "").into())
         }
@@ -268,7 +281,14 @@ async fn head_storage(
     .await;
 
     match check {
-        Ok(_) => empty_ok_response(),
+        Ok(is_file) => {
+            let mut resp = empty_ok_response();
+            resp.headers_mut().append(
+                HeaderName::from_static("x-is-file"),
+                HeaderValue::from_str(&format!("{is_file}")).unwrap(),
+            );
+            resp
+        }
         Err(StorageError::NotAuthorized) => HttpResponse::Unauthorized().finish(),
         Err(_) => HttpResponse::NotFound().finish(),
     }

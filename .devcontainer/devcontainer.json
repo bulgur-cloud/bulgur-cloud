@@ -14,9 +14,9 @@
     // Used to watch for code changes and restart backend
     "cargo-watch": "cargo install cargo-watch",
     // Deps for the frontend need to be installed before any of the tools run
-    //"frontend-deps": "cd bulgur-cloud-frontend && yarn install",
+    "frontend-deps": "cd frontend && pnpm install",
     // Bunyan is used to view the logs of the backend
-    "bunyan": "pnpm install --location=global bunyan",
+    "bunyan": "pnpm setup && pnpm install --global bunyan",
     // Add a test user to Bulgur Cloud
     "add-user": "cargo run -- user add --username test --password test"
   },

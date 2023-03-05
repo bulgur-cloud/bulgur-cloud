@@ -11,7 +11,7 @@ import {
 } from "../utils/store";
 import { isString } from "../utils/type";
 import { useEffect } from "react";
-import { HttpStatusCode, isOkResponse, runAsync } from "./base";
+import { HttpStatusCode, isOkResponse, useRunAsync } from "./base";
 import { axiosThrowless } from "./request";
 import { useRouter } from "next/router";
 
@@ -147,8 +147,14 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
   return isString(data?.username) && isString(data?.access_token);
 }
 
-/** Ensures that if there's a saved auth token, the app is authenticated with the saved token. */
+/** Ensures that the user is authenticated.
+ *
+ * If the user is not authenticated, this hook will first try to restore
+ * authentication from local storage. If that fails, it will redirect the user
+ * to the login page.
+ */
 export function useEnsureAuthInitialized() {
+  const { runAsync } = useRunAsync();
   const state = useAppSelector((selector) => selector.auth.state);
   const dispatch = useAppDispatch();
   const { doTokenCheck } = useTokenCheck();

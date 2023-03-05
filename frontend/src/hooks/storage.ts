@@ -1,5 +1,5 @@
 import { useSWRConfig } from "swr";
-import api from "../client/api";
+import api from "./api";
 import { BError } from "../utils/error";
 import { isBoolean, isString } from "../utils/type";
 import FormData from "form-data";
@@ -10,16 +10,35 @@ import { storageSlice, useAppDispatch, useAppSelector } from "../utils/store";
 import { LiveLimit } from "live-limit";
 import { pick, shallowEquals } from "../utils/object";
 
-export function usePathExists(url: string) {
+export function usePathMeta(url: string) {
   const out = useFetch({
     method: "HEAD",
-    url,
+    url: `storage/${url}`,
   });
+  if (out.isLoading) {
+    return {
+      isLoading: true,
+    };
+  }
+
+  if (out.data === undefined) {
+    return {
+      isLoading: false,
+      data: undefined,
+    };
+  }
+
   const status = out.data?.status;
+  const exists = !!(status && isOkResponse(status));
+  const isFile =
+    exists && out?.data ? out.data.headers["X-Is-File"] === "true" : false;
 
   return {
-    ...out,
-    data: !!(status && isOkResponse(status)),
+    isLoading: false,
+    data: {
+      exists,
+      isFile,
+    },
   };
 }
 
@@ -36,7 +55,7 @@ export function usePathToken(url: string) {
 function useMutateFolder() {
   const { mutate } = useSWRConfig();
   const { access_token, site } = useAppSelector(
-    (selector) => pick(selector.auth, "access_token", "site"),
+    (state) => pick(state.auth, "access_token", "site"),
     shallowEquals,
   );
 
@@ -109,8 +128,7 @@ function isFolderResults(data: any): data is api.FolderResults {
 
 export function useFolderListing(url: string) {
   const resp = useFetch<never, api.FolderResults>({
-    // Normalize the path, it should be in the form of storage/foo/bar/
-    url: url.replace(/[/]+$/, "") + "/",
+    url: `storage/${url}`,
     method: "GET",
   });
 

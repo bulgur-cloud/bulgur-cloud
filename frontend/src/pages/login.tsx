@@ -1,8 +1,8 @@
-import { useLogin } from "@/client/auth";
-import { useRunAsync } from "@/client/base";
+import { useLogin } from "@/hooks/auth";
+import { useRunAsync } from "@/hooks/base";
 import LabelledInput from "@/components/LabelledInput";
 import Head from "next/head";
-import { ChangeEvent, useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 export default function Login() {
   const { runAsync } = useRunAsync();
@@ -17,6 +17,8 @@ export default function Login() {
   const login = useCallback(() => {
     runAsync(async () => {
       await doLogin({ username, password, site });
+      setUsername("");
+      setPassword("");
     });
   }, [doLogin, password, runAsync, site, username]);
 

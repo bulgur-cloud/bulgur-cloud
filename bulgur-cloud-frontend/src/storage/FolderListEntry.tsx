@@ -8,7 +8,7 @@ import {
 } from "../store";
 import { IMAGE_EXTENSIONS, PDF_EXTENSIONS } from "./File";
 import { FontAwesome5 } from "@expo/vector-icons";
-import api from "../../../frontend/src/client/api";
+import api from "../../../frontend/src/hooks/api";
 import { DashboardParams } from "../routes";
 import { BLink } from "../BLink";
 

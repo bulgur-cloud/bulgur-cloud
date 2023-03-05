@@ -1,4 +1,8 @@
 export class BError {
+  public static isBError(error: unknown): error is BError {
+    return error instanceof BError;
+  }
+
   private _code: string;
   public get code(): string {
     return this._code;

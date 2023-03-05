@@ -187,7 +187,7 @@ pub async fn page_folder_list(
     }
     tracing::debug!("{:?}, {:?}, {:?}", &store, &path, &store_path);
 
-    let out = get_storage_internal(params, &authorized).await?;
+    let out = get_storage_internal((&store, &path), &authorized).await?;
 
     match out {
         Either::Left(file) => Ok(Either::Left(file)),
