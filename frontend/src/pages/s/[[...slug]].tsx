@@ -7,19 +7,31 @@ import {
 import { useEnsureAuthInitialized } from "@/hooks/auth";
 import { FullPageSpinner } from "@/components/Spinner";
 import { FolderList } from "@/fragments/s/FolderList";
+import { FileNotFound } from "@/fragments/s/NotFound";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
   return usePathMeta(fullPath);
 }
 
-export function StoreView() {
-  const { name } = useCurrentPath();
+function StoreViewInner() {
   const { data } = useCurrentPathMeta();
   if (!data) {
     return <FullPageSpinner />;
   }
   const { exists, isFile } = data;
+  if (!exists) {
+    return <FileNotFound />;
+  }
+  if (!isFile) {
+    return <FolderList />;
+  }
+  // TODO
+  return <p>File</p>;
+}
+
+function StoreView() {
+  const { name } = useCurrentPath();
 
   return (
     <>
@@ -29,9 +41,7 @@ export function StoreView() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="max-w-sm p-4 mt-12 mx-auto">
-        <h1 className="text-4xl mb-4">{name}</h1>
-        <p className="mb-8">Youre in: {JSON.stringify({ exists, isFile })}</p>
-        <FolderList />
+        <StoreViewInner />
       </main>
     </>
   );
