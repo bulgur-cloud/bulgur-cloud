@@ -1,7 +1,15 @@
-import { IconFidgetSpinner, IconRotateClockwise2 } from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 
 export function Spinner() {
-  return <IconRotateClockwise2 className="animate-spin w-12 h-12" />;
+  return (
+    <>
+      <IconLoader2 className="animate-spin w-12 h-12" />
+      <IconLoader2
+        style={{ position: "absolute" }}
+        className="animate-spin-counter-clockwise w-8 h-8"
+      />
+    </>
+  );
 }
 
 export function FullPageSpinner() {

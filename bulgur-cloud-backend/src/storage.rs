@@ -9,12 +9,8 @@ use actix_files::NamedFile;
 use actix_multipart::{Multipart, MultipartError};
 use actix_web::{
     delete, get, head,
-    http::{
-        self,
-        header::{HeaderName, HeaderValue},
-        StatusCode,
-    },
-    post, put,
+    http::{self, StatusCode},
+    post, put, route,
     web::{self, ReqData},
     Either, HttpResponse, HttpResponseBuilder,
 };
@@ -273,7 +269,7 @@ async fn head_storage(
 
         let meta = fs::metadata(store_path).await?;
         if meta.is_file() || meta.is_dir() {
-            Ok::<bool, StorageError>(meta.is_file())
+            Ok::<(), StorageError>(())
         } else {
             Err(std::io::Error::new(std::io::ErrorKind::NotFound, "").into())
         }
@@ -281,14 +277,43 @@ async fn head_storage(
     .await;
 
     match check {
-        Ok(is_file) => {
-            let mut resp = empty_ok_response();
-            resp.headers_mut().append(
-                HeaderName::from_static("x-is-file"),
-                HeaderValue::from_str(&format!("{is_file}")).unwrap(),
-            );
-            resp
-        }
+        Ok(_) => empty_ok_response(),
+        Err(StorageError::NotAuthorized) => HttpResponse::Unauthorized().finish(),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
+pub struct FileMeta {
+    pub is_file: bool,
+    pub size: u64,
+}
+
+#[tracing::instrument]
+#[route("/{store_and_path:.*}", method = "META")]
+async fn meta_storage(
+    params: web::Path<String>,
+    authorized: Option<ReqData<Authorized>>,
+) -> HttpResponse {
+    let (store, path) = params
+        .as_ref()
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params.as_str(), ""));
+
+    let check = async {
+        let store_path = get_authorized_path(&authorized, store, Some(path))?;
+        tracing::debug!("Requested path {}", store_path.to_string_lossy());
+        Ok(fs::metadata(store_path).await?)
+    }
+    .await;
+
+    match check {
+        Ok(meta) => HttpResponse::Ok().json(FileMeta {
+            is_file: meta.is_file(),
+            size: meta.len(),
+        }),
         Err(StorageError::NotAuthorized) => HttpResponse::Unauthorized().finish(),
         Err(_) => HttpResponse::NotFound().finish(),
     }

@@ -11,8 +11,8 @@ import { LiveLimit } from "live-limit";
 import { pick, shallowEquals } from "../utils/object";
 
 export function usePathMeta(url: string) {
-  const out = useFetch({
-    method: "HEAD",
+  const out = useFetch<never, api.FileMeta>({
+    method: "META" as any, // Hey, this is a perfectly valid HTTP method!
     url: `storage/${url}`,
   });
   if (out.isLoading) {
@@ -30,14 +30,12 @@ export function usePathMeta(url: string) {
 
   const status = out.data?.status;
   const exists = !!(status && isOkResponse(status));
-  const isFile =
-    exists && out?.data ? out.data.headers["X-Is-File"] === "true" : false;
 
   return {
     isLoading: false,
     data: {
       exists,
-      isFile,
+      ...out.data.data,
     },
   };
 }

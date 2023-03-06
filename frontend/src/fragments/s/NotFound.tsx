@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useCurrentPath } from "./CurrentPathProvider";
 
 export function FileNotFound() {
   const { fullPath, store } = useCurrentPath();
-  const router = useRouter();
 
   return (
     <>

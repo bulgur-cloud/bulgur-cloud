@@ -19,7 +19,7 @@ function StoreViewInner() {
   if (!data) {
     return <FullPageSpinner />;
   }
-  const { exists, isFile } = data;
+  const { exists, is_file: isFile } = data;
   if (!exists) {
     return <FileNotFound />;
   }
@@ -40,7 +40,7 @@ function StoreView() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="max-w-sm p-4 mt-12 mx-auto">
+      <main className="max-w-prose p-4 mt-12 mx-auto">
         <StoreViewInner />
       </main>
     </>

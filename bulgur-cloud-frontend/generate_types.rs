@@ -7,7 +7,7 @@ use std::{env, fs, path::PathBuf};
 use bulgur_cloud::{
     auth::{Login, LoginResponse},
     state::PathTokenResponse,
-    storage::{FolderResults, PutStoragePayload, StorageAction},
+    storage::{FileMeta, FolderResults, PutStoragePayload, StorageAction},
 };
 use typescript_type_def::{write_definition_file, DefinitionFileOptions};
 
@@ -18,6 +18,7 @@ type ApiTypes = (
     PathTokenResponse,
     StorageAction,
     PutStoragePayload,
+    FileMeta,
 );
 
 fn main() {
