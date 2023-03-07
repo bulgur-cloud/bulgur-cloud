@@ -8,6 +8,7 @@ import { useEnsureAuthInitialized } from "@/hooks/auth";
 import { FullPageSpinner } from "@/components/Spinner";
 import { FolderList } from "@/fragments/s/FolderList";
 import { FileNotFound } from "@/fragments/s/NotFound";
+import { FilePreview } from "@/fragments/s/FilePreview";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -26,8 +27,7 @@ function StoreViewInner() {
   if (!isFile) {
     return <FolderList />;
   }
-  // TODO
-  return <p>File</p>;
+  return <FilePreview />;
 }
 
 function StoreView() {

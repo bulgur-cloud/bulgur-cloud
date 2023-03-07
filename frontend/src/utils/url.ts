@@ -18,13 +18,9 @@ export function urlUp1Level(url: string) {
 }
 
 export function urlFileExtension(url: string): string | undefined {
-  const extensionMatch = /[.]([^.]+)$/.exec(url);
-  const extension = extensionMatch ? extensionMatch[1] : undefined;
-  return extension;
+  return /[.]([^/.]+)$/.exec(url)?.[1]?.toLowerCase();
 }
 
 export function urlFileName(url: string): string | undefined {
-  const fileNameMatch = /[/]?([^/]+)$/.exec(url);
-  const fileName = fileNameMatch ? fileNameMatch[1] : undefined;
-  return fileName;
+  return /[/]?([^/]+)$/.exec(url)?.[1];
 }

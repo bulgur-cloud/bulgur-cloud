@@ -3,25 +3,11 @@ import { FullPageSpinner } from "@/components/Spinner";
 import api from "@/hooks/api";
 import { useFolderListing } from "@/hooks/storage";
 import { BError } from "@/utils/error";
+import { humanSize } from "@/utils/human";
 import Link from "next/link";
 import { useCurrentPath } from "./CurrentPathProvider";
 import ListingIcon from "./ListingIcon";
-
-function humanSize(sizeBytes: number) {
-  if (sizeBytes < 1024) {
-    return `${sizeBytes} B`;
-  }
-  if (sizeBytes < 1024 * 1024) {
-    return `${(sizeBytes / 1024).toFixed(2)} KB`;
-  }
-  if (sizeBytes < 1024 * 1024 * 1024) {
-    return `${(sizeBytes / 1024 / 1024).toFixed(2)} MB`;
-  }
-  if (sizeBytes < 1024 * 1024 * 1024 * 1024) {
-    return `${(sizeBytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
-  }
-  return `${(sizeBytes / 1024 / 1024 / 1024 / 1024).toFixed(2)} TB`;
-}
+import { FileNotFound } from "./NotFound";
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   const { fullPath } = useCurrentPath();
@@ -30,11 +16,14 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
       <td className="py-4">
         <ListingIcon className="inline mr-1" entry={entry} />
       </td>
-      <Link href={`/s/${fullPath}/${entry.name}`}>
-        <td className="break-all py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
+      <td className="break-all py-2 border-base-content border-b group-last:border-b-0 border-opacity-20">
+        <Link
+          className="w-full inline-block py-2"
+          href={`/s/${fullPath}/${entry.name}`}
+        >
           {entry.name}
-        </td>
-      </Link>
+        </Link>
+      </td>
       <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
         {humanSize(entry.size)}
       </td>
@@ -46,6 +35,9 @@ export function FolderList() {
   const { fullPath } = useCurrentPath();
   const resp = useFolderListing(fullPath);
   if (BError.isBError(resp)) {
+    if (resp.code === "not_found") {
+      return <FileNotFound />;
+    }
     return <ErrorView error={resp} />;
   }
   if (resp.data === undefined) {

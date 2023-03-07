@@ -43,7 +43,7 @@ export function usePathMeta(url: string) {
 export function usePathToken(url: string) {
   return useFetch<api.StorageAction, api.PathTokenResponse>({
     method: "POST",
-    url,
+    url: `storage/${url}`,
     data: {
       action: "MakePathToken",
     },
@@ -255,4 +255,19 @@ export function useUpload() {
   }
 
   return { doUpload };
+}
+
+/** Gets a publicly accessable download URL for a path. */
+export function useDownloadUrl(path: string) {
+  const site = useAppSelector((state) => state.auth.site);
+  const resp = usePathToken(path);
+
+  if (site === undefined || resp.data === undefined) {
+    return { isLoading: true };
+  }
+
+  return {
+    isLoading: false,
+    url: `${site}/storage/${path}?token=${resp.data.data.token}`,
+  };
 }

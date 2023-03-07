@@ -1,4 +1,5 @@
 import api from "@/hooks/api";
+import { urlFileExtension } from "@/utils/url";
 import {
   IconBook,
   IconFile,
@@ -92,7 +93,7 @@ export default function ListingIcon({
   if (!isFile) {
     return <IconFolder className={className} />;
   }
-  const extension = /[.]([^.]*)$/.exec(name)?.[1];
+  const extension = urlFileExtension(name);
   if (!extension) {
     return <IconFile className={className} />;
   }
