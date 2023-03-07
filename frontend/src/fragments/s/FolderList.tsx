@@ -1,3 +1,4 @@
+import { ErrorView } from "@/components/ErrorView";
 import { FullPageSpinner } from "@/components/Spinner";
 import api from "@/hooks/api";
 import { useFolderListing } from "@/hooks/storage";
@@ -41,7 +42,7 @@ export function FolderList() {
   const { fullPath } = useCurrentPath();
   const resp = useFolderListing(fullPath);
   if (BError.isBError(resp)) {
-    return <p>Uh oh!</p>;
+    return <ErrorView error={resp} />;
   }
   if (resp.data === undefined) {
     return <FullPageSpinner />;
