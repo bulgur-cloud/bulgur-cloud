@@ -23,14 +23,16 @@ function humanSize(sizeBytes: number) {
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   return (
-    <tr className="max-w-full">
-      <td>
+    <tr className="max-w-full group">
+      <td className="py-4">
         <ListingIcon className="inline mr-1" entry={entry} />
       </td>
-      <td className="break-all w-4 text-ellipsis overflow-hidden">
+      <td className="break-all py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
         {entry.name}
       </td>
-      <td>{humanSize(entry.size)}</td>
+      <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
+        {humanSize(entry.size)}
+      </td>
     </tr>
   );
 }
@@ -47,12 +49,17 @@ export function FolderList() {
   const { entries } = resp.data.data;
 
   return (
-    <table className="table">
+    <table className="w-full">
+      <colgroup>
+        <col style={{ width: "32px" }} />
+        <col />
+        <col style={{ width: "85px" }} />
+      </colgroup>
       <thead>
         <tr>
-          <th></th>
-          <th>Name</th>
-          <th>Size</th>
+          <th className="bg-base-200 rounded-tl-lg py-4"></th>
+          <th className="bg-base-200 py-4">Name</th>
+          <th className="bg-base-200 rounded-tr-lg py-4">Size</th>
         </tr>
       </thead>
       <tbody>
