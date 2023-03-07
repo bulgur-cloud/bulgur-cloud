@@ -3,6 +3,7 @@ import { FullPageSpinner } from "@/components/Spinner";
 import api from "@/hooks/api";
 import { useFolderListing } from "@/hooks/storage";
 import { BError } from "@/utils/error";
+import Link from "next/link";
 import { useCurrentPath } from "./CurrentPathProvider";
 import ListingIcon from "./ListingIcon";
 
@@ -23,14 +24,17 @@ function humanSize(sizeBytes: number) {
 }
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
+  const { fullPath } = useCurrentPath();
   return (
     <tr className="max-w-full group">
       <td className="py-4">
         <ListingIcon className="inline mr-1" entry={entry} />
       </td>
-      <td className="break-all py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
-        {entry.name}
-      </td>
+      <Link href={`/s/${fullPath}/${entry.name}`}>
+        <td className="break-all py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
+          {entry.name}
+        </td>
+      </Link>
       <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
         {humanSize(entry.size)}
       </td>
@@ -64,6 +68,13 @@ export function FolderList() {
         </tr>
       </thead>
       <tbody>
+        {entries.length === 0 && (
+          <tr>
+            <td colSpan={3} className="text-center p-8">
+              This folder is empty.
+            </td>
+          </tr>
+        )}
         {entries.map((entry) => (
           <Listing entry={entry} key={entry.name} />
         ))}
