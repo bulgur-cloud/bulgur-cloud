@@ -9,6 +9,7 @@ import { FullPageSpinner } from "@/components/Spinner";
 import { FolderList } from "@/fragments/s/FolderList";
 import { FileNotFound } from "@/fragments/s/NotFound";
 import { FilePreview } from "@/fragments/s/FilePreview";
+import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -41,6 +42,7 @@ function StoreView() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="max-w-prose p-4 mt-12 mx-auto">
+        <PathBreadcrumbs />
         <StoreViewInner />
       </main>
     </>
