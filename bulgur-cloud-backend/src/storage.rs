@@ -472,9 +472,15 @@ async fn post_storage(
 
 #[tracing::instrument]
 async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpResponse {
-    let token = Token::new();
     let full_path = format!("/{}", path.to_string_lossy());
+    let existing = state.path_tokens.get(&full_path).await.unwrap_or_log();
+    if let Some(token) = existing {
+        return HttpResponse::Ok().json(PathTokenResponse { token });
+    }
+
+    let token = Token::new();
     tracing::debug!("Creating a token for {}", full_path);
+    // TODO This should have a TTL attached
     state
         .path_tokens
         .put(full_path, &token)

@@ -1,13 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { FullPageSpinner, Spinner } from "@/components/Spinner";
-import {
-  useDownloadUrl,
-  useFileContents,
-  usePathMeta,
-  usePathToken,
-} from "@/hooks/storage";
+import { useDownloadUrl, useFileContents, usePathMeta } from "@/hooks/storage";
 import { humanSize } from "@/utils/human";
-import { useAppSelector } from "@/utils/store";
 import { urlFileExtension } from "@/utils/url";
 import Link from "next/link";
 import { useCurrentPath } from "./CurrentPathProvider";
@@ -26,6 +20,15 @@ const PREVIEWABLE_TEXT_FORMATS: ReadonlySet<string> = new Set([
   ...TEXT_EXTENSIONS.keys(),
   ...CODE_EXTENSIONS.keys(),
 ]);
+const PREVIEWABLE_AUDIO_FORMATS: ReadonlySet<string> = new Set([
+  "mp3",
+  "wav",
+  "opus",
+  "ogg",
+  "aac",
+  "flac",
+]);
+const PREVIEWABLE_VIDEO_FORMATS: ReadonlySet<string> = new Set(["mp4", "webm"]);
 
 function ImagePreview() {
   const { fullPath } = useCurrentPath();
@@ -36,6 +39,30 @@ function ImagePreview() {
   }
 
   return <img className="object-contain w-full" src={downloadUrl.url} alt="" />;
+}
+
+function AudioPreview() {
+  const { fullPath } = useCurrentPath();
+  const downloadUrl = useDownloadUrl(fullPath);
+
+  if (downloadUrl.isLoading) {
+    return <Spinner />;
+  }
+
+  return <audio controls className="w-full" src={downloadUrl.url} />;
+}
+
+function VideoPreview() {
+  const { fullPath } = useCurrentPath();
+  const downloadUrl = useDownloadUrl(fullPath);
+
+  if (downloadUrl.isLoading) {
+    return <Spinner />;
+  }
+
+  return (
+    <video controls className="object-contain w-full" src={downloadUrl.url} />
+  );
 }
 
 function TextPreview() {
@@ -63,6 +90,14 @@ function PreviewSelector() {
 
   if (resp.data === undefined) {
     return <Spinner />;
+  }
+
+  if (extension && PREVIEWABLE_AUDIO_FORMATS.has(extension)) {
+    return <AudioPreview />;
+  }
+
+  if (extension && PREVIEWABLE_VIDEO_FORMATS.has(extension)) {
+    return <VideoPreview />;
   }
 
   // TODO: This should be configurable per user, up to some server max
