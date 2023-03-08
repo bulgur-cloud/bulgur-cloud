@@ -1,10 +1,14 @@
-import { useLogin } from "@/hooks/auth";
+import { useLogin, useTokenCheck } from "@/hooks/auth";
 import { useRunAsync } from "@/hooks/base";
 import LabelledInput from "@/components/LabelledInput";
 import Head from "next/head";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useAppSelector } from "@/utils/store";
+import { pick, shallowEquals } from "@/utils/object";
 
 export default function Login() {
+  const router = useRouter();
   const { runAsync } = useRunAsync();
   const { doLogin } = useLogin();
   const [username, setUsername] = useState("");
@@ -19,8 +23,9 @@ export default function Login() {
       await doLogin({ username, password, site });
       setUsername("");
       setPassword("");
+      router.push(`/s/${username}`);
     });
-  }, [doLogin, password, runAsync, site, username]);
+  }, [doLogin, password, runAsync, site, username, router]);
 
   return (
     <>

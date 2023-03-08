@@ -1,3 +1,4 @@
+import { FullPageSpinner } from "@/components/Spinner";
 import { joinURL } from "@/utils/url";
 import { useRouter } from "next/router";
 import { createContext, useContext } from "react";
@@ -17,11 +18,41 @@ type PathData =
 
 const PathContext = createContext<PathData>(undefined);
 
+/** Gets the current path from the router.
+ *
+ * Avoid using this, use {@link useCurrentPath} instead.
+ *
+ * Unlike `useCurrentPath', this hook is
+ * available outside of `PathDataProvider`, but it has a loading state because
+ * the router isn't ready immediately.
+ */
+export function useCurrentPathFromRouter() {
+  const router = useRouter();
+  if (!router.isReady) {
+    return { isLoading: true };
+  }
+
+  const { slug } = router.query;
+  if (!Array.isArray(slug) || slug.length === 0) {
+    return { isLoading: false, data: undefined };
+  }
+
+  const [store, ...path] = slug;
+  const data: PathData = {
+    store,
+    name: path[path.length - 1] ?? store,
+    fullPath: joinURL(store, ...path),
+    path: joinURL(...path),
+  };
+  return { isLoading: false, data };
+}
+
 /**
  * A hook to get the current path data.
  *
  * Only available within PathDataProvider, which should only be used under `s/`
- * paths.
+ * paths. Unlike {@link useCurrentPathFromRouter}, this hook's data is
+ * immediately avaiable without a loading state.
  */
 export const useCurrentPath = () => {
   const context = useContext(PathContext);
@@ -42,23 +73,14 @@ export function CurrentPathProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  if (!router.isReady) {
-    return <></>;
+  const { isLoading, data } = useCurrentPathFromRouter();
+  if (isLoading) {
+    return <FullPageSpinner />;
   }
 
-  // Safe to cast, because as long as this page is [...slug] we'll always get an array
-  const { slug } = router.query;
-  if (!Array.isArray(slug) || slug.length === 0) {
+  if (data === undefined) {
     throw new Error("PathDataProvider must be used under a `s/` path.");
   }
-  const [store, ...path] = slug;
-  const data: PathData = {
-    store,
-    name: path[path.length - 1] ?? store,
-    fullPath: joinURL(store, ...path),
-    path: joinURL(...path),
-  };
 
   return <PathContext.Provider value={data}>{children}</PathContext.Provider>;
 }
