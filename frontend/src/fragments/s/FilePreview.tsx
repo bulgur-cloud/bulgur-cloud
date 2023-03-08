@@ -1,11 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
 import { FullPageSpinner, Spinner } from "@/components/Spinner";
-import { useDownloadUrl, usePathMeta, usePathToken } from "@/hooks/storage";
+import {
+  useDownloadUrl,
+  useFileContents,
+  usePathMeta,
+  usePathToken,
+} from "@/hooks/storage";
 import { humanSize } from "@/utils/human";
 import { useAppSelector } from "@/utils/store";
 import { urlFileExtension } from "@/utils/url";
 import Link from "next/link";
 import { useCurrentPath } from "./CurrentPathProvider";
+import { CODE_EXTENSIONS, TEXT_EXTENSIONS } from "./ListingIcon";
 import { FileNotFound } from "./NotFound";
 
 const PREVIEWABLE_IMAGE_FORMATS: ReadonlySet<string> = new Set([
@@ -15,6 +21,10 @@ const PREVIEWABLE_IMAGE_FORMATS: ReadonlySet<string> = new Set([
   "gif",
   "webp",
   "svg",
+]);
+const PREVIEWABLE_TEXT_FORMATS: ReadonlySet<string> = new Set([
+  ...TEXT_EXTENSIONS.keys(),
+  ...CODE_EXTENSIONS.keys(),
 ]);
 
 function ImagePreview() {
@@ -28,12 +38,44 @@ function ImagePreview() {
   return <img className="object-contain w-full" src={downloadUrl.url} alt="" />;
 }
 
+function TextPreview() {
+  const { fullPath } = useCurrentPath();
+  const { contents } = useFileContents(fullPath);
+
+  if (contents === undefined) {
+    return <Spinner />;
+  }
+
+  return (
+    <pre
+      className="p-4 lg:p-8 bg-base-200 overflow-auto rounded-md"
+      style={{ height: "36rem" }}
+    >
+      {contents}
+    </pre>
+  );
+}
+
 function PreviewSelector() {
-  const { name } = useCurrentPath();
+  const { name, fullPath } = useCurrentPath();
+  const resp = usePathMeta(fullPath);
   const extension = urlFileExtension(name);
+
+  if (resp.data === undefined) {
+    return <Spinner />;
+  }
+
+  // TODO: This should be configurable per user, up to some server max
+  if (resp.data.size > 20 * 1024 * 1024) {
+    return <span>File is too large to preview.</span>;
+  }
 
   if (extension && PREVIEWABLE_IMAGE_FORMATS.has(extension)) {
     return <ImagePreview />;
+  }
+
+  if (extension && PREVIEWABLE_TEXT_FORMATS.has(extension)) {
+    return <TextPreview />;
   }
 
   return <span>This file type can&#39;t be previewed.</span>;

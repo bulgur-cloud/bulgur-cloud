@@ -271,3 +271,24 @@ export function useDownloadUrl(path: string) {
     url: `${site}/storage/${path}?token=${resp.data.data.token}`,
   };
 }
+
+/** Get the full contents of the file at this path.
+ *
+ * Be careful to not call this for files that are too large!
+ */
+export function useFileContents(path: string) {
+  const resp = useFetch<never, string>({
+    method: "GET",
+    url: `storage/${path}`,
+  });
+
+  let contents: string | undefined;
+  if (resp.data?.data) {
+    contents = resp.data.data;
+  }
+
+  return {
+    contents,
+    isLoading: resp.isLoading,
+  };
+}
