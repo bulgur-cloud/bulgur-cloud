@@ -28,12 +28,14 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Bulgur Cloud</title>
-        <meta name="description" content="Log into Bulgur Cloud." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title key="title">Log in - Bulgur Cloud</title>
+        <meta
+          key="description"
+          name="description"
+          content="Log into Bulgur Cloud."
+        />
       </Head>
-      <main className="max-w-sm p-4 mt-12 mx-auto">
+      <main className="max-w-sm mt-12 mx-auto">
         <h1 className="text-4xl mb-4">Bulgur Cloud</h1>
         <p className="mb-8">Simple and delicious cloud storage and sharing.</p>
         <LabelledInput

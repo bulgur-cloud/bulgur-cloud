@@ -41,12 +41,14 @@ function StoreView() {
   return (
     <>
       <Head>
-        <title>{name} - Bulgur Cloud</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <title key="title">{name} - Bulgur Cloud</title>
+        <meta
+          key="description"
+          name="description"
+          content={`Contents of ${name} on Bulgur Cloud.`}
+        />
       </Head>
-      <Navbar />
-      <main className="max-w-prose p-4 mt-12 mx-auto">
+      <main className="max-w-prose mt-12 mx-auto">
         <PathBreadcrumbs />
         <StoreViewInner />
       </main>

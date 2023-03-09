@@ -12,6 +12,11 @@ export function Navbar() {
     doLogout({ noRedirect: false });
   }, [doLogout]);
 
+  if (!username) {
+    // Logged out users don't get a navbar.
+    return null;
+  }
+
   return (
     <header className="navbar bg-base-100 p-4">
       <div className="ml-4 select-none">Bulgur Cloud</div>
