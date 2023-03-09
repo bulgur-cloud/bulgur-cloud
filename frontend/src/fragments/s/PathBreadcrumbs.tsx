@@ -30,7 +30,7 @@ export function PathBreadcrumbs() {
 
   return (
     <div ref={breadcrumbs} className="text-sm breadcrumbs">
-      <ul>
+      <ul className="before:w-1 before:bg-base-content before:h-4 before:opacity-20 before:mr-1">
         {accumulativePath.map(({ url, name }, index) => (
           <li key={index}>
             {index === accumulativePath.length - 1 ? (
