@@ -150,8 +150,7 @@ function isAuthState(data: any): data is Required<Omit<AuthState, "state">> {
 /** Ensures that the user is authenticated.
  *
  * If the user is not authenticated, this hook will first try to restore
- * authentication from local storage. If that fails, it will redirect the user
- * to the login page.
+ * authentication from local storage.
  */
 export function useEnsureAuthInitialized() {
   const { runAsync } = useRunAsync();

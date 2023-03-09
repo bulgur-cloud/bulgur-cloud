@@ -2,10 +2,20 @@ import { useLogin } from "@/hooks/auth";
 import { useRunAsync } from "@/hooks/base";
 import LabelledInput from "@/components/LabelledInput";
 import Head from "next/head";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { pick, shallowEquals } from "@/utils/object";
+import { useAppSelector } from "@/utils/store";
 
 export default function Login() {
+  const {
+    username: loggedInUsername,
+    access_token,
+    state: authState,
+  } = useAppSelector(
+    (state) => pick(state.auth, "username", "access_token", "state"),
+    shallowEquals,
+  );
   const router = useRouter();
   const { runAsync } = useRunAsync();
   const { doLogin } = useLogin();
@@ -24,6 +34,15 @@ export default function Login() {
       router.push(`/s/${username}`);
     });
   }, [doLogin, password, runAsync, site, username, router]);
+
+  useEffect(() => {
+    console.log(loggedInUsername, access_token, authState);
+    if (loggedInUsername && access_token && authState === "done") {
+      router.push(`/s/${loggedInUsername}`);
+    }
+    // We only want this to run ONCE at the start, otherwise it will re-trigger
+    // after we login and override the login redirect, if any.
+  }, [access_token, authState, loggedInUsername, router]);
 
   return (
     <>
