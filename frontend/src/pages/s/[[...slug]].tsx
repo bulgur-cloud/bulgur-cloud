@@ -13,6 +13,7 @@ import { FilePreview } from "@/fragments/s/FilePreview";
 import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
 import { useRouter } from "next/router";
+import { Navbar } from "@/fragments/Navbar";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -44,6 +45,7 @@ function StoreView() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <Navbar />
       <main className="max-w-prose p-4 mt-12 mx-auto">
         <PathBreadcrumbs />
         <StoreViewInner />
