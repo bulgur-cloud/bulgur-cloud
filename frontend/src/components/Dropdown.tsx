@@ -68,11 +68,11 @@ export function Dropdown({ children, trigger }: DropdownProps) {
             }
           }}
           style={{ visibility: isOpen ? "visible" : "hidden" }}
-          className={`absolute w-48 p-4`}
+          className={`absolute w-48 clip`}
         >
           <div
             ref={openFocusRef}
-            className="drop-shadow-md bg-base-100 rounded-box p-4 flex flex-col items-start"
+            className="drop-shadow-md bg-base-100 rounded-box flex flex-col items-start overflow-clip"
           >
             {children}
           </div>

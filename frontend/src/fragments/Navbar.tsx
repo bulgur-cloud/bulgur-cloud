@@ -31,10 +31,16 @@ export function Navbar() {
             </button>
           }
         >
-          <Link href="/settings" className="btn btn-ghost w-full">
+          <Link
+            href="/settings"
+            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+          >
             Settings
           </Link>
-          <button onClick={logout} className="btn btn-ghost w-full">
+          <button
+            onClick={logout}
+            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+          >
             Logout
           </button>
         </Dropdown>
