@@ -326,13 +326,17 @@ pub struct PutStoragePayload {
 }
 
 #[tracing::instrument(skip(payload))]
-#[put("/{store}/{path:.*}")]
+#[put("/{store_and_path:.*}")]
 async fn put_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
     mut payload: Multipart,
 ) -> Result<web::Json<PutStoragePayload>, StorageError> {
-    let (store, path) = params.as_ref();
+    let (store, path) = params
+        .as_ref()
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params.as_str(), ""));
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
 
     tokio::fs::create_dir(&store_path).await.or_else(|err| {

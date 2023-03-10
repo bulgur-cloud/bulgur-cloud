@@ -221,7 +221,7 @@ export function useUpload() {
           await doRequest(
             {
               method: "PUT",
-              url,
+              url: `/storage/${url}`,
               data: form,
             },
             ({ total, done }) => {

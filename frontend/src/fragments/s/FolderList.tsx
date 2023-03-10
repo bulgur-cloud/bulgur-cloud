@@ -46,33 +46,31 @@ export function FolderList() {
   const { entries } = resp.data.data;
 
   return (
-    <>
-      <table className="w-full">
-        <colgroup>
-          <col style={{ width: "32px" }} />
-          <col />
-          <col style={{ width: "85px" }} />
-        </colgroup>
-        <thead>
+    <table className="w-full">
+      <colgroup>
+        <col style={{ width: "32px" }} />
+        <col />
+        <col style={{ width: "85px" }} />
+      </colgroup>
+      <thead>
+        <tr>
+          <th className="bg-base-200 rounded-tl-lg py-4"></th>
+          <th className="bg-base-200 py-4">Name</th>
+          <th className="bg-base-200 rounded-tr-lg py-4">Size</th>
+        </tr>
+      </thead>
+      <tbody>
+        {entries.length === 0 && (
           <tr>
-            <th className="bg-base-200 rounded-tl-lg py-4"></th>
-            <th className="bg-base-200 py-4">Name</th>
-            <th className="bg-base-200 rounded-tr-lg py-4">Size</th>
+            <td colSpan={3} className="text-center p-8">
+              This folder is empty.
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {entries.length === 0 && (
-            <tr>
-              <td colSpan={3} className="text-center p-8">
-                This folder is empty.
-              </td>
-            </tr>
-          )}
-          {entries.map((entry) => (
-            <Listing entry={entry} key={entry.name} />
-          ))}
-        </tbody>
-      </table>
-    </>
+        )}
+        {entries.map((entry) => (
+          <Listing entry={entry} key={entry.name} />
+        ))}
+      </tbody>
+    </table>
   );
 }
