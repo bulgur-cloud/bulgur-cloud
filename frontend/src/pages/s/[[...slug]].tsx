@@ -12,8 +12,6 @@ import { FileNotFound } from "@/fragments/s/NotFound";
 import { FilePreview } from "@/fragments/s/FilePreview";
 import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
-import { useRouter } from "next/router";
-import { Navbar } from "@/fragments/Navbar";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -49,6 +47,10 @@ function StoreView() {
         />
       </Head>
       <main className="max-w-prose mt-12 mx-auto">
+        <div className="flex flex-row my-4">
+          <button className="btn btn-primary mx-2">Upload</button>
+          <button className="btn btn-primary mx-2">New Folder</button>
+        </div>
         <PathBreadcrumbs />
         <StoreViewInner />
       </main>
