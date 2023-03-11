@@ -72,6 +72,14 @@ impl actix_web::error::ResponseError for StorageError {
     }
 }
 
+fn parse_params(params: &str) -> (&str, &str) {
+    let (store, path) = params
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params, ""));
+    (store, path)
+}
+
 /// Gets the path, but only if the user is authorized for it.
 #[tracing::instrument]
 pub fn get_authorized_path(
@@ -193,11 +201,7 @@ pub async fn get_storage(
     params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
-    let (store, path) = params
-        .as_ref()
-        .split_once('/')
-        // If there is no `/`, then we just have the store and the path is empty.
-        .unwrap_or_else(|| (params.as_str(), ""));
+    let (store, path) = parse_params(&params);
     get_storage_internal((store, path), &authorized).await
 }
 
@@ -257,11 +261,7 @@ async fn head_storage(
     params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> HttpResponse {
-    let (store, path) = params
-        .as_ref()
-        .split_once('/')
-        // If there is no `/`, then we just have the store and the path is empty.
-        .unwrap_or_else(|| (params.as_str(), ""));
+    let (store, path) = parse_params(&params);
 
     let check = async {
         let store_path = get_authorized_path(&authorized, store, Some(path))?;
@@ -296,11 +296,7 @@ async fn meta_storage(
     params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> HttpResponse {
-    let (store, path) = params
-        .as_ref()
-        .split_once('/')
-        // If there is no `/`, then we just have the store and the path is empty.
-        .unwrap_or_else(|| (params.as_str(), ""));
+    let (store, path) = parse_params(&params);
 
     let check = async {
         let store_path = get_authorized_path(&authorized, store, Some(path))?;
@@ -332,11 +328,7 @@ async fn put_storage(
     authorized: Option<ReqData<Authorized>>,
     mut payload: Multipart,
 ) -> Result<web::Json<PutStoragePayload>, StorageError> {
-    let (store, path) = params
-        .as_ref()
-        .split_once('/')
-        // If there is no `/`, then we just have the store and the path is empty.
-        .unwrap_or_else(|| (params.as_str(), ""));
+    let (store, path) = parse_params(&params);
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
 
     tokio::fs::create_dir(&store_path).await.or_else(|err| {
