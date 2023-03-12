@@ -12,6 +12,9 @@ module.exports = {
       animation: {
         "spin-counter-clockwise": "spin-counter-clockwise 1s linear infinite",
       },
+      minHeight: {
+        "1/2-screen": "50vh",
+      },
     },
   },
   plugins: [require("daisyui")],

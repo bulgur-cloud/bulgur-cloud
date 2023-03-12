@@ -90,7 +90,7 @@ export function Slideout({
           [offSide]: offSideValue,
           transform: translate,
         }}
-        className="fixed transition-all"
+        className="fixed transition-all ease-in-out duration-300"
       >
         {children}
       </div>

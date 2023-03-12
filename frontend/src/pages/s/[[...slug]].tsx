@@ -13,6 +13,7 @@ import { FilePreview } from "@/fragments/s/FilePreview";
 import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
 import { UploadButton } from "@/fragments/s/UploadButton";
+import { UploadProgress } from "@/fragments/s/UploadProgress";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -50,6 +51,7 @@ function StoreView() {
       <main className="max-w-prose mt-12 mx-auto">
         <div className="flex flex-row my-4">
           <UploadButton />
+          <UploadProgress />
           <button className="btn btn-primary mx-2">New Folder</button>
         </div>
         <PathBreadcrumbs />
