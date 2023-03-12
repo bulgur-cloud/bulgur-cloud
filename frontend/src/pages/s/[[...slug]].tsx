@@ -13,9 +13,8 @@ import { FilePreview } from "@/fragments/s/FilePreview";
 import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
 import { UploadButton } from "@/fragments/s/UploadButton";
-import { UploadProgress } from "@/fragments/s/UploadProgress";
+import { UploadProgress } from "@/fragments/s/Slideouts/UploadProgress";
 import { NewFolderButton } from "@/fragments/s/NewFolderButton";
-import { NewFolderModal } from "@/fragments/s/ActionModal/NewFolderModal";
 import { ModalSelector } from "@/fragments/s/ActionModal/ModalSelector";
 
 function useCurrentPathMeta() {

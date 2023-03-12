@@ -64,10 +64,8 @@ export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
   selected: {
     [fullpath: string]: {
-      store: string;
       path: string;
       name: string;
-      isFile: boolean;
     };
   };
   /** Maps file names to their current upload progress. */
@@ -97,25 +95,39 @@ export const storageSlice = createSlice({
     markSelected: (
       state,
       action: {
-        payload: { store: string; path: string; name: string; isFile: boolean };
+        payload: { path: string; name: string };
       },
     ) => {
-      const { store, path, name, isFile } = action.payload;
-      const fullPath = joinURL(store, path, name);
+      const { path, name } = action.payload;
+      const fullPath = joinURL(path, name);
       state.selected[fullPath] = {
-        store,
         path,
         name,
-        isFile,
       };
     },
     unmarkSelected: (
       state,
-      action: { payload: { store: string; path: string; name: string } },
+      action: { payload: { path: string; name: string } },
     ) => {
-      const { store, path, name } = action.payload;
-      const fullPath = joinURL(store, path, name);
-      if (state.selected[fullPath]) delete state.selected[fullPath];
+      const { path, name } = action.payload;
+      const fullPath = joinURL(path, name);
+      delete state.selected[fullPath];
+    },
+    toggleSelected: (
+      state,
+      action: { payload: { path: string; name: string } },
+    ) => {
+      console.log("toggle Selected called");
+      const { path, name } = action.payload;
+      const fullPath = joinURL(path, name);
+      if (state.selected[fullPath]) {
+        delete state.selected[fullPath];
+      } else {
+        state.selected[fullPath] = {
+          path,
+          name,
+        };
+      }
     },
     clearAllSelected: (state) => {
       state.selected = {};
