@@ -16,6 +16,7 @@ import { UploadButton } from "@/fragments/s/UploadButton";
 import { UploadProgress } from "@/fragments/s/Slideouts/UploadProgress";
 import { NewFolderButton } from "@/fragments/s/NewFolderButton";
 import { ModalSelector } from "@/fragments/s/ActionModal/ModalSelector";
+import { Selection } from "@/fragments/s/Slideouts/Selection";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -54,6 +55,7 @@ function StoreView() {
         <div className="flex flex-row my-4">
           <UploadButton />
           <UploadProgress />
+          <Selection />
           <NewFolderButton />
           <ModalSelector />
         </div>
