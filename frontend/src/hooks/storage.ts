@@ -63,7 +63,7 @@ function useMutateFolder() {
       site?: string;
     } = {
       method: "GET",
-      url,
+      url: `storage/${url}`,
       access_token,
       site,
     };
@@ -71,6 +71,7 @@ function useMutateFolder() {
   }
 
   function doMutateContainingFolder(url: string) {
+    console.log(urlUp1Level(url));
     doMutateFolder(urlUp1Level(url));
   }
 
@@ -83,12 +84,13 @@ export function useCreateFolder() {
 
   async function doCreateFolder(url: string) {
     await doRequest({
-      url,
+      url: `storage/${url}`,
       method: "POST",
       data: {
         action: "CreateFolder",
       },
     });
+    console.log(url);
     doMutateContainingFolder(url);
   }
 
@@ -221,7 +223,7 @@ export function useUpload() {
           await doRequest(
             {
               method: "PUT",
-              url: `/storage/${url}`,
+              url: `storage/${url}`,
               data: form,
             },
             ({ total, done }) => {

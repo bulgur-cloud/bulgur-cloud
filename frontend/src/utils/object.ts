@@ -11,7 +11,11 @@ export function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
 export function shallowEquals<
   Left extends Record<string, unknown>,
   Right extends Record<string, unknown>,
->(left: Left, right: Right) {
+>(left: Left | undefined, right: Right | undefined) {
+  // handle undefined as a special case
+  if (left === undefined && right === undefined) return true;
+  if (left === undefined || right === undefined) return false;
+
   // If they have a different number of keys, they can't be equal
   if (Object.keys(left).length !== Object.keys(right).length) return false;
   // If right doesn't contain all the same key-value pairs left does, they can't

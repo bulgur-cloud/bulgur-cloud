@@ -14,6 +14,9 @@ import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
 import { UploadButton } from "@/fragments/s/UploadButton";
 import { UploadProgress } from "@/fragments/s/UploadProgress";
+import { NewFolderButton } from "@/fragments/s/NewFolderButton";
+import { NewFolderModal } from "@/fragments/s/ActionModal/NewFolderModal";
+import { ModalSelector } from "@/fragments/s/ActionModal/ModalSelector";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -52,7 +55,8 @@ function StoreView() {
         <div className="flex flex-row my-4">
           <UploadButton />
           <UploadProgress />
-          <button className="btn btn-primary mx-2">New Folder</button>
+          <NewFolderButton />
+          <ModalSelector />
         </div>
         <PathBreadcrumbs />
         <StoreViewInner />

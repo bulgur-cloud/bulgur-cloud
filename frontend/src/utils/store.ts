@@ -52,11 +52,13 @@ export const authSlice = createSlice({
   },
 });
 
-export enum StorageAction {
-  Rename = "Rename",
-  Delete = "Delete",
-  CreateFolder = "Create Folder",
-}
+export type ActionCreateFolder = {
+  type: "CreateFolder";
+  path: string;
+};
+export type ActionBulkDelete = {
+  type: "BulkDelete";
+};
 
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
@@ -76,15 +78,7 @@ export type StorageState = {
       done: number;
     };
   };
-  action?:
-    | {
-        type: StorageAction;
-        isFile: boolean;
-        name: string;
-        store: string;
-        path: string;
-      }
-    | { type: "BulkDelete" };
+  action?: ActionCreateFolder | ActionBulkDelete;
 };
 
 const initialStorageState: StorageState = {

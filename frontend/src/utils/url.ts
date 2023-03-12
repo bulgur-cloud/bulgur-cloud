@@ -7,12 +7,11 @@ export function joinURL(...args: string[]) {
 }
 
 export function urlUp1Level(url: string) {
-  const upUrl =
-    normalizeURL(url)
-      .replace(/\/$/, "")
-      .split("/")
-      .slice(undefined, -1)
-      .join("/") + "/";
+  const upUrl = normalizeURL(url)
+    .replace(/\/$/, "")
+    .split("/")
+    .slice(undefined, -1)
+    .join("/");
   if (upUrl === "/") return "";
   return upUrl;
 }
