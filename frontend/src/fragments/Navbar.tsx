@@ -19,7 +19,7 @@ export function Navbar() {
 
   return (
     <header className="navbar bg-base-100 p-4">
-      <div className="ml-4 select-none">Bulgur Cloud</div>
+      <div className="select-none text-2xl">Bulgur Cloud</div>
       <div className="grow" />
       <div>{username}</div>
       <div className="grow" />
