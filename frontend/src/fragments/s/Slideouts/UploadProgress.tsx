@@ -19,25 +19,6 @@ export function UploadProgress() {
   const { isOpen, onToggle, onOpen, onClose } = useDisclosure(false);
 
   const slideoutInner = useRef<HTMLDivElement>(null);
-  // When open, disable scrolling on the body. Otherwise when a user scrolls to
-  // the bottom of the slideout it will scroll the body. Except, we only want to
-  // do this if the slideout is covering most of the screen (i.e. mobile
-  // vertical) otherwise the user may want to keep the slideout open and scroll
-  // the body at the same time.
-  useEffect(() => {
-    const body = document.getElementsByTagName("body")[0];
-    if (!isOpen) {
-      body.style.overflow = "auto";
-    } else {
-      if (
-        body &&
-        body.getBoundingClientRect().width * 0.7 <
-          (slideoutInner?.current?.getBoundingClientRect().width ?? 400)
-      ) {
-        body.style.overflow = "hidden";
-      }
-    }
-  }, [isOpen, slideoutInner]);
 
   // When the upload starts, open the slideout. When it ends, close it.
   useEffect(() => {
@@ -59,7 +40,7 @@ export function UploadProgress() {
       </button>
       {/* w is 80% of the screen, but that's mainly for small width screens like vertical phones. We really want max-w-prose. */}
       <div ref={slideoutInner} className="rounded-r-2xl overflow-hidden">
-        <div className="bg-base-100 drop-shadow-xl min-h-1/2-screen max-h-screen p-4 w-[80vw] max-w-prose border-base-content border-2 border-l-0 rounded-r-2xl overflow-y-scroll">
+        <div className="bg-base-100 drop-shadow-xl min-h-1/2-screen max-h-screen p-4 w-[80vw] max-w-prose border-base-content border-2 border-l-0 rounded-r-2xl overflow-y-scroll overscroll-contain my-2">
           <h2 className="text-2xl mb-4">Uploads</h2>
 
           {uploads.map((upload) => (
