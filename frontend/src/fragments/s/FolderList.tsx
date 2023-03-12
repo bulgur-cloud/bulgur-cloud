@@ -24,8 +24,8 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
           {entry.name}
         </Link>
       </td>
-      <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20">
-        {humanSize(entry.size)}
+      <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20 text-center">
+        {entry.is_file ? humanSize(entry.size) : "-"}
       </td>
     </tr>
   );
