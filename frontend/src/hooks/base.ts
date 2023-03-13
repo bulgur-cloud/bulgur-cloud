@@ -10,7 +10,7 @@ export function useRunAsync() {
     fn: () => Promise<void>,
     onError?: (error: unknown) => Promise<void>,
   ) {
-    fn().catch((error) => {
+    return fn().catch((error) => {
       console.error(error);
       dispatch(
         errorSlice.actions.addError({

@@ -103,7 +103,7 @@ export function useDelete() {
 
   async function doDelete(url: string) {
     await doRequest({
-      url,
+      url: `storage/${url}`,
       method: "DELETE",
     });
     doMutateContainingFolder(url);
@@ -176,7 +176,7 @@ export function useRename() {
   async function doRename(from: string, to: string) {
     await doRequest({
       method: "POST",
-      url: from,
+      url: `storage/${from}`,
       data: {
         action: "Move",
         new_path: to,
@@ -184,8 +184,7 @@ export function useRename() {
     });
 
     doMutateContainingFolder(from);
-    const toPath = joinURL(STORAGE, to);
-    doMutateContainingFolder(toPath);
+    doMutateContainingFolder(to);
   }
 
   return { doRename };
