@@ -1,5 +1,6 @@
 import { shallowEquals } from "@/utils/object";
 import { useAppSelector } from "@/utils/store";
+import { DeleteModal } from "./DeleteModal";
 import { NewFolderModal } from "./NewFolderModal";
 import { RenameModal } from "./RenameModal";
 
@@ -15,6 +16,10 @@ export function ModalSelector() {
 
   if (action?.type === "Rename") {
     return <RenameModal action={action} />;
+  }
+
+  if (action?.type === "Delete") {
+    return <DeleteModal action={action} />;
   }
 
   return <></>;

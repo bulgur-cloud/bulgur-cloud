@@ -131,7 +131,7 @@ export function BaseFilenameModal<
   );
 }
 
-function ModalButton({
+export function ModalButton({
   onPress,
   message,
   highlight,
