@@ -99,11 +99,10 @@ export function BaseFilenameModal<
             description={description}
           />
           <input
-            className="input my-4"
+            className="input input-bordered my-4"
             placeholder={props.placeHolder ?? "new name"}
             enterKeyHint="done"
             type="text"
-            autoFocus={true}
             defaultValue={props.initialValue}
             onSubmit={onSubmit}
             onChange={(event) => setNewName(event.target.value)}
@@ -167,9 +166,9 @@ function SafetyLabel({
     <span
       className={`text-xs italic text-warning ${
         shouldDisplay ? "opacity-100" : "opacity-0"
-      }`}
+      } h-4`}
     >
-      {description ?? " "}
+      {description}
     </span>
   );
 }

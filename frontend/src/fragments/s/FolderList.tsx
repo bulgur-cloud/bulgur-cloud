@@ -76,6 +76,7 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
         {entry.is_file ? humanSize(entry.size) : "-"}
       </td>
       <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20 text-center">
+        {/* TODO: Should use a single dropdown that targets the correct button instead of a different dropdown per item */}
         <Dropdown
           trigger={
             <button className="btn btn-square btn-ghost">
@@ -83,10 +84,30 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
             </button>
           }
         >
-          <button className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none">
+          <button
+            onClick={() => {
+              dispatch(
+                storageSlice.actions.promptAction({
+                  path: joinURL(fullPath, entry.name),
+                  type: "Rename",
+                }),
+              );
+            }}
+            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+          >
             Rename
           </button>
-          <button className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none">
+          <button
+            onClick={() => {
+              dispatch(
+                storageSlice.actions.promptAction({
+                  path: joinURL(fullPath, entry.name),
+                  type: "Delete",
+                }),
+              );
+            }}
+            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+          >
             Delete
           </button>
         </Dropdown>
