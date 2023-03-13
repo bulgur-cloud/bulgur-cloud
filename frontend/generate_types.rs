@@ -1,7 +1,7 @@
 //! Run this binary to re-generate the `api.d.ts` file.
 //! If new types are added for the API, import them here and add to ApiTypes.
 //!
-//! Make sure to run this inside `bulgur-cloud-frontend` folder.
+//! Make sure to run this inside `frontend` folder.
 use std::{env, fs, path::PathBuf};
 
 use bulgur_cloud::{
@@ -29,11 +29,8 @@ fn main() {
     };
     write_definition_file::<_, ApiTypes>(&mut buf, options).unwrap();
     let out = String::from_utf8(buf).unwrap();
-    if !env::current_dir()
-        .unwrap()
-        .ends_with("bulgur-cloud-frontend")
-    {
-        env::set_current_dir("bulgur-cloud-frontend").unwrap();
+    if !env::current_dir().unwrap().ends_with("frontend") {
+        env::set_current_dir("frontend").unwrap();
     }
     env::set_current_dir("src").unwrap();
     fs::write(PathBuf::from("api.d.ts"), &out).unwrap();

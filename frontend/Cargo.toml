@@ -1,5 +1,5 @@
 [package]
-name = "bulgur-cloud-frontend"
+name = "frontend"
 description = "Simple and delicious cloud storage and sharing."
 version = "0.3.0"
 edition = "2021"

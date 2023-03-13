@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "bulgur-cloud-frontend"
+        working-directory: "frontend"
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: lts/gallium
           cache: "yarn"
-          cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
+          cache-dependency-path: "frontend/yarn.lock"
       - run: yarn install --frozen-lockfile
         # Get a build first, because otherwise playwright times out waiting for the build
       - uses: Swatinem/rust-cache@v2

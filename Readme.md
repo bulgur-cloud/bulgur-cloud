@@ -49,7 +49,7 @@ eventually so this won't be required.
 
 #### Frontend
 
-There is a Playwright test suite. You can run it inside the `bulgur-cloud-frontend` folder with:
+There is a Playwright test suite. You can run it inside the `frontend` folder with:
 
 ```sh
 # You need to install browsers first if you haven't used playwright before

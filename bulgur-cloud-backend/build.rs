@@ -9,7 +9,7 @@ fn main() {
     fs::create_dir_all(
         PathBuf::from(".")
             .join("..")
-            .join("bulgur-cloud-frontend")
+            .join("frontend")
             .join("web-build"),
     )
     .expect("Failed to create web build folder");

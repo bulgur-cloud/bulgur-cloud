@@ -1,6 +1,6 @@
 ignore:
   # This is just a script to generate type defs for the frontend, nothing to test
-  - "bulgur-cloud-frontend/generate_types.rs"
+  - "frontend/generate_types.rs"
   # Derivations for basic Display and Debug impls, nothing to test
   - "simple-secrecy/src"
   # The main file is not really testable

@@ -4,7 +4,7 @@ use rust_embed_for_web::RustEmbed;
 
 /// Serves the web UI.
 #[derive(RustEmbed)]
-#[folder = "../bulgur-cloud-frontend/web-build/"]
+#[folder = "../frontend/web-build/"]
 #[gzip = "false"]
 struct UI;
 

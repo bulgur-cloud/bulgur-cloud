@@ -58,7 +58,7 @@ VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' bulgur-cloud-backend/Cargo.t
 prompt_confirm "Releasing version ${VERSION}, please make sure all Cargo.toml and package.json files are updated."
 
 # Build the UI
-pushd bulgur-cloud-frontend
+pushd frontend
 yarn build:web
 popd
 
