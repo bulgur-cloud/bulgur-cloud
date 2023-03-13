@@ -7,12 +7,13 @@ import { BError } from "@/utils/error";
 import { humanSize } from "@/utils/human";
 import { storageSlice, useAppDispatch, useAppSelector } from "@/utils/store";
 import { joinURL } from "@/utils/url";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconDots, IconMenu } from "@tabler/icons-react";
 import Link from "next/link";
 import { useCallback } from "react";
 import { useCurrentPath } from "./CurrentPathProvider";
 import ListingIcon from "./ListingIcon";
 import { FileNotFound } from "./NotFound";
+import { Dropdown } from "@/components/Dropdown";
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   const { fullPath } = useCurrentPath();
@@ -36,8 +37,8 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
   );
   const onShiftSelect = useCallback(
     (event: MouseEvent) => {
-      // Shift-clicking will select text between the last selected file and here.
-      // But shift-click is also used to select files, so we need to prevent the text selection.
+      // We want to use shift-clicking to select files, not text range selection.
+      // So we'll remove text selected by shift clicking.
       // We'll reimplement a text copy & paste ourselves later.
       if (event.getModifierState("Shift")) {
         document.getSelection()?.removeAllRanges();
@@ -74,6 +75,22 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
       <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20 text-center">
         {entry.is_file ? humanSize(entry.size) : "-"}
       </td>
+      <td className="py-4 border-base-content border-b group-last:border-b-0 border-opacity-20 text-center">
+        <Dropdown
+          trigger={
+            <button className="btn btn-square btn-ghost">
+              <IconDots />
+            </button>
+          }
+        >
+          <button className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none">
+            Rename
+          </button>
+          <button className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none">
+            Delete
+          </button>
+        </Dropdown>
+      </td>
     </tr>
   );
 }
@@ -98,12 +115,14 @@ export function FolderList() {
         <col style={{ width: "32px" }} />
         <col />
         <col style={{ width: "85px" }} />
+        <col style={{ width: "32px" }} />
       </colgroup>
       <thead>
         <tr>
-          <th className="bg-base-200 rounded-tl-lg py-4"></th>
+          <th className="bg-base-200 py-4 rounded-tl-lg"></th>
           <th className="bg-base-200 py-4">Name</th>
-          <th className="bg-base-200 rounded-tr-lg py-4">Size</th>
+          <th className="bg-base-200 py-4">Size</th>
+          <th className="bg-base-200 py-4 rounded-tr-lg "></th>
         </tr>
       </thead>
       <tbody>

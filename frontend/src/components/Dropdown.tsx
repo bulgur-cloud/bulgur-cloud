@@ -1,15 +1,20 @@
-import { useDisclosure } from "@/utils/hooks/useDisclosure";
-import { debounce } from "debounce";
-import { ReactNode, useCallback, useEffect, useRef } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { Portal } from "./Portal";
+import { usePopper } from "react-popper";
+import { useDisclosure } from "@/utils/hooks/useDisclosure";
 
 export type DropdownProps = { children: ReactNode; trigger: ReactNode };
 
 export function Dropdown({ children, trigger }: DropdownProps) {
-  const { isOpen, onClose, onOpen } = useDisclosure(false);
-  const dropdownTriggerRef = useRef<HTMLDivElement>(null);
-  const dropdownItemsRef = useRef<HTMLDivElement>(null);
-  const openFocusRef = useRef<HTMLDivElement>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [referenceElement, setReferenceElement] = useState<HTMLElement | null>(
+    null,
+  );
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [{ name: "eventListeners", enabled: isOpen }],
+  });
+  const [openFocusRef, setOpenFocusRef] = useState<HTMLElement | null>(null);
 
   // Manage focus. When the dropdown gets opened, we put the focus on the first
   // child inside of the dropdown. When the dropdown is closed, we put the focus
@@ -17,14 +22,14 @@ export function Dropdown({ children, trigger }: DropdownProps) {
   // setTimeouts are required, otherwise the focus does not actually change.
   const focusChangeOnClose = useCallback(() => {
     setTimeout(() => {
-      (dropdownTriggerRef.current?.childNodes[0] as HTMLElement)?.focus();
+      (referenceElement?.childNodes[0] as HTMLElement)?.focus();
     });
-  }, []);
+  }, [referenceElement?.childNodes]);
   const focusChangeOnOpen = useCallback(() => {
     setTimeout(() => {
-      (openFocusRef.current as HTMLElement)?.focus();
+      (openFocusRef as HTMLElement)?.focus();
     });
-  }, []);
+  }, [openFocusRef]);
 
   const onToggle = useCallback(() => {
     if (isOpen) {
@@ -35,15 +40,6 @@ export function Dropdown({ children, trigger }: DropdownProps) {
       focusChangeOnOpen();
     }
   }, [focusChangeOnClose, focusChangeOnOpen, isOpen, onClose, onOpen]);
-
-  if (dropdownItemsRef.current && dropdownTriggerRef.current) {
-    const triggerRect = dropdownTriggerRef.current.getBoundingClientRect();
-    const itemsRect = dropdownItemsRef.current.getBoundingClientRect();
-    dropdownItemsRef.current.style.left = `${
-      triggerRect.right - itemsRect.width
-    }px`;
-    dropdownItemsRef.current.style.top = `${triggerRect.bottom}px`;
-  }
 
   return (
     <>
@@ -60,14 +56,16 @@ export function Dropdown({ children, trigger }: DropdownProps) {
             focusChangeOnClose();
           }
         }}
-        ref={dropdownTriggerRef}
+        ref={setReferenceElement}
       >
         {trigger}
       </div>
       <Portal>
         <div
           tabIndex={-1}
-          ref={dropdownItemsRef}
+          ref={setPopperElement}
+          style={styles.popper}
+          className={`absolute w-48 clip ${isOpen ? "" : "hidden"}`}
           onKeyUp={(e) => {
             if (e.key === "Escape") {
               onClose();
@@ -79,14 +77,13 @@ export function Dropdown({ children, trigger }: DropdownProps) {
             // onClick handler executes first if the user is clicking on the
             // dropdown trigger to close the dropdown.
             setTimeout(() => {
-              if (!openFocusRef.current?.contains(e.relatedTarget as Node)) {
+              if (!openFocusRef?.contains(e.relatedTarget as Node)) {
                 onClose();
                 focusChangeOnClose();
               }
             }, 100);
           }}
-          style={{ visibility: isOpen ? "visible" : "hidden" }}
-          className={`absolute w-48 clip`}
+          {...attributes.popper}
         >
           {/* Placeholder to trap focus within the dropdown */}
           <div
@@ -95,7 +92,7 @@ export function Dropdown({ children, trigger }: DropdownProps) {
             className="focus:outline-none"
           />
           <div
-            ref={openFocusRef}
+            ref={setOpenFocusRef}
             className="drop-shadow-md bg-base-100 rounded-box flex flex-col items-start overflow-clip"
             tabIndex={0}
           >

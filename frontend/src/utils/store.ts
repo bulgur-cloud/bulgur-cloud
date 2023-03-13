@@ -59,6 +59,10 @@ export type ActionCreateFolder = {
 export type ActionBulkDelete = {
   type: "BulkDelete";
 };
+export type ActionDelete = {
+  type: "Delete";
+  path: string;
+};
 
 export type StorageState = {
   /** Maps item names to full paths, for items that have been marked to be moved. */
@@ -76,7 +80,7 @@ export type StorageState = {
       done: number;
     };
   };
-  action?: ActionCreateFolder | ActionBulkDelete;
+  action?: ActionCreateFolder | ActionBulkDelete | ActionDelete;
 };
 
 const initialStorageState: StorageState = {
