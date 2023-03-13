@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@playwright/test': ^1.31.2
   '@popperjs/core': ^2.11.6
   '@reduxjs/toolkit': ^1.9.3
   '@tabler/icons-react': ^2.7.0
@@ -50,6 +51,7 @@ dependencies:
   typescript: 4.9.5
 
 devDependencies:
+  '@playwright/test': 1.31.2
   '@types/debounce': 1.2.1
   autoprefixer: 10.4.13_postcss@8.4.21
   daisyui: 2.51.3_gbtt6ss3tbiz4yjtvdr6fbrj44
@@ -264,6 +266,17 @@ packages:
       tslib: 2.5.0
     dev: false
 
+  /@playwright/test/1.31.2:
+    resolution: {integrity: sha512-BYVutxDI4JeZKV1+ups6dt5WiqKhjBtIYowyZIJ3kBDmJgsuPKsqqKNIMFbUePLSCmp2cZu+BDL427RcNKTRYw==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      '@types/node': 18.14.6
+      playwright-core: 1.31.2
+    optionalDependencies:
+      fsevents: 2.3.2
+    dev: true
+
   /@popperjs/core/2.11.6:
     resolution: {integrity: sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==}
     dev: false
@@ -328,7 +341,6 @@ packages:
 
   /@types/node/18.14.6:
     resolution: {integrity: sha512-93+VvleD3mXwlLI/xASjw0FzKcwzl3OdTCzm1LaRfqgS21gfFtK3zDXM5Op9TeeMsJVOaJ2VRDpT9q4Y3d0AvA==}
-    dev: false
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
@@ -2113,6 +2125,12 @@ packages:
   /pify/2.3.0:
     resolution: {integrity: sha512-udgsAY+fTnvv7kI7aaxbqwWNb0AHiB0qBO89PZKPkoTmGOgdbrHDKD+0B2X4uTfJ/FT1R09r9gTsjUjNJotuog==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /playwright-core/1.31.2:
+    resolution: {integrity: sha512-a1dFgCNQw4vCsG7bnojZjDnPewZcw7tZUNFN0ZkcLYKj+mPmXvg4MpaaKZ5SgqPsOmqIf2YsVRkgqiRDxD+fDQ==}
+    engines: {node: '>=14'}
+    hasBin: true
     dev: true
 
   /postcss-import/14.1.0_postcss@8.4.21:
