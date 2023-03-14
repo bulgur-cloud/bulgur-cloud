@@ -13,7 +13,7 @@ export function UploadProgress() {
   const uploads = useMemo(() => {
     return Object.values(uploadProgress);
   }, [uploadProgress]);
-  const isUploading = useMemo(() => {
+  const isUploading = !useMemo(() => {
     return uploads.length > 0;
   }, [uploads]);
   const { isOpen, onToggle, onOpen, onClose } = useDisclosure(false);
@@ -34,7 +34,7 @@ export function UploadProgress() {
       <button
         onClick={onToggle}
         style={{ visibility: isUploading ? "visible" : "hidden" }}
-        className="absolute left-full top-16 bg-base-100 p-4 rounded-r-2xl drop-shadow-xl"
+        className="absolute left-full top-16 bg-base-100 p-4 rounded-r-2xl drop-shadow-xl border-base-content border-2 border-l-0"
       >
         <IconUpload />
       </button>

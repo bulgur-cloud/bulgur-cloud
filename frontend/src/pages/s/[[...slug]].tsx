@@ -17,6 +17,7 @@ import { UploadProgress } from "@/fragments/s/Slideouts/UploadProgress";
 import { NewFolderButton } from "@/fragments/s/NewFolderButton";
 import { ModalSelector } from "@/fragments/s/ActionModal/ModalSelector";
 import { Selection } from "@/fragments/s/Slideouts/Selection";
+import Link from "next/link";
 
 function useCurrentPathMeta() {
   const { fullPath } = useCurrentPath();
@@ -68,9 +69,9 @@ function StoreView() {
 
 function Dashboard() {
   const username = useAppSelector((state) => state.auth.username);
-  // TODO Needs to be actually implemented! There is not much point in this
-  // right now because the user can only have one store, but we could list all
-  // their stores and all files shared with them etc. here once those exist
+  // TODO: This could show all stores as cards, and display stats about those
+  // stores. Maybe even let users pick colors or attach tags to stores. Or take
+  // notes about stores!
   return (
     <>
       <Head>
@@ -79,7 +80,12 @@ function Dashboard() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="max-w-prose p-4 mt-12 mx-auto">
-        <p>{username}</p>
+        <h2 className="text-xl mb-8">Your stores</h2>
+        <ul className="list-disc">
+          <Link href={`/s/${username}`}>
+            <li>{username}</li>
+          </Link>
+        </ul>
       </main>
     </>
   );

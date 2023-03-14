@@ -19,9 +19,11 @@ export function Navbar() {
 
   return (
     <header className="navbar bg-base-100 p-4">
-      <div className="select-none text-2xl">Bulgur Cloud</div>
+      <Link href="/s" className="select-none text-2xl">
+        Bulgur Cloud
+      </Link>
       <div className="grow" />
-      <div>{username}</div>
+      <Link href={`/s/${username}`}>{username}</Link>
       <div className="grow" />
       <div className="flex-none">
         <Dropdown
