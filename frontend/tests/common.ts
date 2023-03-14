@@ -11,10 +11,10 @@ export async function login({
   password?: string;
   homepage?: string;
 }) {
-  await page.goto(homepage ?? "/");
-  await page.fill('input[placeholder="Username"]', username);
-  await page.fill('input[placeholder="Password"]', password);
-  await page.click("text=Login");
+  await page.goto(homepage ?? "/login");
+  await page.fill("#username", username);
+  await page.fill("#password", password);
+  await page.click("text=Log in");
 }
 
 export const AUTH_STATE_FILE = "test-data/testing_auth_state.json";

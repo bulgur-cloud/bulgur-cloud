@@ -33,4 +33,4 @@ jobs:
       - run: cargo build
         working-directory: ""
       - run: pnpx playwright install --with-deps ${{ matrix.browser }} chromium
-      - run: pnpm test --project=${{ matrix.browser }}
+      - run: pnpm run test --project=${{ matrix.browser }}
