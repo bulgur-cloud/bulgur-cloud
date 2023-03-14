@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { HttpStatusCode, isOkResponse, useRunAsync } from "./base";
 import { axiosThrowless } from "./request";
 import { useRouter } from "next/router";
+import { getWindow } from "@/utils/window";
 
 export const PERSIST_AUTH_KEY = "bulgur-cloud-auth";
 
@@ -168,7 +169,7 @@ export function useEnsureAuthInitialized() {
       } else {
         dispatch(
           authSlice.actions.setSite(
-            `${window.location.protocol}//${window.location.host}`,
+            `${getWindow()?.location.protocol}//${getWindow()?.location.host}`,
           ),
         );
       }

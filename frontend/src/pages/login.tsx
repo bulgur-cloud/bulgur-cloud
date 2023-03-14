@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { pick, shallowEquals } from "@/utils/object";
 import { useAppSelector } from "@/utils/store";
+import { getWindow } from "@/utils/window";
 
 export default function Login() {
   const {
@@ -24,7 +25,7 @@ export default function Login() {
   const site =
     process.env.NODE_ENV === "development"
       ? "http://localhost:8000"
-      : `${window.location.protocol}//${window.location.host}`;
+      : `${getWindow()?.location.protocol}//${getWindow()?.location.host}`;
 
   const login = useCallback(() => {
     runAsync(async () => {
