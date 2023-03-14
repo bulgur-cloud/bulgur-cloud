@@ -1,3 +1,7 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+// We disable no-static-element-interactions here because we have to add
+// keyboard and focus listeners in particular points in the DOM to get the right
+// interactions. We're not making the mistake of slapping an onClick on a div.
 import { ReactNode, useCallback, useState } from "react";
 import { Portal } from "./Portal";
 import { usePopper } from "react-popper";

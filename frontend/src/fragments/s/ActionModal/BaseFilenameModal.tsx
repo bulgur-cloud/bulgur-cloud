@@ -1,7 +1,6 @@
 import { Portal } from "@/components/Portal";
 import { describeUnsafeFilename, isSafeFilename } from "@/utils/filename";
-import { nanoid } from "@reduxjs/toolkit";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 /** Wait this many ms before warning users about an unsafe filename.
  *
@@ -12,7 +11,7 @@ const UNSAFE_FILENAME_WARNING_DELAY = 800;
 
 export type BaseFilenameModalAction = {
   message: string;
-  action?: (name: string) => void;
+  action?: (_name: string) => void;
 };
 
 type BaseFilenameModalActionMap = {

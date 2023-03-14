@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import { ErrorView } from "@/components/ErrorView";
 import { FullPageSpinner } from "@/components/Spinner";
 import api from "@/hooks/api";
@@ -7,7 +7,7 @@ import { BError } from "@/utils/error";
 import { humanSize } from "@/utils/human";
 import { storageSlice, useAppDispatch, useAppSelector } from "@/utils/store";
 import { joinURL } from "@/utils/url";
-import { IconCheck, IconDots, IconMenu } from "@tabler/icons-react";
+import { IconCheck, IconDots } from "@tabler/icons-react";
 import Link from "next/link";
 import { useCallback } from "react";
 import { useCurrentPath } from "./CurrentPathProvider";
@@ -23,7 +23,7 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
     return state.storage.selected[path] !== undefined;
   });
   const onSelect = useCallback(
-    (event: MouseEvent<unknown>) => {
+    (event: MouseEvent<unknown> | KeyboardEvent<unknown>) => {
       event.preventDefault();
       event.stopPropagation();
       dispatch(
@@ -50,7 +50,16 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
 
   return (
     <tr className="max-w-full group" onClick={onShiftSelect}>
-      <td onClick={onSelect} className="py-4">
+      <td
+        onClick={onSelect}
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSelect(e);
+          }
+        }}
+        className="py-4"
+      >
         <div className="relative">
           <ListingIcon className="inline mr-1" entry={entry} />
           {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCurrentPath } from "./CurrentPathProvider";
 
 export function FileNotFound() {
-  const { fullPath, store } = useCurrentPath();
+  const { fullPath } = useCurrentPath();
   const username = useAppSelector((state) => state.auth.username);
 
   return (

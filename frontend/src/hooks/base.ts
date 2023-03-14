@@ -8,7 +8,7 @@ export function useRunAsync() {
   /** Runs an async function, catching and storing any errors. */
   function runAsync(
     fn: () => Promise<void>,
-    onError?: (error: unknown) => Promise<void>,
+    onError?: (_error: unknown) => Promise<void>,
   ) {
     return fn().catch((error) => {
       console.error(error);

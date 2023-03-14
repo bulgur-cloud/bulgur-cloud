@@ -3,8 +3,8 @@ import { getWindow } from "./window";
 /** Cross-platform web/native persistent storage. Intended for sensitive data. */
 export class Persist {
   public static async get<T>(key: string): Promise<T | null> {
-    let out: string | undefined | null;
-    out = getWindow()?.localStorage.getItem(key);
+    const out: string | undefined | null =
+      getWindow()?.localStorage.getItem(key);
     if (!out) return null;
     return JSON.parse(out) as T;
   }
