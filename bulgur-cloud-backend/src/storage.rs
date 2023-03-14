@@ -10,7 +10,7 @@ use actix_multipart::{Multipart, MultipartError};
 use actix_web::{
     delete, get, head,
     http::{self, StatusCode},
-    post, put,
+    post, put, route,
     web::{self, ReqData},
     Either, HttpResponse, HttpResponseBuilder,
 };
@@ -70,6 +70,14 @@ impl actix_web::error::ResponseError for StorageError {
     fn error_response(&self) -> HttpResponse {
         HttpResponseBuilder::new(self.status_code()).json(self)
     }
+}
+
+fn parse_params(params: &str) -> (&str, &str) {
+    let (store, path) = params
+        .split_once('/')
+        // If there is no `/`, then we just have the store and the path is empty.
+        .unwrap_or_else(|| (params, ""));
+    (store, path)
 }
 
 /// Gets the path, but only if the user is authorized for it.
@@ -142,10 +150,10 @@ pub struct FolderEntry {
 }
 
 pub async fn get_storage_internal(
-    params: web::Path<(String, String)>,
+    params: (&str, &str),
     authorized: &Option<ReqData<Authorized>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
-    let (store, path) = params.as_ref();
+    let (store, path) = params;
 
     let store_path = get_authorized_path(authorized, store, Some(path))?;
     tracing::debug!("Requested path {}", store_path.to_string_lossy());
@@ -188,12 +196,13 @@ pub struct EmptySuccess {
 }
 
 #[tracing::instrument]
-#[get("/{store}/{path:.*}")]
+#[get("/{store_and_path:.*}")]
 pub async fn get_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
-    get_storage_internal(params, &authorized).await
+    let (store, path) = parse_params(&params);
+    get_storage_internal((store, path), &authorized).await
 }
 
 fn empty_ok_response() -> HttpResponse {
@@ -247,12 +256,12 @@ pub async fn common_delete(
 }
 
 #[tracing::instrument]
-#[head("/{store}/{path:.*}")]
+#[head("/{store_and_path:.*}")]
 async fn head_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
 ) -> HttpResponse {
-    let (store, path) = params.as_ref();
+    let (store, path) = parse_params(&params);
 
     let check = async {
         let store_path = get_authorized_path(&authorized, store, Some(path))?;
@@ -274,6 +283,38 @@ async fn head_storage(
     }
 }
 
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "generate_types", derive(TypeDef))]
+pub struct FileMeta {
+    pub is_file: bool,
+    pub size: u64,
+}
+
+#[tracing::instrument]
+#[route("/{store_and_path:.*}", method = "META")]
+async fn meta_storage(
+    params: web::Path<String>,
+    authorized: Option<ReqData<Authorized>>,
+) -> HttpResponse {
+    let (store, path) = parse_params(&params);
+
+    let check = async {
+        let store_path = get_authorized_path(&authorized, store, Some(path))?;
+        tracing::debug!("Requested path {}", store_path.to_string_lossy());
+        Ok(fs::metadata(store_path).await?)
+    }
+    .await;
+
+    match check {
+        Ok(meta) => HttpResponse::Ok().json(FileMeta {
+            is_file: meta.is_file(),
+            size: meta.len(),
+        }),
+        Err(StorageError::NotAuthorized) => HttpResponse::Unauthorized().finish(),
+        Err(_) => HttpResponse::NotFound().finish(),
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[cfg_attr(feature = "generate_types", derive(TypeDef))]
 pub struct PutStoragePayload {
@@ -281,13 +322,13 @@ pub struct PutStoragePayload {
 }
 
 #[tracing::instrument(skip(payload))]
-#[put("/{store}/{path:.*}")]
+#[put("/{store_and_path:.*}")]
 async fn put_storage(
-    params: web::Path<(String, String)>,
+    params: web::Path<String>,
     authorized: Option<ReqData<Authorized>>,
     mut payload: Multipart,
 ) -> Result<web::Json<PutStoragePayload>, StorageError> {
-    let (store, path) = params.as_ref();
+    let (store, path) = parse_params(&params);
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
 
     tokio::fs::create_dir(&store_path).await.or_else(|err| {
@@ -427,9 +468,15 @@ async fn post_storage(
 
 #[tracing::instrument]
 async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpResponse {
-    let token = Token::new();
     let full_path = format!("/{}", path.to_string_lossy());
+    let existing = state.path_tokens.get(&full_path).await.unwrap_or_log();
+    if let Some(token) = existing {
+        return HttpResponse::Ok().json(PathTokenResponse { token });
+    }
+
+    let token = Token::new();
     tracing::debug!("Creating a token for {}", full_path);
+    // TODO This should have a TTL attached
     state
         .path_tokens
         .put(full_path, &token)

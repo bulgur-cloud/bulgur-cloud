@@ -3,7 +3,7 @@ members = [
   "bulgur-cloud-backend",
   "simple-secrecy",
   "atomic-rename",
-  "bulgur-cloud-frontend",
+  "frontend",
 ]
 
 [profile.release]

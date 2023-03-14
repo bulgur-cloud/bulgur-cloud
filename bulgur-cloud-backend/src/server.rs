@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::{env, path::PathBuf, str::FromStr};
 
 use crate::{
     auth::{create_nobody, login},
@@ -10,7 +10,7 @@ use crate::{
     },
     state::AppState,
     static_files::{get_basic_assets, ui_pages},
-    storage::{delete_storage, get_storage, head_storage, post_storage, put_storage},
+    storage::{delete_storage, get_storage, head_storage, meta_storage, post_storage, put_storage},
 };
 
 use actix_service::ServiceFactory;
@@ -37,7 +37,16 @@ use tracing_actix_web::TracingLogger;
 
 fn setup_cors() -> Cors {
     let cors = Cors::default()
-        .allow_any_method()
+        .allowed_methods(vec![
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::HEAD,
+            Method::OPTIONS,
+            Method::PATCH,
+            Method::from_str("META").unwrap(),
+        ])
         .allowed_headers(vec![
             http::header::AUTHORIZATION,
             http::header::ACCEPT,
@@ -94,6 +103,7 @@ pub fn setup_app(
         .service(get_storage)
         .service(put_storage)
         .service(head_storage)
+        .service(meta_storage)
         .service(post_storage)
         .service(delete_storage);
     // Basic HTML scopes are for the javascript-free basic interface.

@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:8000",
+      "localStorage": [
+        {
+          "name": "bulgur-cloud-auth",
+          "value": "{\"username\":\"testuser\",\"access_token\":\"Zendk1Ie7ZiN16q4DpveH\",\"site\":\"http://localhost:8000\"}"
+        }
+      ]
+    }
+  ]
+}

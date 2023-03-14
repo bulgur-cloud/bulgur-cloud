@@ -6,7 +6,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:bullseye",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts/gallium"
+      "version": "lts/hydrogen"
     },
     "ghcr.io/devcontainers/features/rust:1": {}
   },
@@ -14,9 +14,9 @@
     // Used to watch for code changes and restart backend
     "cargo-watch": "cargo install cargo-watch",
     // Deps for the frontend need to be installed before any of the tools run
-    "frontend-deps": "cd bulgur-cloud-frontend && yarn install",
+    "frontend-deps": "cd frontend && pnpm install",
     // Bunyan is used to view the logs of the backend
-    "bunyan": "npm install --location=global bunyan",
+    "bunyan": "pnpm setup && pnpm install --global bunyan",
     // Add a test user to Bulgur Cloud
     "add-user": "cargo run -- user add --username test --password test"
   },

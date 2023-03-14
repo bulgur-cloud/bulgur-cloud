@@ -34,10 +34,10 @@
     {
       "label": "Run web frontend",
       "type": "npm",
-      "script": "web",
-      "path": "bulgur-cloud-frontend/",
+      "script": "dev",
+      "path": "frontend/",
       "options": {
-        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+        "cwd": "${workspaceFolder}/frontend"
       },
       "problemMatcher": [],
       "isBackground": true
@@ -55,7 +55,7 @@
       "type": "shell",
       "command": "cargo run",
       "options": {
-        "cwd": "${workspaceFolder}/bulgur-cloud-frontend"
+        "cwd": "${workspaceFolder}/frontend"
       },
       "problemMatcher": []
     }

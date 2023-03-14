@@ -18,17 +18,20 @@ jobs:
           - arm-unknown-linux-musleabihf
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: "7.29.0"
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: yarn
-          cache-dependency-path: bulgur-cloud-frontend/yarn.lock
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install UI deps
-        run: yarn install --frozen-lockfile
-        working-directory: bulgur-cloud-frontend
+        run: pnpm install
+        working-directory: frontend
       - name: Build UI
-        run: yarn build:web
-        working-directory: bulgur-cloud-frontend
+        run: pnpm build
+        working-directory: frontend
       - name: Install cross
         uses: taiki-e/install-action@v2
         with:
@@ -47,24 +50,27 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "bulgur-cloud-frontend"
+        working-directory: "frontend"
     strategy:
       fail-fast: false
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: "7.29.0"
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: "yarn"
-          cache-dependency-path: "bulgur-cloud-frontend/yarn.lock"
-      - run: yarn install --frozen-lockfile
+          cache: "pnmp"
+          cache-dependency-path: "frontend/pnpm-lock.yaml"
+      - run: pnpm install
         # Get a build first, because otherwise playwright times out waiting for the build
       - run: cargo build
         working-directory: ""
       - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
-      - run: yarn test --project=${{ matrix.browser }}
+      - run: pnpm run test --project=${{ matrix.browser }}
 
   backend-tests:
     name: backend tests

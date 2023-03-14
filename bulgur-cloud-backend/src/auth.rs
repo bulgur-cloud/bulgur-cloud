@@ -190,7 +190,7 @@ impl Serialize for LoginFailed {
 
 impl actix_web::error::ResponseError for LoginFailed {
     fn status_code(&self) -> http::StatusCode {
-        actix_web::http::StatusCode::BAD_REQUEST
+        actix_web::http::StatusCode::UNAUTHORIZED
     }
 
     fn error_response(&self) -> HttpResponse {
