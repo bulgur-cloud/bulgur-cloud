@@ -72,7 +72,7 @@ export function Selection() {
       <button
         onClick={onToggle}
         style={{ visibility: isSelecting ? "visible" : "hidden" }}
-        className="absolute right-full top-16 bg-base-100 p-4 rounded-l-2xl drop-shadow-xl"
+        className="absolute right-full top-16 bg-base-100 p-4 rounded-l-2xl drop-shadow-xl border-base-content border-2 border-r-0"
       >
         <IconCheckbox />
       </button>

@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { pick, shallowEquals } from "@/utils/object";
 import { useAppSelector } from "@/utils/store";
 import { getWindow } from "@/utils/window";
+import { BError } from "@/utils/error";
 
 export default function Login() {
   const {
@@ -20,6 +21,7 @@ export default function Login() {
   const router = useRouter();
   const { runAsync } = useRunAsync();
   const { doLogin } = useLogin();
+  const [error, setError] = useState<string>("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const site =
@@ -28,8 +30,18 @@ export default function Login() {
       : `${getWindow()?.location.protocol}//${getWindow()?.location.host}`;
 
   const login = useCallback(() => {
+    setError("");
     runAsync(async () => {
-      await doLogin({ username, password, site });
+      try {
+        await doLogin({ username, password, site });
+      } catch (err) {
+        if (BError.isBError(err) && err.code === "login_bad") {
+          setError(err.description);
+          return;
+        } else {
+          throw err;
+        }
+      }
       setUsername("");
       setPassword("");
       router.push(`/s/${username}`);
@@ -58,6 +70,7 @@ export default function Login() {
       <main className="max-w-sm mt-12 mx-auto">
         <h1 className="text-4xl mb-4">Bulgur Cloud</h1>
         <p className="mb-8">Simple and delicious cloud storage and sharing.</p>
+        <p className="text-error mb-4 min-h-8">{error}</p>
         <LabelledInput
           onChange={setUsername}
           id="username"

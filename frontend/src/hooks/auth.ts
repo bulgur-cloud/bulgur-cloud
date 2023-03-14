@@ -75,12 +75,11 @@ export function useLogin() {
         data,
       });
 
-      if (out.status === HttpStatusCode.BAD_REQUEST) {
+      if (out.status === HttpStatusCode.UNAUTHORIZED) {
         throw new BError({
           code: "login_bad",
           title: "Bad username or password",
-          description:
-            "The username or password you tried to use is incorrect.",
+          description: "The username or password is incorrect.",
         });
       }
 
