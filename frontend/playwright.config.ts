@@ -12,7 +12,7 @@ import { devices } from "@playwright/test";
  */
 const config: PlaywrightTestConfig = {
   webServer: {
-    command: "yarn start:test",
+    command: "pnpm run start:test",
     url: "http://localhost:8000/",
     timeout: 120 * 1000,
     reuseExistingServer: false,

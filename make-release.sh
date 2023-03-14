@@ -59,7 +59,7 @@ prompt_confirm "Releasing version ${VERSION}, please make sure all Cargo.toml an
 
 # Build the UI
 pushd frontend
-yarn build:web
+pnpm run build
 popd
 
 # Make the builds

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start:test": "node ./scripts/build-run.js",
+    "test": "pnpx playwright test"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",

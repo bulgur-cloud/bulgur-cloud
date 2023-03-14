@@ -7,8 +7,8 @@ const { execSync } = require("child_process");
 const frontendRoot = path.join(__dirname, "..");
 const projectRoot = path.join(frontendRoot, "..");
 
-console.log("Getting dev build of the frontend");
-execSync("yarn build:web --dev", { cwd: frontendRoot, stdio: "inherit" });
+console.log("Getting a build of the frontend");
+execSync("pnpm run build", { cwd: frontendRoot, stdio: "inherit" });
 
 console.log("Cleaning up test user files");
 fs.rmSync(path.join(projectRoot, "storage", "testuser"), {

@@ -21,13 +21,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: yarn
-          cache-dependency-path: frontend/yarn.lock
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install UI deps
-        run: yarn install --frozen-lockfile
+        run: pnpm install
         working-directory: frontend
       - name: Build UI
-        run: yarn build:web
+        run: pnpm build
         working-directory: frontend
       - name: Install cross
         uses: taiki-e/install-action@v2
@@ -57,14 +57,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: "yarn"
-          cache-dependency-path: "frontend/yarn.lock"
-      - run: yarn install --frozen-lockfile
+          cache: "pnmp"
+          cache-dependency-path: "frontend/pnpm-lock.yaml"
+      - run: pnpm install
         # Get a build first, because otherwise playwright times out waiting for the build
       - run: cargo build
         working-directory: ""
       - run: npx playwright install --with-deps ${{ matrix.browser }} chromium
-      - run: yarn test --project=${{ matrix.browser }}
+      - run: pnpm run test --project=${{ matrix.browser }}
 
   backend-tests:
     name: backend tests

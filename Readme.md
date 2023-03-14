@@ -32,28 +32,3 @@ Please see our docs here: [bulgur-cloud.github.io](https://bulgur-cloud.github.i
 Please see the [developer documentation](https://bulgur-cloud.github.io/docs/developers/dev-docs/dev-env) to get started.
 You can use Dev Containers to start up immediately if you have VSCode and Docker installed.
 Otherwise you can set up a local development environment.
-
-### Tests
-
-#### Backend
-
-To run tests, please run them single-threaded.
-
-```sh
-cargo test -- --test-threads=1
-```
-
-Tests create and use a test folder, and because they run in the same process
-this can't be parallelized. We'll make the file access parts modularized
-eventually so this won't be required.
-
-#### Frontend
-
-There is a Playwright test suite. You can run it inside the `frontend` folder with:
-
-```sh
-# You need to install browsers first if you haven't used playwright before
-yarn playwright install
-# Then, you can run the tests. By default it tests with Firefox and Chromium.
-yarn test
-```
