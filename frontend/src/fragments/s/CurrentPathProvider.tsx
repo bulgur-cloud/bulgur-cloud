@@ -1,7 +1,7 @@
 import { FullPageSpinner } from "@/components/Spinner";
 import { joinURL } from "@/utils/url";
 import { useRouter } from "next/router";
-import { createContext, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 
 type PathData =
   | {
@@ -68,11 +68,7 @@ export const useCurrentPath = () => {
  * rendered, so this component has to block all children until the path data is
  * ready.
  */
-export function CurrentPathProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CurrentPathProvider({ children }: { children: ReactNode }) {
   const { isLoading, data } = useCurrentPathFromRouter();
   if (isLoading) {
     return <FullPageSpinner />;

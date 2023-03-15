@@ -1,9 +1,5 @@
-import { useEnsureAuthInitialized, useLogin } from "@/hooks/auth";
-import { useRunAsync } from "@/hooks/base";
-import LabelledInput from "@/components/LabelledInput";
+import { useEnsureAuthInitialized } from "@/hooks/auth";
 import Head from "next/head";
-import { useCallback, useState } from "react";
-import { useRouter } from "next/router";
 
 export default function Settings() {
   useEnsureAuthInitialized();

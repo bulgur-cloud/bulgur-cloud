@@ -18,7 +18,7 @@ export default function LabelledInput({
   id?: string;
   type?: HTMLInputTypeAttribute;
   placeholder?: string;
-  onChange?: (value: string) => void;
+  onChange?: (_value: string) => void;
   onSubmit?: () => void;
 }) {
   const onChange = useCallback(

@@ -1,11 +1,6 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import {
-  EqualityFn,
-  TypedUseSelectorHook,
-  useDispatch,
-  useSelector,
-} from "react-redux";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import type { api } from "../hooks/api";
 import { BError } from "./error";
 import { joinURL } from "./url";

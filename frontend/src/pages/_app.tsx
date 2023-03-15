@@ -1,5 +1,4 @@
 import { Navbar } from "@/fragments/Navbar";
-import { useEnsureAuthInitialized } from "@/hooks/auth";
 import "@/styles/globals.css";
 import { storeWrapper } from "@/utils/store";
 import type { AppProps } from "next/app";
@@ -8,7 +7,6 @@ import { ReactNode } from "react";
 import { Provider } from "react-redux";
 
 function Layout({ children }: { children: ReactNode }) {
-  useEnsureAuthInitialized();
   return (
     <>
       <Head>

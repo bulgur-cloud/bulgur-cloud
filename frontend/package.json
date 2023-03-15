@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build && next export",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "start:test": "node ./scripts/build-run.js",
     "test": "pnpx playwright test"
@@ -20,7 +20,6 @@
     "@types/react-dom": "18.0.11",
     "axios": "^1.3.4",
     "debounce": "^1.2.1",
-    "eslint": "8.36.0",
     "eslint-config-next": "13.2.4",
     "form-data": "^4.0.0",
     "live-limit": "^1.0.0",
@@ -34,10 +33,16 @@
     "typescript": "4.9.5"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^13.2.4",
     "@playwright/test": "^1.31.2",
     "@types/debounce": "^1.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
     "autoprefixer": "^10.4.14",
     "daisyui": "^2.51.3",
+    "eslint": "8.36.0",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-react": "^7.32.2",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.2.7"
   }
