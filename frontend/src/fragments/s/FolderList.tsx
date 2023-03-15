@@ -14,6 +14,7 @@ import { useCurrentPath } from "./CurrentPathProvider";
 import ListingIcon from "./ListingIcon";
 import { FileNotFound } from "./NotFound";
 import { Dropdown } from "@/components/Dropdown";
+import { getDocument } from "@/utils/window";
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   const { fullPath } = useCurrentPath();
@@ -41,7 +42,7 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
       // So we'll remove text selected by shift clicking.
       // We'll reimplement a text copy & paste ourselves later.
       if (event.getModifierState("Shift")) {
-        document.getSelection()?.removeAllRanges();
+        getDocument()?.getSelection()?.removeAllRanges();
         onSelect(event);
       }
     },

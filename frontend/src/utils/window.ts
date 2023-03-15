@@ -7,3 +7,13 @@ export function getWindow() {
     return undefined;
   }
 }
+
+export function getDocument() {
+  try {
+    if (typeof document !== undefined) {
+      return document;
+    }
+  } catch (_err) {
+    return undefined;
+  }
+}
