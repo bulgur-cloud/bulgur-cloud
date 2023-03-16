@@ -189,8 +189,7 @@ export const errorSlice = createSlice({
       ) {
         error = new BError({
           code: "network_failure",
-          description:
-            "Failed to connect to the server. Make sure you have an internet connection, otherwise notify your admin.\n\nIf you are the admin, check that the server is running and accessible from this device.",
+          description: "Make sure you have an internet connection.",
           title: "Failed to connect to the server",
         });
       } else {

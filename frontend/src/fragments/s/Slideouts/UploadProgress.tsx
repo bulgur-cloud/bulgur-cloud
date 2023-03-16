@@ -13,7 +13,7 @@ export function UploadProgress() {
   const uploads = useMemo(() => {
     return Object.values(uploadProgress);
   }, [uploadProgress]);
-  const isUploading = !useMemo(() => {
+  const isUploading = useMemo(() => {
     return uploads.length > 0;
   }, [uploads]);
   const { isOpen, onToggle, onOpen, onClose } = useDisclosure(false);

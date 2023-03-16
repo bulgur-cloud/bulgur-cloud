@@ -1,11 +1,12 @@
 import { useRunAsync } from "@/hooks/base";
 import { useUpload } from "@/hooks/storage";
+import { getDocument } from "@/utils/window";
 import { useCallback } from "react";
 import { useCurrentPath } from "./CurrentPathProvider";
 
 function selectFiles(): Promise<null | File[]> {
   return new Promise((resolve) => {
-    const picker = document.createElement("input");
+    const picker = getDocument()!.createElement("input");
     picker.type = "file";
     picker.multiple = true;
     picker.accept = "*";

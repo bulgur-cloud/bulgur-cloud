@@ -1,3 +1,4 @@
+import { ErrorDisplay } from "@/fragments/ErrorDisplay";
 import { Navbar } from "@/fragments/Navbar";
 import "@/styles/globals.css";
 import { storeWrapper } from "@/utils/store";
@@ -24,6 +25,7 @@ function Layout({ children }: { children: ReactNode }) {
         <link key="favicon" rel="icon" href="/favicon.ico" />
       </Head>
       <Navbar />
+      <ErrorDisplay />
       <div className="p-4">{children}</div>
     </>
   );
