@@ -11,7 +11,7 @@ export async function login({
   password?: string;
   homepage?: string;
 }) {
-  await page.goto(`${homepage ?? "http://localhost:8000"}/login`);
+  await page.goto(`${homepage ?? "http://localhost:3000"}/login`);
   await page.fill("#username", username);
   await page.fill("#password", password);
   await page.click("text=Log in");
