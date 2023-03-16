@@ -23,6 +23,7 @@ export type BaseFilenameModalProps<
   Primary extends keyof Actions,
   Cancel extends keyof Actions,
 > = {
+  idPrefix?: string;
   actions: Actions;
   title: string;
   placeHolder?: string;
@@ -98,6 +99,7 @@ export function BaseFilenameModal<
             description={description}
           />
           <input
+            id={props.idPrefix ? `${props.idPrefix}-filename-input` : undefined}
             className="input input-bordered my-4"
             placeholder={props.placeHolder ?? "new name"}
             enterKeyHint="done"
@@ -108,6 +110,9 @@ export function BaseFilenameModal<
           />
           <div className="flex flex-row">
             <ModalButton
+              id={
+                props.idPrefix ? `${props.idPrefix}-filename-submit` : undefined
+              }
               onPress={onSubmit}
               message={primary.message}
               highlight={true}
@@ -115,6 +120,11 @@ export function BaseFilenameModal<
             />
             {rest.map((action) => (
               <ModalButton
+                id={
+                  props.idPrefix
+                    ? `${props.idPrefix}-filename-${action.message}`
+                    : undefined
+                }
                 key={action.message}
                 onPress={() => {
                   if (action.action) action.action(newName);
@@ -122,7 +132,13 @@ export function BaseFilenameModal<
                 message={action.message}
               />
             ))}
-            <ModalButton onPress={props.onDismiss} message={cancel.message} />
+            <ModalButton
+              id={
+                props.idPrefix ? `${props.idPrefix}-filename-cancel` : undefined
+              }
+              onPress={props.onDismiss}
+              message={cancel.message}
+            />
           </div>
         </div>
       </div>
@@ -131,11 +147,13 @@ export function BaseFilenameModal<
 }
 
 export function ModalButton({
+  id,
   onPress,
   message,
   highlight,
   isDisabled,
 }: {
+  id?: string;
   onPress: () => void;
   message: string;
   highlight?: boolean;
@@ -143,6 +161,7 @@ export function ModalButton({
 }) {
   return (
     <button
+      id={id}
       className={`btn m-2 flex-grow max-w- ${
         highlight ? " btn-primary" : "btn-secondary"
       }`}

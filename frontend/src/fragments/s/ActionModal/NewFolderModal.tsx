@@ -30,6 +30,7 @@ export function NewFolderModal(props: NewFolderModalProps) {
 
   return (
     <BaseFilenameModal
+      idPrefix="new-folder"
       onDismiss={() => {
         dispatch(storageSlice.actions.dismissPrompt());
       }}

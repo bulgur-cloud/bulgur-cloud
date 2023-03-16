@@ -1,23 +1,26 @@
 import { test, expect } from "@playwright/test";
+import { nanoid } from "@reduxjs/toolkit";
 import { login } from "./common";
 
-// TODO fix the selectors
-test.skip("creating a folder works", async ({ page }) => {
+test("creating a folder works", async ({ page }) => {
   await login({ page });
-  await expect(page).toHaveURL(/\/s\/testuser\/$/);
-  // Click div[role="button"]:has-text("New folder")
-  await page.locator('div[role="button"]:has-text("New folder")').click();
-  // Click [placeholder="Enter a name for the new folder"]
-  await page.locator('[placeholder="Enter a name for the new folder"]').click();
-  // Fill [placeholder="Enter a name for the new folder"]
-  await page
-    .locator('[placeholder="Enter a name for the new folder"]')
-    .fill("hi");
-  // Click div[role="button"]:has-text("Create")
-  await page.locator('div[role="button"]:has-text("Create")').click();
-  // Click span:has-text("hi")
-  await page.locator('span:has-text("hi")').click();
-  await expect(page).toHaveURL(/\/s\/testuser\/hi\/$/);
-  await page.locator('[aria-label="Go up"]').click();
-  await expect(page).toHaveURL("http://localhost:8000/s/testuser/");
+  await expect(page).toHaveURL(/\/s\/testuser$/);
+
+  const folderName = nanoid();
+
+  await page.click("[id='new-folder-button']");
+  await page.click("[id='new-folder-filename-input']");
+  await page.fill("[id='new-folder-filename-input']", folderName);
+  await page.click("[id='new-folder-filename-submit']");
+
+  // Verify the folder was created
+
+  await page.click(`:has-text('${folderName}')`);
+  await expect(page).toHaveURL(
+    new RegExp(`/\\/s\\/testuser\\/${folderName}\\/$/`),
+  );
+
+  // Check that we can go back to the root folder with the breadcrumbs
+  await page.getByRole("list").getByRole("link", { name: "testuser" }).click();
+  await expect(page).toHaveURL(/\/s\/testuser$/);
 });

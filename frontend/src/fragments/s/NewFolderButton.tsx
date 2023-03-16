@@ -15,7 +15,11 @@ export function NewFolderButton() {
   }, [dispatch, fullPath]);
 
   return (
-    <button onClick={onClick} className="btn btn-primary">
+    <button
+      id="button-new-folder"
+      onClick={onClick}
+      className="btn btn-primary"
+    >
       New Folder
     </button>
   );
