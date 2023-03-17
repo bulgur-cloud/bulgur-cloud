@@ -54,7 +54,7 @@ prompt_confirm() {
 }
 
 # Get the version number
-VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' bulgur-cloud-backend/Cargo.toml)
+VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' backend/Cargo.toml)
 prompt_confirm "Releasing version ${VERSION}, please make sure all Cargo.toml and package.json files are updated."
 
 # Build the UI

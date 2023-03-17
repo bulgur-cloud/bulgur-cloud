@@ -7,7 +7,7 @@ license = "AGPL-3.0-only"
 
 [dependencies]
 typescript-type-def = "0.5"
-bulgur-cloud = { path = "../bulgur-cloud-backend", features = [
+bulgur-cloud = { path = "../backend", features = [
   "generate_types",
 ] }
 
