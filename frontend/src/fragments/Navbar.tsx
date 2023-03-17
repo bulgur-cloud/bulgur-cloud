@@ -1,3 +1,4 @@
+import { Banner } from "@/components/Banner";
 import { Dropdown } from "@/components/Dropdown";
 import { useLogout } from "@/hooks/auth";
 import { useAppSelector } from "@/utils/store";
@@ -18,36 +19,39 @@ export function Navbar() {
   }
 
   return (
-    <header className="navbar bg-base-100 p-4">
-      <Link href="/s" className="select-none text-2xl">
-        Bulgur Cloud
-      </Link>
-      <div className="grow" />
-      <Link href={`/s/${username}`}>{username}</Link>
-      <div className="grow" />
-      <div className="flex-none">
-        <Dropdown
-          trigger={
-            <button className="btn btn-square btn-ghost">
-              <IconMenu2 />
+    <>
+      <header className="navbar bg-base-100 p-4">
+        <Link href="/s" className="select-none text-2xl">
+          Bulgur Cloud
+        </Link>
+        <div className="grow" />
+        <Link href={`/s/${username}`}>{username}</Link>
+        <div className="grow" />
+        <div className="flex-none">
+          <Dropdown
+            trigger={
+              <button className="btn btn-square btn-ghost">
+                <IconMenu2 />
+              </button>
+            }
+          >
+            <Link
+              href="/settings"
+              className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+            >
+              Settings
+            </Link>
+            <button
+              onClick={logout}
+              className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
+            >
+              Logout
             </button>
-          }
-        >
-          <Link
-            href="/settings"
-            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
-          >
-            Settings
-          </Link>
-          <button
-            onClick={logout}
-            className="btn btn-ghost w-full rounded-none focus:bg-base-200 focus:outline-none"
-          >
-            Logout
-          </button>
-        </Dropdown>
-        <div className="dropdown dropdown-end"></div>
-      </div>
-    </header>
+          </Dropdown>
+          <div className="dropdown dropdown-end"></div>
+        </div>
+      </header>
+      <Banner bannerKey="page" />
+    </>
   );
 }
