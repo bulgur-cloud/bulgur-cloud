@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "start:test": "node ./scripts/build-run.js",
-    "test": "pnpx playwright test"
+    "test:start-server": "node ./scripts/build-run.js",
+    "test:run": "pnpx playwright test",
+    "test": "pnpm run test:start-server || pnpm run test:run"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
@@ -43,6 +44,7 @@
     "eslint": "8.36.0",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
+    "execa": "^7.1.1",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.2.7"
   }
