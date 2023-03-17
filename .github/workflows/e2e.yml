@@ -32,9 +32,7 @@ jobs:
       - name: Start the backend server
         run: |
           # cleanup test user storage
-          pwd
-          ls
-          cd bulgur-cloud-backend
+          cd ../bulgur-cloud-backend
           rm -rf storage/testuser
           cargo run user add --username testuser --password testpass
           # Run in the background
