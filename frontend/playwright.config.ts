@@ -18,7 +18,6 @@ const config: PlaywrightTestConfig = {
     timeout: 15 * 1000,
     reuseExistingServer: true,
   },
-  globalSetup: require.resolve("./tests/global-setup"),
   use: {
     baseURL: "http://localhost:3000/",
     screenshot: "only-on-failure",
