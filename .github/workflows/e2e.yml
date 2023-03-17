@@ -33,7 +33,7 @@ jobs:
       - name: Run the tests
         run: |
           # cleanup test user storage
-          pushd ../bulgur-cloud-backend
+          pushd ../backend
           rm -rf storage/testuser
           cargo run user add --username testuser --password testpass
 

@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "bulgur-cloud-backend",
+  "backend",
   "simple-secrecy",
   "atomic-rename",
   "frontend",

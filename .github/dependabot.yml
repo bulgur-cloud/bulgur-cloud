@@ -10,6 +10,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "cargo"
-    directory: "/bulgur-cloud-backend"
+    directory: "/backend"
     schedule:
       interval: "weekly"

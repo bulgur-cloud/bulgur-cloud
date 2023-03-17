@@ -29,7 +29,7 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
-OLD_VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' bulgur-cloud-backend/Cargo.toml)
+OLD_VERSION=$(sed -nr 's/^version *= *"([0-9.]+)"/\1/p' backend/Cargo.toml)
 
 case "${1}" in
 patch)
@@ -49,10 +49,10 @@ esac
 
 echo "Bumping up to ${NEW_VERSION}"
 
-sed -i -E "s/^version *= *\"([0-9.]+)\"/version = \"${NEW_VERSION}\"/" bulgur-cloud-backend/Cargo.toml
+sed -i -E "s/^version *= *\"([0-9.]+)\"/version = \"${NEW_VERSION}\"/" backend/Cargo.toml
 sed -i -E "s/^version *= *\"([0-9.]+)\"/version = \"${NEW_VERSION}\"/" frontend/Cargo.toml
 sed -i -E "s/^( *\"version\" *: *)\"([0-9.]+)\"/\1\"${NEW_VERSION}\"/" frontend/package.json
 
-git add bulgur-cloud-backend/Cargo.toml frontend/Cargo.toml frontend/package.json
+git add backend/Cargo.toml frontend/Cargo.toml frontend/package.json
 git commit -m "version bump ${NEW_VERSION}"
 git tag -m "${NEW_VERSION}" "release/${NEW_VERSION}"
