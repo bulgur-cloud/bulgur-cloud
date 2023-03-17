@@ -28,9 +28,23 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "frontend/pnpm-lock.yaml"
       - run: pnpm install
-        # Get a build first, because otherwise playwright times out waiting for the build
       - uses: Swatinem/rust-cache@v2
-      - run: cargo build
-        working-directory: ""
       - run: pnpx playwright install --with-deps ${{ matrix.browser }} chromium
-      - run: pnpm run test --project=${{ matrix.browser }}
+      - name: Run the tests
+        run: |
+          # cleanup test user storage
+          pushd ../bulgur-cloud-backend
+          rm -rf storage/testuser
+          cargo run user add --username testuser --password testpass
+
+          # Run in the background
+          cargo run &
+
+          # Wait until the server is ready
+          while true; do
+            curl --head http://localhost:8000/is_bulgur_cloud && break || sleep 1
+          done
+
+          popd
+          # Run the tests
+          pnpm run test --project=${{ matrix.browser }}

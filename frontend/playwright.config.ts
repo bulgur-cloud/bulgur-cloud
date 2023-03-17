@@ -12,14 +12,13 @@ import { devices } from "@playwright/test";
  */
 const config: PlaywrightTestConfig = {
   webServer: {
-    command: "pnpm run start:test",
-    url: "http://localhost:8000/",
-    timeout: 120 * 1000,
-    reuseExistingServer: false,
+    command: "pnpm run dev",
+    url: "http://localhost:3000/",
+    timeout: 60 * 1000,
+    reuseExistingServer: true,
   },
-  globalSetup: require.resolve("./tests/global-setup"),
   use: {
-    baseURL: "http://localhost:8000/",
+    baseURL: "http://localhost:3000/",
     screenshot: "only-on-failure",
   },
   testDir: "./tests",

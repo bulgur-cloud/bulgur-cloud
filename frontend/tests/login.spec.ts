@@ -12,5 +12,5 @@ test("Logging in with the right password works", async ({ page }) => {
   await login({ page });
 
   expect(page.locator("text=testuser")).toBeTruthy();
-  await expect(page).toHaveURL(/\/s\/testuser$/);
+  await expect(page).toHaveURL("http://localhost:3000/s/testuser");
 });

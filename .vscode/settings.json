@@ -30,5 +30,6 @@
     "titleBar.inactiveBackground": "#69310b99",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "eslint.format.enable": true
+  "eslint.format.enable": true,
+  "playwright.env": {}
 }
