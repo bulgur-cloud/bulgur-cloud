@@ -8,6 +8,7 @@ import { pick, shallowEquals } from "@/utils/object";
 import { useAppSelector } from "@/utils/store";
 import { getWindow } from "@/utils/window";
 import { BError } from "@/utils/error";
+import { Banner } from "@/components/Banner";
 
 export default function Login() {
   const {
@@ -68,6 +69,7 @@ export default function Login() {
         />
       </Head>
       <main className="max-w-sm mt-12 mx-auto">
+        <Banner bannerKey="login" />
         <h1 className="text-4xl mb-4">Bulgur Cloud</h1>
         <p className="mb-8">Simple and delicious cloud storage and sharing.</p>
         <p className="text-error mb-4 min-h-8">{error}</p>
