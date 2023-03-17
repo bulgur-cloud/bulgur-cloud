@@ -14,8 +14,7 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: "pnpm run dev",
     url: "http://localhost:3000/",
-    // 15 seconds
-    timeout: 15 * 1000,
+    timeout: 60 * 1000,
     reuseExistingServer: true,
   },
   use: {
