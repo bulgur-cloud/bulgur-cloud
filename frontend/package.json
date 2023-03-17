@@ -8,9 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:start-server": "node ./scripts/build-run.js",
-    "test:run": "pnpx playwright test",
-    "test": "pnpm run test:start-server || pnpm run test:run"
+    "test": "pnpx playwright test"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
