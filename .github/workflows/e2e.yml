@@ -33,7 +33,7 @@ jobs:
       - name: Run the tests
         run: |
           # cleanup test user storage
-          cd ../bulgur-cloud-backend
+          pushd ../bulgur-cloud-backend
           rm -rf storage/testuser
           cargo run user add --username testuser --password testpass
 
@@ -45,5 +45,6 @@ jobs:
             curl --head http://localhost:8000/is_bulgur_cloud && break || sleep 1
           done
 
+          popd
           # Run the tests
           pnpm run test --project=${{ matrix.browser }}
