@@ -89,11 +89,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
+      - name: Calculate version
+        id: version
+        run: |
+          VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
+          echo version=${VERSION}
         # Downloaded artifacts are put into awkward folders, and they lose their permissions.
         # So let's collect them into a single directory and mark them as executable.
       - name: Collect downloaded artifacts
         run: |
-          VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
+          VERSION=${{ steps.version.outputs.version }}
           mkdir -p release-artifacts
           cp bulgur-cloud-aarch64-unknown-linux-musl/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64
           cp bulgur-cloud-arm-unknown-linux-musleabihf/bulgur-cloud release-artifacts/bulgur-cloud.${VERSION}.linux-armv6
@@ -127,18 +132,33 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           allowUpdates: true
+      - name: Log into Docker Hub
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: seriousbug
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Log in to the Github Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
         # We need to put the binaries into specific folders then run the docker build with buildx
-      - name: Build and upload docker images
+      - name: Prepare to build docker images
         run: |
-          VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
+          VERSION=${{ steps.version.outputs.version }}
           mkdir -p Docker/binaries/linux/amd64 Docker/binaries/linux/arm64 Docker/binaries/linux/arm/v6 Docker/binaries/linux/arm/v7
           cd Docker
           cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-aarch64 binaries/linux/arm64/bulgur-cloud
           cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv6 binaries/linux/arm/v6/bulgur-cloud
           cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-armv7 binaries/linux/arm/v7/bulgur-cloud
           cp ../release-artifacts/bulgur-cloud.${VERSION}.linux-x86_64 binaries/linux/amd64/bulgur-cloud
-          echo "${DOCKERHUB_PASS}" | docker login --username seriousbug --password-stdin
-          docker buildx create --use
-          docker buildx build . --platform=linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7 --file "Dockerfile" --tag "seriousbug/bulgur-cloud:latest" --tag "seriousbug/bulgur-cloud:${VERSION}" --push
-        env:
-          DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and push Docker images
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          push: true
+          tags: seriousbug/bulgur-cloud:latest,seriousbug/bulgur-cloud:${{ steps.version.outputs.version }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+          context: ./Docker
