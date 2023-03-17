@@ -41,7 +41,7 @@ pathdiff = "0.2"
 atomic-rename = { path = "../atomic-rename" }
 # Template rendering for static pages
 askama = "0.11"
-askama_actix = "0.13"
+askama_actix = "0.14"
 # Include asset files
 actix-web-rust-embed-responder = { version = "2.1.1", default-features = false, features = [
   "support-rust-embed-for-web",
