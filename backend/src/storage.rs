@@ -14,6 +14,8 @@ use actix_web::{
     web::{self, ReqData},
     Either, HttpResponse, HttpResponseBuilder,
 };
+use chrono::{Duration, Utc};
+use cuttlestore::PutOptions;
 use futures::TryStreamExt;
 use nanoid::nanoid;
 use serde::{Deserialize, Serialize};
@@ -22,7 +24,7 @@ use tracing_unwrap::ResultExt;
 
 use crate::{
     folder,
-    state::{AppState, Authorized, PathTokenResponse, Token},
+    state::{AppState, Authorized, PathTokenResponse, PathTokenStored, Token},
 };
 
 #[cfg(feature = "generate_types")]
@@ -471,15 +473,31 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
     let full_path = format!("/{}", path.to_string_lossy());
     let existing = state.path_tokens.get(&full_path).await.unwrap_or_log();
     if let Some(token) = existing {
-        return HttpResponse::Ok().json(PathTokenResponse { token });
+        // Only reuse the existing token if it's going to be valid for a while
+        if token
+            .valid_until
+            .signed_duration_since(Utc::now())
+            .num_hours()
+            > 6
+        {
+            return HttpResponse::Ok().json(PathTokenResponse { token: token.token });
+        }
     }
 
     let token = Token::new();
     tracing::debug!("Creating a token for {}", full_path);
-    // TODO This should have a TTL attached
+    let live_until = Utc::now() + Duration::hours(24);
     state
         .path_tokens
-        .put(full_path, &token)
+        .put_with(
+            full_path,
+            &PathTokenStored {
+                token: token.clone(),
+                created_at: Utc::now(),
+                valid_until: live_until,
+            },
+            PutOptions::live_until(live_until.into()),
+        )
         .await
         .unwrap_or_log();
     HttpResponse::Ok().json(PathTokenResponse { token })

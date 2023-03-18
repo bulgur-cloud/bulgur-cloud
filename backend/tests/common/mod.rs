@@ -11,7 +11,7 @@ use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderN
 use bulgur_cloud::{
     auth::{add_new_user, create_user_folder, make_token},
     server::setup_app_deps,
-    state::{AppState, Token},
+    state::{AppState, PathTokenStored, Token},
 };
 use cuttlestore::CuttlestoreBuilder;
 use tokio::fs;
@@ -107,7 +107,14 @@ impl TestEnv<TestKeyExtractor> {
         let token = Token::new();
         self.state
             .path_tokens
-            .put(path.to_string(), &token)
+            .put(
+                path.to_string(),
+                &PathTokenStored {
+                    token: token.clone(),
+                    created_at: chrono::Utc::now(),
+                    valid_until: chrono::Utc::now() + chrono::Duration::hours(24),
+                },
+            )
             .await
             .unwrap();
         token
