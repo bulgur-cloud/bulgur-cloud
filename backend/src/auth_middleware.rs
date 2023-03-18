@@ -5,6 +5,7 @@ use actix_web::body::EitherBody;
 use actix_web::dev::{self, ServiceRequest, ServiceResponse};
 use actix_web::dev::{Service, Transform};
 use actix_web::{http, web, Error, HttpMessage, HttpRequest, HttpResponse};
+use chrono::Utc;
 use futures::future::LocalBoxFuture;
 use qstring::QString;
 use serde::Serialize;
@@ -129,7 +130,13 @@ async fn verify_auth(
             tracing::debug!("Found path token attached to request {:?}", path);
             let known_token = state.path_tokens.get(&path).await.unwrap_or_log();
             tracing::debug!("Token exists for path {:?}", &path);
-            known_token.map(|known_token| known_token.eq(&path_token))
+            known_token.map(|known_token| {
+                let valid_secs_left = known_token
+                    .valid_until
+                    .signed_duration_since(Utc::now())
+                    .num_seconds();
+                known_token.token.eq(&path_token) && valid_secs_left > 0
+            })
         } else {
             None
         }

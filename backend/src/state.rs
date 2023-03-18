@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use cuttlestore::Cuttlestore;
 use nanoid::nanoid;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 
 use simple_secrecy;
 
@@ -56,6 +56,42 @@ pub struct PathTokenResponse {
     pub token: Token,
 }
 
+fn serialize_datetime<S>(
+    time: &chrono::DateTime<chrono::Utc>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let formatted_time = time.to_rfc3339();
+    serializer.serialize_str(&formatted_time)
+}
+
+fn deserialize_datetime<'de, D>(deserializer: D) -> Result<chrono::DateTime<chrono::Utc>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    Ok(chrono::DateTime::parse_from_rfc3339(&s)
+        .map_err(serde::de::Error::custom)?
+        .with_timezone(&chrono::Utc))
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PathTokenStored {
+    pub token: Token,
+    #[serde(
+        serialize_with = "serialize_datetime",
+        deserialize_with = "deserialize_datetime"
+    )]
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    #[serde(
+        serialize_with = "serialize_datetime",
+        deserialize_with = "deserialize_datetime"
+    )]
+    pub valid_until: chrono::DateTime<chrono::Utc>,
+}
+
 #[derive(std::fmt::Debug, Serialize, Deserialize, derive_more::Display, Clone)]
 pub struct Username(pub String);
 
@@ -67,7 +103,7 @@ pub struct AppState {
     /// Maps access tokens to users
     pub access_tokens: Cuttlestore<Username>,
     /// Maps file paths to access tokens
-    pub path_tokens: Cuttlestore<Token>,
+    pub path_tokens: Cuttlestore<PathTokenStored>,
 }
 
 #[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]

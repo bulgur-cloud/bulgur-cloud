@@ -41,13 +41,20 @@ export function usePathMeta(url: string) {
 }
 
 export function usePathToken(url: string) {
-  return useFetch<api.StorageAction, api.PathTokenResponse>({
-    method: "POST",
-    url: `storage/${url}`,
-    data: {
-      action: "MakePathToken",
+  return useFetch<api.StorageAction, api.PathTokenResponse>(
+    {
+      method: "POST",
+      url: `storage/${url}`,
+      data: {
+        action: "MakePathToken",
+      },
     },
-  });
+    {
+      // Refresh this every hour. The server will return the same token if it's
+      // still valid.
+      refreshInterval: 60 * 60 * 1000,
+    },
+  );
 }
 
 function useMutateFolder() {
