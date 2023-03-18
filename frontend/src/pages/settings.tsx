@@ -1,3 +1,4 @@
+import { ThemePicker } from "@/fragments/settings/ThemePicker";
 import { useEnsureAuthInitialized } from "@/hooks/auth";
 import Head from "next/head";
 
@@ -16,6 +17,10 @@ export default function Settings() {
       </Head>
       <main className="max-w-prose mt-12 mx-auto">
         <h1 className="text-4xl mb-4">Settings</h1>
+        <section>
+          <h2 className="text-2xl mb-4">Theme</h2>
+          <ThemePicker />
+        </section>
       </main>
     </>
   );

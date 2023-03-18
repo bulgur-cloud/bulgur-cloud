@@ -18,6 +18,9 @@ module.exports = {
       maxHeight: {
         "9/10-screen": "90vh",
       },
+      bottom: {
+        "minus-16": "-4rem",
+      },
     },
   },
   plugins: [require("daisyui")],
