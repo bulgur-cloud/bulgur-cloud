@@ -50,9 +50,9 @@ export function usePathToken(url: string) {
       },
     },
     {
-      // 24 hours. Path tokens expire after this long, so if someone keeps the
-      // page open and in focus for that long we should refresh the token.
-      refreshInterval: 24 * 60 * 60 * 1000,
+      // Refresh this every hour. The server will return the same token if it's
+      // still valid.
+      refreshInterval: 60 * 60 * 1000,
     },
   );
 }
