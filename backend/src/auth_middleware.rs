@@ -131,12 +131,11 @@ async fn verify_auth(
             let known_token = state.path_tokens.get(&path).await.unwrap_or_log();
             tracing::debug!("Token exists for path {:?}", &path);
             known_token.map(|known_token| {
-                known_token.token.eq(&path_token)
-                    && known_token
-                        .valid_until
-                        .signed_duration_since(Utc::now())
-                        .num_seconds()
-                        < 0
+                let valid_secs_left = known_token
+                    .valid_until
+                    .signed_duration_since(Utc::now())
+                    .num_seconds();
+                known_token.token.eq(&path_token) && valid_secs_left > 0
             })
         } else {
             None
