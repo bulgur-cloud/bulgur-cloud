@@ -63,7 +63,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: "pnmp"
+          cache: "pnpm"
           cache-dependency-path: "frontend/pnpm-lock.yaml"
       - run: pnpm install
         # Get a build first, because otherwise playwright times out waiting for the build
