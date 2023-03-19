@@ -153,10 +153,8 @@ jobs:
           commit: ${{ github.ref_name }}
           tag: release/${{ steps.version.outputs.version }}
       - name: Log into Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+        run: |
+          echo "${{ secrets.DOCKERHUB_PASS }}" | docker login --username seriousbug --password-stdin
       - name: Log in to the Github Container registry
         uses: docker/login-action@v2
         with:
