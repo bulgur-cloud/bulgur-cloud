@@ -148,6 +148,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           allowUpdates: true
+          updateOnlyUnreleased: true
+          removeArtifacts: true
+          commit: ${{ github.ref_name }}
+          tag: release-${{ steps.version.outputs.version }}
       - name: Log into Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
