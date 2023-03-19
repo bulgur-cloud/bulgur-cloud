@@ -150,10 +150,10 @@ export function FolderList() {
       </colgroup>
       <thead>
         <tr>
-          <th className="bg-base-200 py-4 rounded-tl-lg"></th>
+          <th className="bg-base-200 py-4 rounded-tl-box"></th>
           <th className="bg-base-200 py-4">Name</th>
           <th className="bg-base-200 py-4">Size</th>
-          <th className="bg-base-200 py-4 rounded-tr-lg "></th>
+          <th className="bg-base-200 py-4 rounded-tr-box "></th>
         </tr>
       </thead>
       <tbody>

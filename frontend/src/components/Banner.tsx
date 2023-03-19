@@ -16,7 +16,7 @@ export function Banner({ bannerKey }: { bannerKey: "page" | "login" }) {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="bg-base-200 rounded-xl m-4 p-4 shadow-lg mb-8 max-w-prose flex flex-row items-center">
+      <div className="bg-base-200 rounded-box m-4 p-4 shadow-lg mb-8 max-w-prose flex flex-row items-center">
         <IconInfoCircle className="w-6 h-6 mr-2 flex-shrink-0" />
         <span>{banner}</span>
         <div className="flex-grow" />

@@ -91,13 +91,13 @@ function ThemePreviewButton({ theme }: { theme: typeof THEMES[number] }) {
         <div className="card-body flex flex-col">
           <p>{theme}</p>
           <div className="flex flex-row">
-            <div className="p-2 ml-1 rounded text-sm bg-primary text-primary-content">
+            <div className="p-2 ml-1 rounded-box text-sm bg-primary text-primary-content">
               A
             </div>
-            <div className="p-2 ml-1 rounded text-sm bg-secondary text-secondary-content">
+            <div className="p-2 ml-1 rounded-box text-sm bg-secondary text-secondary-content">
               A
             </div>
-            <div className="p-2 ml-1 rounded text-sm bg-accent text-accent-content">
+            <div className="p-2 ml-1 rounded-box text-sm bg-accent text-accent-content">
               A
             </div>
           </div>

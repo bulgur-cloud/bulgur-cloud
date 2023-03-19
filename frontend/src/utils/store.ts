@@ -221,6 +221,8 @@ export const themeSlice = createSlice({
       document
         .getElementsByTagName("html")[0]
         .setAttribute("data-theme", action.payload);
+      // This gets picked up by `theme-setter.js` in the `public` folder.
+      localStorage.setItem("bulgur-theme", action.payload);
     },
   },
 });
