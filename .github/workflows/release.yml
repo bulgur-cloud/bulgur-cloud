@@ -102,7 +102,6 @@ jobs:
     needs: [release-builds, e2e-tests, backend-tests]
     permissions:
       contents: write
-      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
@@ -153,10 +152,15 @@ jobs:
           removeArtifacts: true
           commit: ${{ github.ref_name }}
           tag: release/${{ steps.version.outputs.version }}
+      - name: Log into Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
       - name: Log in to the Github Container registry
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: bulgur-cloud
           password: ${{ secrets.GITHUB_TOKEN }}
         # We need to put the binaries into specific folders then run the docker build with buildx
@@ -175,6 +179,6 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
-          tags: bulgur-cloud/bulgur-cloud:latest,bulgur-cloud/bulgur-cloud:${{ steps.version.outputs.version }}
+          tags: seriousbug/bulgur-cloud:latest,seriousbug/bulgur-cloud:${{ steps.version.outputs.version }},ghcr.io/bulgur-cloud/bulgur-cloud:latest,ghcr.io/bulgur-cloud/bulgur-cloud:${{ steps.version.outputs.version }}
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           context: ./Docker
