@@ -75,7 +75,7 @@ function TextPreview() {
 
   return (
     <pre
-      className="p-4 lg:p-8 bg-base-200 overflow-auto rounded-md"
+      className="p-4 lg:p-8 bg-base-200 overflow-auto rounded-box"
       style={{ height: "36rem" }}
     >
       {contents}

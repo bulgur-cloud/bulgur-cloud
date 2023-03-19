@@ -34,13 +34,13 @@ export function UploadProgress() {
       <button
         onClick={onToggle}
         style={{ visibility: isUploading ? "visible" : "hidden" }}
-        className="absolute left-full top-16 bg-base-100 p-4 rounded-r-2xl drop-shadow-xl border-base-content border-2 border-l-0"
+        className="absolute left-full top-16 bg-base-100 p-4 rounded-r-box drop-shadow-xl border-base-content border-2 border-l-0"
       >
         <IconUpload />
       </button>
       {/* w is 80% of the screen, but that's mainly for small width screens like vertical phones. We really want max-w-prose. */}
-      <div ref={slideoutInner} className="rounded-r-2xl overflow-hidden">
-        <div className="bg-base-100 drop-shadow-xl min-h-1/2-screen max-h-screen p-4 w-[80vw] max-w-prose border-base-content border-2 border-l-0 rounded-r-2xl overflow-y-scroll overscroll-contain my-2">
+      <div ref={slideoutInner} className="rounded-r-box overflow-hidden">
+        <div className="bg-base-100 drop-shadow-xl min-h-1/2-screen max-h-screen p-4 w-[80vw] max-w-prose border-base-content border-2 border-l-0 rounded-r-box overflow-y-scroll overscroll-contain my-2">
           <h2 className="text-2xl mb-4">Uploads</h2>
 
           {uploads.map((upload) => (

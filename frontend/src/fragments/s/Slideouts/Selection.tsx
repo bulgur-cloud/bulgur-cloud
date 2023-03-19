@@ -72,13 +72,13 @@ export function Selection() {
       <button
         onClick={onToggle}
         style={{ visibility: isSelecting ? "visible" : "hidden" }}
-        className="absolute right-full top-16 bg-base-100 p-4 rounded-l-2xl drop-shadow-xl border-base-content border-2 border-r-0"
+        className="absolute right-full top-16 bg-base-100 p-4 rounded-l-box drop-shadow-xl border-base-content border-2 border-r-0"
       >
         <IconCheckbox />
       </button>
       <div
         ref={slideoutInner}
-        className="rounded-l-2xl overflow-hidden border-base-content border-2 border-r-0"
+        className="rounded-l-box overflow-hidden border-base-content border-2 border-r-0"
       >
         {/* w is 80% of the screen, but that's mainly for small width screens like vertical phones. We really want max-w-prose. */}
         <div className="bg-base-100 drop-shadow-xl min-h-1/2-screen max-h-9/10-screen p-4 w-[80vw] max-w-prose overflow-y-auto overscroll-contain">

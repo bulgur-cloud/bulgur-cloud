@@ -5,6 +5,10 @@ export default function Document() {
     <Html lang="en" data-theme="light">
       <Head />
       <body>
+        {/* The following script does need to be sync, because we want it to set the theme from local storage before anything gets rendered. Otherwise there will be a flash of unthemed content.
+            The script is tiny, so the performance impact is negligible. */}
+        {/* eslint-disable @next/next/no-sync-scripts */}
+        <script type="text/javascript" src="/theme-setter.js" />
         <Main />
         <div id="bulgur-portal-root" />
 

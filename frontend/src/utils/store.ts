@@ -209,12 +209,31 @@ export const errorSlice = createSlice({
   },
 });
 
+export const themeSlice = createSlice({
+  name: "theme",
+  initialState: {
+    theme: "light",
+  },
+  reducers: {
+    setTheme: (state, action: { payload: string }) => {
+      state.theme = action.payload;
+      console.log("setting theme");
+      document
+        .getElementsByTagName("html")[0]
+        .setAttribute("data-theme", action.payload);
+      // This gets picked up by `theme-setter.js` in the `public` folder.
+      localStorage.setItem("bulgur-theme", action.payload);
+    },
+  },
+});
+
 function makeStore() {
   return configureStore({
     reducer: {
       auth: authSlice.reducer,
       storage: storageSlice.reducer,
       error: errorSlice.reducer,
+      theme: themeSlice.reducer,
     },
     middleware: [
       // Log all actions for debugging
