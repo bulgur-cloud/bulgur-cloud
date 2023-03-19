@@ -109,7 +109,7 @@ jobs:
         id: version
         run: |
           VERSION=$(echo ${{ github.ref_name }} | sed -E 's/^release[/](.*)$/\1/')
-          echo version=${VERSION}
+          echo version=${VERSION} | tee -a "$GITHUB_OUTPUT"
         # Downloaded artifacts are put into awkward folders, and they lose their permissions.
         # So let's collect them into a single directory and mark them as executable.
       - name: Collect downloaded artifacts
