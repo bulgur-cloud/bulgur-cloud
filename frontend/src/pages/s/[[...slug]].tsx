@@ -12,9 +12,7 @@ import { FileNotFound } from "@/fragments/s/NotFound";
 import { FilePreview } from "@/fragments/s/FilePreview";
 import { PathBreadcrumbs } from "@/fragments/s/PathBreadcrumbs";
 import { useAppSelector } from "@/utils/store";
-import { UploadButton } from "@/fragments/s/UploadButton";
 import { UploadProgress } from "@/fragments/s/Slideouts/UploadProgress";
-import { NewFolderButton } from "@/fragments/s/NewFolderButton";
 import { ModalSelector } from "@/fragments/s/ActionModal/ModalSelector";
 import { Selection } from "@/fragments/s/Slideouts/Selection";
 import Link from "next/link";
@@ -53,13 +51,9 @@ function StoreView() {
         />
       </Head>
       <main className="max-w-prose mt-12 mx-auto">
-        <div className="flex flex-row my-4">
-          <UploadButton />
-          <UploadProgress />
-          <Selection />
-          <NewFolderButton />
-          <ModalSelector />
-        </div>
+        <UploadProgress />
+        <Selection />
+        <ModalSelector />
         <PathBreadcrumbs />
         <StoreViewInner />
       </main>

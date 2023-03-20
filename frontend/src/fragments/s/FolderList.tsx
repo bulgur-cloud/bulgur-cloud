@@ -15,6 +15,8 @@ import ListingIcon from "./ListingIcon";
 import { FileNotFound } from "./NotFound";
 import { Dropdown } from "@/components/Dropdown";
 import { getDocument } from "@/utils/window";
+import { UploadButton } from "./UploadButton";
+import { NewFolderButton } from "./NewFolderButton";
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   const { fullPath } = useCurrentPath();
@@ -141,33 +143,39 @@ export function FolderList() {
   const { entries } = resp.data.data;
 
   return (
-    <table className="w-full">
-      <colgroup>
-        <col style={{ width: "32px" }} />
-        <col />
-        <col style={{ width: "85px" }} />
-        <col style={{ width: "32px" }} />
-      </colgroup>
-      <thead>
-        <tr>
-          <th className="bg-base-200 py-4 rounded-tl-box"></th>
-          <th className="bg-base-200 py-4">Name</th>
-          <th className="bg-base-200 py-4">Size</th>
-          <th className="bg-base-200 py-4 rounded-tr-box "></th>
-        </tr>
-      </thead>
-      <tbody>
-        {entries.length === 0 && (
+    <>
+      <div className="flex flex-row my-4">
+        <UploadButton />
+        <NewFolderButton />
+      </div>
+      <table className="w-full">
+        <colgroup>
+          <col style={{ width: "32px" }} />
+          <col />
+          <col style={{ width: "85px" }} />
+          <col style={{ width: "32px" }} />
+        </colgroup>
+        <thead>
           <tr>
-            <td colSpan={3} className="text-center p-8">
-              This folder is empty.
-            </td>
+            <th className="bg-base-200 py-4 rounded-tl-box"></th>
+            <th className="bg-base-200 py-4">Name</th>
+            <th className="bg-base-200 py-4">Size</th>
+            <th className="bg-base-200 py-4 rounded-tr-box "></th>
           </tr>
-        )}
-        {entries.map((entry) => (
-          <Listing entry={entry} key={entry.name} />
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {entries.length === 0 && (
+            <tr>
+              <td colSpan={3} className="text-center p-8">
+                This folder is empty.
+              </td>
+            </tr>
+          )}
+          {entries.map((entry) => (
+            <Listing entry={entry} key={entry.name} />
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 }
