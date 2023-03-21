@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - run: rustup component add clippy
       - uses: actions-rs/clippy-check@v1
         with:
@@ -14,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all --check
   typescript_lint:
     runs-on: ubuntu-latest
