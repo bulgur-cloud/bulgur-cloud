@@ -17,6 +17,7 @@ import { Dropdown } from "@/components/Dropdown";
 import { getDocument } from "@/utils/window";
 import { UploadButton } from "./UploadButton";
 import { NewFolderButton } from "./NewFolderButton";
+import { UploadDropzone } from "./UploadDropzone";
 
 function Listing({ entry }: { entry: api.FolderEntry }) {
   const { fullPath } = useCurrentPath();
@@ -147,6 +148,7 @@ export function FolderList() {
       <div className="flex flex-row my-4">
         <UploadButton />
         <NewFolderButton />
+        <UploadDropzone />
       </div>
       <table className="w-full">
         <colgroup>
