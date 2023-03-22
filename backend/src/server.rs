@@ -136,8 +136,6 @@ pub fn setup_app(
         .wrap(middleware::NormalizePath::new(
             middleware::TrailingSlash::MergeOnly,
         ))
-        // Negotiate and do compression
-        .wrap(middleware::Compress::default())
         // Allow CORS access.
         .wrap(cors)
         .app_data(state)
