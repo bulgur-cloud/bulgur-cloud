@@ -141,7 +141,11 @@ export function FilePreview() {
         <div className="stat-value">{humanSize(size)}</div>
         <div className="stat-desc">{size} bytes</div>
       </div>
-      <Link className="btn btn-primary my-4" href={downloadUrl.url}>
+      <Link
+        className="btn btn-primary my-4"
+        href={downloadUrl.url}
+        download={name}
+      >
         Download
       </Link>
     </div>
