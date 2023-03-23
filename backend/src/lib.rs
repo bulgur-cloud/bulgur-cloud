@@ -8,6 +8,7 @@ pub mod error;
 pub mod folder;
 pub mod meta;
 pub mod pages;
+pub mod ratelimit_middleware;
 pub mod server;
 pub mod state;
 pub mod static_files;
