@@ -8,6 +8,7 @@ use crate::{
         not_found, page_create_folder, page_delete, page_folder_list, page_folder_upload,
         page_login_get, page_login_post, page_logout,
     },
+    ratelimit_middleware::RateLimit,
     state::AppState,
     static_files::{get_basic_assets, ui_pages},
     storage::{delete_storage, get_storage, head_storage, meta_storage, post_storage, put_storage},
@@ -16,10 +17,6 @@ use crate::{
 use actix_service::ServiceFactory;
 
 use actix_cors::Cors;
-use actix_governor::{
-    governor::middleware::StateInformationMiddleware, Governor, GovernorConfig,
-    GovernorConfigBuilder, KeyExtractor, PeerIpKeyExtractor,
-};
 
 use actix_web::{
     body::MessageBody,
@@ -67,7 +64,7 @@ fn setup_cors() -> Cors {
 
 pub fn setup_app(
     state: Data<AppState>,
-    login_governor: GovernorConfig<impl KeyExtractor + 'static, StateInformationMiddleware>,
+    login_governor: RateLimit,
 ) -> App<
     impl ServiceFactory<
         ServiceRequest,
@@ -89,9 +86,7 @@ pub fn setup_app(
     };
 
     // Login scope just handles logins. It is heavily throttled to resist brute force attacks.
-    let login_scope = web::scope("/auth")
-        .wrap(Governor::new(&login_governor))
-        .service(login);
+    let login_scope = web::scope("/auth").wrap(login_governor).service(login);
     // API scope handles all api functionality (anything except storage)
     let api_scope = web::scope("/api")
         .wrap(api_guard.clone())
@@ -150,7 +145,7 @@ pub fn setup_app(
 
 #[cfg(debug_assertions)]
 /// During debugging, throttling login attempts is not really needed
-const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
+const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 100_000_000;
 #[cfg(not(debug_assertions))]
 /// For release, we strictly throttle login attempts to resist brute force attacks
 const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
@@ -158,10 +153,7 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 pub async fn setup_app_deps(
     _base_folder: PathBuf,
     connection: &CuttleConnection,
-) -> anyhow::Result<(
-    Data<AppState>,
-    GovernorConfig<PeerIpKeyExtractor, StateInformationMiddleware>,
-)> {
+) -> anyhow::Result<(Data<AppState>, RateLimit)> {
     // Make sure the needed folders are available
     fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
     let state = web::Data::new(AppState {
@@ -171,12 +163,11 @@ pub async fn setup_app_deps(
         users: connection.make("user").await?,
     });
 
-    let login_governor = GovernorConfigBuilder::default()
-        .per_second(10)
-        .burst_size(MAX_LOGIN_ATTEMPTS_PER_MIN)
-        .use_headers()
-        .finish()
-        .expect("Unable to setup login governor");
+    let login_governor = RateLimit::new(
+        MAX_LOGIN_ATTEMPTS_PER_MIN,
+        env::var("BULGUR_CLOUD_BEHIND_PROXY").is_ok(),
+    );
+
     // Make sure the nobody user is created if it doesn't exist
     create_nobody(&state.users).await?;
 
