@@ -49,7 +49,7 @@ impl TestEnv {
 
     #[allow(dead_code)]
     pub fn login_governor(&self) -> RateLimit {
-        RateLimit::new()
+        RateLimit::new(100_000_000, true)
     }
 
     #[allow(dead_code)]

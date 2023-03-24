@@ -21,14 +21,16 @@ type Limiter =
 #[derive(Clone)]
 pub struct RateLimit {
     limiter: Arc<Limiter>,
+    use_header: bool,
 }
 
 impl RateLimit {
-    pub fn new() -> Self {
+    pub fn new(per_minute: u32, use_header: bool) -> Self {
         RateLimit {
             limiter: Arc::new(RateLimiter::keyed(Quota::per_minute(
-                NonZeroU32::new(10).unwrap(),
+                NonZeroU32::new(per_minute).unwrap(),
             ))),
+            use_header,
         }
     }
 }
@@ -48,12 +50,14 @@ where
         ready(Ok(RateLimitMiddleware {
             service: Rc::new(service),
             limiter: self.limiter.clone(),
+            use_header: self.use_header,
         }))
     }
 }
 pub struct RateLimitMiddleware<S> {
     service: Rc<S>,
     limiter: Arc<Limiter>,
+    use_header: bool,
 }
 
 impl<S: 'static, B> Service<ServiceRequest> for RateLimitMiddleware<S>
@@ -68,11 +72,15 @@ where
     dev::forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let ip = req
-            .head()
-            .peer_addr
-            .map(|v| v.to_string())
-            .unwrap_or_else(|| "".to_string());
+        let ip = if self.use_header {
+            req.connection_info()
+                .realip_remote_addr()
+                .map(|v| v.to_string())
+        } else {
+            req.connection_info().peer_addr().map(|v| v.to_string())
+        }
+        // I think this only happens during testing
+        .unwrap_or_else(|| "".to_string());
 
         let service = self.service.clone();
         let limiter = self.limiter.clone();

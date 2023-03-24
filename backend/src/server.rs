@@ -8,7 +8,7 @@ use crate::{
         not_found, page_create_folder, page_delete, page_folder_list, page_folder_upload,
         page_login_get, page_login_post, page_logout,
     },
-    ratelimit_middleware::{RateLimit, RateLimitMiddleware},
+    ratelimit_middleware::RateLimit,
     state::AppState,
     static_files::{get_basic_assets, ui_pages},
     storage::{delete_storage, get_storage, head_storage, meta_storage, post_storage, put_storage},
@@ -147,7 +147,7 @@ pub fn setup_app(
 
 #[cfg(debug_assertions)]
 /// During debugging, throttling login attempts is not really needed
-const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 1000;
+const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 100_000_000;
 #[cfg(not(debug_assertions))]
 /// For release, we strictly throttle login attempts to resist brute force attacks
 const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
@@ -165,7 +165,10 @@ pub async fn setup_app_deps(
         users: connection.make("user").await?,
     });
 
-    let login_governor = RateLimit::new();
+    let login_governor = RateLimit::new(
+        MAX_LOGIN_ATTEMPTS_PER_MIN,
+        env::var("BULGUR_CLOUD_BEHIND_PROXY").is_ok(),
+    );
 
     // Make sure the nobody user is created if it doesn't exist
     create_nobody(&state.users).await?;
