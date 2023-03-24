@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.2.4",
-    "@playwright/test": "^1.31.2",
+    "@playwright/test": "^1.32",
     "@types/debounce": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
