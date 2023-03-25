@@ -116,7 +116,7 @@ export function BaseFilenameModal<
               onPress={onSubmit}
               message={primary.message}
               highlight={true}
-              isDisabled={isUnsafe && shouldDisplay}
+              isDisabled={isUnsafe && shouldDisplay && newName !== ""}
             />
             {rest.map((action) => (
               <ModalButton
