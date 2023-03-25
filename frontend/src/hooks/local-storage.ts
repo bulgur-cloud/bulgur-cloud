@@ -23,7 +23,7 @@ export function useLocalStorageState(
     return () => {
       window.removeEventListener("storage", cb);
     };
-  }, []);
+  }, [storageKey]);
 
   const setValue = useCallback(
     (value: string | null) => {
@@ -34,7 +34,7 @@ export function useLocalStorageState(
         localStorage.setItem(storageKey, value);
       }
     },
-    [setCachedValue],
+    [storageKey],
   );
 
   return [cachedValue, setValue] as const;

@@ -48,7 +48,7 @@ export function UploadDropzone() {
         await doUpload(fullPath, files);
       });
     },
-    [doUpload, onClose, fullPath],
+    [onClose, runAsync, doUpload, fullPath],
   );
 
   // The dragenter event will not fire on the dropzone because the dropzone is
