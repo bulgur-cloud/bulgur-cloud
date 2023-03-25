@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { Portal } from "./Portal";
 import { usePopper } from "react-popper";
 import { useDisclosure } from "@/utils/hooks/useDisclosure";
