@@ -4,6 +4,7 @@ import { useDelete } from "@/hooks/storage";
 import { ActionDelete, storageSlice, useAppDispatch } from "@/utils/store";
 import { urlFileName } from "@/utils/url";
 import { useCallback } from "react";
+import { FocusOn } from "react-focus-on";
 import { ModalButton } from "./BaseFilenameModal";
 
 export type DeleteModalProps = {
@@ -28,7 +29,11 @@ export function DeleteModal(props: DeleteModalProps) {
 
   return (
     <Portal>
-      <div className="modal modal-open">
+      <FocusOn
+        onClickOutside={onDismiss}
+        onEscapeKey={onDismiss}
+        className="modal modal-open"
+      >
         <div className="modal-box flex flex-col">
           <h2 className="text-xl">Delete {name}</h2>
           <div className="flex flex-row">
@@ -40,7 +45,7 @@ export function DeleteModal(props: DeleteModalProps) {
             <ModalButton onPress={onDismiss} message={"Cancel"} />
           </div>
         </div>
-      </div>
+      </FocusOn>
     </Portal>
   );
 }
