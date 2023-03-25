@@ -1,6 +1,7 @@
 import { Portal } from "@/components/Portal";
 import { describeUnsafeFilename, isSafeFilename } from "@/utils/filename";
 import { useEffect, useState } from "react";
+import { FocusOn } from "react-focus-on";
 
 /** Wait this many ms before warning users about an unsafe filename.
  *
@@ -92,7 +93,11 @@ export function BaseFilenameModal<
   return (
     <Portal>
       <div className="modal modal-open">
-        <div className="modal-box flex flex-col">
+        <FocusOn
+          className="modal-box flex flex-col w-full m-4"
+          onClickOutside={props.onDismiss}
+          onEscapeKey={props.onDismiss}
+        >
           <h2 className="text-xl">{props.title}</h2>
           <SafetyLabel
             shouldDisplay={shouldDisplay}
@@ -140,7 +145,7 @@ export function BaseFilenameModal<
               message={cancel.message}
             />
           </div>
-        </div>
+        </FocusOn>
       </div>
     </Portal>
   );

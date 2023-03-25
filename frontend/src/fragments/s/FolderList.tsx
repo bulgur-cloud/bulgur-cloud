@@ -92,9 +92,9 @@ function Listing({ entry }: { entry: api.FolderEntry }) {
         {/* TODO: Should use a single dropdown that targets the correct button instead of a different dropdown per item */}
         <Dropdown
           trigger={
-            <button className="btn btn-square btn-ghost">
+            <div className="btn btn-square btn-ghost">
               <IconDots />
-            </button>
+            </div>
           }
         >
           <button
