@@ -30,9 +30,9 @@ export function Navbar() {
         <div className="flex-none">
           <Dropdown
             trigger={
-              <button className="btn btn-square btn-ghost">
+              <div className="btn btn-square btn-ghost">
                 <IconMenu2 />
-              </button>
+              </div>
             }
           >
             <Link

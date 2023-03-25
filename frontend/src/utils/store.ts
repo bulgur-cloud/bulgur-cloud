@@ -80,12 +80,14 @@ export type StorageState = {
     };
   };
   action?: ActionCreateFolder | ActionBulkDelete | ActionDelete | ActionRename;
+  focusBeforeAction: { focus: () => void } | null;
 };
 
 const initialStorageState: StorageState = {
   selected: {},
   uploadProgress: {},
   action: undefined,
+  focusBeforeAction: null,
 };
 
 export type LoadFolderPayload = api.FolderResults;
@@ -155,11 +157,19 @@ export const storageSlice = createSlice({
         payload: Required<StorageState>["action"];
       },
     ) => {
+      state.focusBeforeAction = document.activeElement as any;
       state.action = {
         ...action.payload,
       };
     },
     dismissPrompt: (state) => {
+      const { focusBeforeAction } = state;
+      if (focusBeforeAction) {
+        setTimeout(() => {
+          focusBeforeAction.focus();
+        });
+        state.focusBeforeAction = null;
+      }
       state.action = undefined;
     },
   },
