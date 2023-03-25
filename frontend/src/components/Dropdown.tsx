@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { Portal } from "./Portal";
 import { usePopper } from "react-popper";
 import { useDisclosure } from "@/utils/hooks/useDisclosure";
@@ -16,6 +16,13 @@ export function Dropdown({ children, trigger }: DropdownProps) {
     modifiers: [{ name: "eventListeners", enabled: isOpen }],
   });
 
+  const onCloseWithoutAction = useCallback(() => {
+    onClose();
+    setTimeout(() => {
+      referenceElement?.focus();
+    });
+  }, []);
+
   return (
     <>
       <button ref={setReferenceElement} onClick={onOpen}>
@@ -25,8 +32,7 @@ export function Dropdown({ children, trigger }: DropdownProps) {
         {isOpen && (
           <FocusOn
             onClickOutside={onClose}
-            onEscapeKey={onClose}
-            returnFocus={true}
+            onEscapeKey={onCloseWithoutAction}
             scrollLock={false}
           >
             <div
