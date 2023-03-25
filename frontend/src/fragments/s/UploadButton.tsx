@@ -6,6 +6,7 @@ import { useCurrentPath } from "./CurrentPathProvider";
 
 function selectFiles(): Promise<null | File[]> {
   return new Promise((resolve) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const picker = getDocument()!.createElement("input");
     picker.type = "file";
     picker.multiple = true;

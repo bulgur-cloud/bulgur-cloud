@@ -21,7 +21,7 @@ export function Dropdown({ children, trigger }: DropdownProps) {
     setTimeout(() => {
       referenceElement?.focus();
     });
-  }, []);
+  }, [onClose, referenceElement]);
 
   return (
     <>
