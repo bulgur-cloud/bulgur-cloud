@@ -53,6 +53,6 @@ sed -i -E "s/^version *= *\"([0-9.]+)\"/version = \"${NEW_VERSION}\"/" backend/C
 sed -i -E "s/^version *= *\"([0-9.]+)\"/version = \"${NEW_VERSION}\"/" frontend/Cargo.toml
 sed -i -E "s/^( *\"version\" *: *)\"([0-9.]+)\"/\1\"${NEW_VERSION}\"/" frontend/package.json
 
+git checkout -b "release/${NEW_VERSION}"
 git add backend/Cargo.toml frontend/Cargo.toml frontend/package.json
 git commit -m "version bump ${NEW_VERSION}"
-git tag -m "${NEW_VERSION}" "release/${NEW_VERSION}"
