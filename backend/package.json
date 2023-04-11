@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "This just sets up TailwindCSS & DaisyUI for the no-js pages.",
+  "scripts": {
+    "build": "tailwindcss -i ./input.css -o ./assets/style.css",
+    "watch": "tailwindcss -i ./input.css -o ./assets/style.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "daisyui": "^2.51.5",
+    "tailwindcss": "^3.3.1"
+  }
+}

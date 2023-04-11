@@ -16,7 +16,7 @@
     // Deps for the frontend need to be installed before any of the tools run
     "frontend-deps": "cd frontend && pnpm install",
     // Bunyan is used to view the logs of the backend
-    "bunyan": "pnpm setup && pnpm install --global bunyan",
+    "bunyan": "pnpm setup && PATH='/root/.local/share/pnpm':$PATH PNPM_HOME='/root/.local/share/pnpm' pnpm install --global bunyan",
     // Add a test user to Bulgur Cloud
     "add-user": "cargo run -- user add --username test --password test",
     // Playwright, for e2e tests

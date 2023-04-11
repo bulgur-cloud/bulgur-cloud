@@ -1,11 +1,23 @@
 {% extends "base.html" %} {% block main %}
-<main class="login">
-  <h1>Bulgur Cloud</h1>
-  <p>Simple and delicious cloud storage and sharing.</p>
+<main class="max-w-prose mx-auto mt-8">
+  <h1 class="text-2xl">Bulgur Cloud</h1>
+  <p class="mt-4">Simple and delicious cloud storage and sharing.</p>
   <form name="login" class="login" action="" method="post">
-    <input name="username" type="text" title="Username" />
-    <input name="password" type="password" title="Password" />
-    <input class="button" type="submit" value="Login" />
+    <label class="label" for="username">
+      <span class="label-text">
+        Username
+      </span>
+    </label>
+    <input class="input input-bordered w-full max-w-xs block" id="username" name="username" type="text"
+      title="Username" />
+    <label class="label" for="password">
+      <span class="label-text">
+        Password
+      </span>
+    </label>
+    <input class="input input-bordered w-full max-w-xs block" id="password" name="password" type="password"
+      title="Password" />
+    <input class="btn btn-primary mt-8" type="submit" value="Log in" />
   </form>
 </main>
 {% endblock %}
