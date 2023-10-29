@@ -26,7 +26,7 @@ jobs:
           cache-dependency-path: "frontend/package-lock.json"
       - run: npm install
       - uses: Swatinem/rust-cache@v2
-      - run: pnpx playwright@1.39.0 install --with-deps ${{ matrix.browser }} chromium
+      - run: npx playwright@1.39.0 install --with-deps ${{ matrix.browser }} chromium
       - name: Run the tests
         run: |
           # cleanup test user storage
