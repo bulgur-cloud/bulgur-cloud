@@ -18,19 +18,16 @@ jobs:
           - arm-unknown-linux-musleabihf
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: "7.29.0"
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: pnpm
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Install UI deps
-        run: pnpm install
+        run: npm install
         working-directory: frontend
       - name: Build UI
-        run: pnpm build
+        run: npm build
         working-directory: frontend
       - name: Install cross
         uses: taiki-e/install-action@v2
@@ -57,35 +54,33 @@ jobs:
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-        with:
-          version: "7.29.0"
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v3
         with:
           node-version: lts/gallium
-          cache: "pnpm"
-          cache-dependency-path: "frontend/pnpm-lock.yaml"
-      - run: pnpm install
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+      - run: npm install
       - uses: Swatinem/rust-cache@v2
-#      - run: pnpx playwright@1.32.1 install --with-deps ${{ matrix.browser }} chromium
-#      - name: Run the tests
-#        run: |
-#          # cleanup test user storage
-#          pushd ../backend
-#          rm -rf storage/testuser
-#          cargo run user add --username testuser --password testpass
-#
-#          # Run in the background
-#          cargo run &
-#
-#          # Wait until the server is ready
-#          while true; do
-#            curl --head http://localhost:8000/is_bulgur_cloud && break || sleep 1
-#          done
-#
-#          popd
-#          # Run the tests
-#          pnpm run test --project=${{ matrix.browser }}
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run the tests
+        run: |
+          # cleanup test user storage
+          pushd ../backend
+          rm -rf storage/testuser
+          cargo run user add --username testuser --password testpass
+
+          # Run in the background
+          cargo run &
+
+          # Wait until the server is ready
+          while true; do
+            curl --head http://localhost:8000/is_bulgur_cloud && break || sleep 1
+          done
+
+          popd
+          # Run the tests
+          npm run test -- --project=${{ matrix.browser }}
 
 
   backend-tests:
