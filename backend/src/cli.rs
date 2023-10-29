@@ -71,20 +71,9 @@ pub struct Opt {
     ///
     /// - sqlite://relative/path/to/file.sqlite
     /// - sqlite:///absolute/path/to/file.sqlite
-    /// - redis://127.0.0.1
-    /// - redis://127.0.0.1:5678
-    /// - redis://127.0.0.1?username=bulgur&password=cloud
     ///
-    /// Sqlite is a great choice for small deployments. For large ones, Redis
-    /// offers better performance and allows scalability as it can run as a
-    /// cluster.
-    ///
-    /// For sqlite, you put in `sqlite://` followed by a relative or absolute
+    /// Put in `sqlite://` followed by a relative or absolute
     /// path.
-    ///
-    /// For Redis, you put in `redis://` followed by the IP address for the
-    /// redis server, optionally a port, and also optionally username and
-    /// password for ACL authentication if needed.
     pub datastore: String,
 
     #[clap(long, default_value_t = num_cpus::get())]

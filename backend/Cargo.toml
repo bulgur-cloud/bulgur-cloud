@@ -69,7 +69,7 @@ tracing-bunyan-formatter = "0.3"
 # Password hashing
 scrypt = { version = "0.11" }
 # For use as a CLI tool
-clap = { version = "3.2", features = ["wrap_help", "derive"] }
+clap = { version = "4.4.7", features = ["wrap_help", "derive"] }
 num_cpus = "1.16"
 rpassword = "7.2"
 # Error management
