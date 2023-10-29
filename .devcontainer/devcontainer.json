@@ -6,7 +6,7 @@
   "image": "mcr.microsoft.com/devcontainers/base:bullseye",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "lts/hydrogen"
+      "version": "lts/iron"
     },
     "ghcr.io/devcontainers/features/rust:1": {}
   },
@@ -14,13 +14,13 @@
     // Used to watch for code changes and restart backend
     "cargo-watch": "cargo install cargo-watch",
     // Deps for the frontend need to be installed before any of the tools run
-    "frontend-deps": "cd frontend && pnpm install",
+    "frontend-deps": "cd frontend && npm install",
     // Bunyan is used to view the logs of the backend
-    "bunyan": "pnpm setup && pnpm install --global bunyan",
+    "bunyan": "npm install --global bunyan",
     // Add a test user to Bulgur Cloud
     "add-user": "cargo run -- user add --username test --password test",
     // Playwright, for e2e tests
-    "playwright": "pnpx playwright install --with-deps"
+    "playwright": "npx playwright install --with-deps"
   },
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
