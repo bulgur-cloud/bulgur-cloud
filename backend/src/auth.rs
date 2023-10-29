@@ -36,7 +36,7 @@ fn scrypt_params() -> Params {
     // without optimizations logins can take 3+ seconds each.
     #[cfg(debug_assertions)]
     {
-        Params::new(5, 2, 1).unwrap_or_log()
+        Params::new(5, 2, 1, 32).unwrap_or_log()
     }
     // During release, follow the recommended parameters to sufficiently slow
     // down logins.
