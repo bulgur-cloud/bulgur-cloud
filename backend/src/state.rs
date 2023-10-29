@@ -121,7 +121,7 @@ pub struct UserData {
     pub user_type: UserType,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 /// Type of user. Admins can add and remove users.
 pub enum UserType {
     User,

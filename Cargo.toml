@@ -1,10 +1,6 @@
 [workspace]
-members = [
-  "backend",
-  "simple-secrecy",
-  "atomic-rename",
-  "frontend",
-]
+members = ["backend", "simple-secrecy", "atomic-rename", "frontend"]
+resolver = "2"
 
 [profile.release]
 strip = true

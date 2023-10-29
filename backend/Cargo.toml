@@ -23,31 +23,31 @@ generate_types = []
 
 [dependencies]
 # Server
-actix-web = "4.2"
+actix-web = "4.4"
 actix-cors = "0.6"
 actix-service = "2.0"
 actix-files = "0.6"
 actix-multipart = "0.6"
 qstring = "0.7"
 futures = "0.3"
-tokio = { version = "1.20", features = ["full"] }
+tokio = { version = "1.32", features = ["full"] }
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 async-trait = "0.1"
 # Rate limiting
-governor = { version = "0.5.1", default-features = false, features = [
+governor = { version = "0.6", default-features = false, features = [
   "std",
   "dashmap",
 ] }
 # Verifying file names
-sanitize-filename = "0.4"
+sanitize-filename = "0.5"
 pathdiff = "0.2"
 # Atomic rename for overwrite-free uploads
 atomic-rename = { path = "../atomic-rename" }
 # Template rendering for static pages
-askama = "0.11"
-askama_actix = "0.13"
+askama = "0.12"
+askama_actix = "0.14"
 # Include asset files
-actix-web-rust-embed-responder = { version = "2.1.1", default-features = false, features = [
+actix-web-rust-embed-responder = { version = "2.2.2", default-features = false, features = [
   "support-rust-embed-for-web",
 ] }
 rust-embed-for-web = "11.1"
@@ -57,9 +57,9 @@ derive_more = "0.99"
 simple-secrecy = { path = "../simple-secrecy" }
 # Data serialization
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.7"
+toml = "0.8"
 # Decode url-encoded URLs
-urlencoding = "2.1.0"
+urlencoding = "2.1"
 # Logging
 tracing = "0.1"
 tracing-unwrap = { version = "0.10", default-features = false }
@@ -67,37 +67,34 @@ tracing-actix-web = "0.7"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-bunyan-formatter = "0.3"
 # Password hashing
-scrypt = { version = "0.10" }
+scrypt = { version = "0.11" }
 # For use as a CLI tool
-clap = { version = "3.2", features = ["wrap_help", "derive"] }
-num_cpus = "1.13"
-rpassword = "7.0"
+clap = { version = "4.4.7", features = ["wrap_help", "derive"] }
+num_cpus = "1.16"
+rpassword = "7.2"
 # Error management
 thiserror = "1.0"
 anyhow = "1.0"
-# Middleware for simple pages that allows 
+# Middleware for simple pages that allows changing HTTP method using a query parameter
 actix-web-query-method-middleware = "1.0"
+# Data storage
 cuttlestore = { version = "0.2.1", default-features = false, features = [
-  "backend-redis",
-  "backend-sqlite",
+  "backend-sqlite-rustls",
   "logging-tracing",
 ] } # Data storage
-# We don't use openssl directly, we need it through cuttlestore.
-# This enables vendored openssl so we can cross compile.
-openssl = { version = "0.10", features = ["vendored"] }
 
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"
 
 # Tracing (optional, enabled with `telemetry_opentelemetry` option)
-opentelemetry = { version = "0.17", features = [
+opentelemetry = { version = "0.20", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
-opentelemetry-otlp = { version = "0.10", features = [
+opentelemetry-otlp = { version = "0.13", features = [
   "tonic",
   "tls",
   "tls-roots",
 ], optional = true }
-tonic = { version = "0.6.2", optional = true }
-tracing-opentelemetry = { version = "0.17", optional = true }
+tonic = { version = "0.9.0", optional = true }
+tracing-opentelemetry = { version = "0.21", optional = true }

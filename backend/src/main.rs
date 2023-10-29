@@ -3,7 +3,7 @@ use bulgur_cloud::{
     server::{setup_app, setup_app_deps},
 };
 
-use clap::StructOpt;
+use clap::Parser;
 
 use cuttlestore::CuttlestoreBuilder;
 #[cfg(feature = "telemetry_opentelemetry")]
