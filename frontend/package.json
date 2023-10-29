@@ -7,8 +7,7 @@
     "build": "next build && next export",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "pnpx playwright test"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.7",
@@ -34,7 +33,6 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^13.2.4",
-    "@playwright/test": "^1.32.1",
     "@types/debounce": "^1.2.1",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",

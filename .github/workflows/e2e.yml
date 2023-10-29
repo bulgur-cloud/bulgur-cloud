@@ -29,7 +29,7 @@ jobs:
           cache-dependency-path: "frontend/pnpm-lock.yaml"
       - run: pnpm install
       - uses: Swatinem/rust-cache@v2
-      - run: pnpx playwright@1.32.1 install --with-deps ${{ matrix.browser }} chromium
+      - run: pnpx playwright@1.39.0 install --with-deps ${{ matrix.browser }} chromium
       - name: Run the tests
         run: |
           # cleanup test user storage
