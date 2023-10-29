@@ -11,7 +11,7 @@ cfg-if = "1"
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies.windows-sys]
-version = "0.45"
+version = "0.48"
 features = ["Win32_Storage_FileSystem", "Win32_Foundation"]
 
 [features]
