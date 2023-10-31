@@ -24,7 +24,8 @@
         "cwd": "${workspaceFolder}/backend",
         "env": {
           "RUST_LOG": "debug",
-          "RUST_BACKTRACE": "1"
+          "RUST_BACKTRACE": "1",
+          "DATABASE_URL": "sqlite://data.sqlite?mode=rwc"
         }
       },
       "detail": "Runs the backend server, rebuilding and restarting when code changes.",
@@ -56,6 +57,30 @@
       "command": "cargo run",
       "options": {
         "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Migrate database",
+      "detail": "You may need to run this if you are having trouble running the development build for the first time.",
+      "type": "shell",
+      "command": "sea-orm-cli migrate up",
+      "options": {
+        "env": {
+          "DATABASE_URL": "sqlite://data.sqlite?mode=rwc"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Regenerate entity code",
+      "detail": "You will need to run this whenever you add a new migration.",
+      "type": "shell",
+      "command": "sea-orm-cli generate entity -o backend/src/entity/",
+      "options": {
+        "env": {
+          "DATABASE_URL": "sqlite://data.sqlite?mode=rwc"
+        }
       },
       "problemMatcher": []
     }
