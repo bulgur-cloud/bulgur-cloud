@@ -397,7 +397,7 @@ async fn test_upload_file_duplicate_name() {
 
     let req = test::TestRequest::put()
         .uri("/storage/testuser/")
-        .insert_header((header::AUTHORIZATION, token_data.clone()))
+        .insert_header((header::AUTHORIZATION, token_data))
         .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nAutem tempore\r\n--zzz--\r\n\r\n")
         .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
         .to_request();

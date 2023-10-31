@@ -455,7 +455,9 @@ async fn post_storage(
     let (store, path) = params.as_ref();
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
     match action.deref() {
-        StorageAction::MakePathToken => Ok(make_path_token(&state, &store_path).await),
+        StorageAction::MakePathToken => Ok(HttpResponse::Ok().json(PathTokenResponse {
+            token: make_path_token(&state, &store_path).await,
+        })),
         StorageAction::Move { new_path } => {
             let (to_store, to_path) = parse_store_path(new_path).ok_or(StorageError::BadPath)?;
             let to_store_path = get_authorized_path(&authorized, to_store, Some(&to_path))?;
@@ -475,7 +477,7 @@ pub const PATH_TOKENS_LIVE_HOURS: i64 = 24;
 pub const PATH_TOKENS_REUSE_HOURS: i64 = 18;
 
 #[tracing::instrument]
-async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpResponse {
+pub async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> Token {
     let full_path = format!("/{}", path.to_string_lossy());
 
     let token = path_token::Entity::find()
@@ -489,9 +491,7 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
         let created_at = DateTime::parse_from_rfc3339(&token.created_at).unwrap_or_log();
 
         if Utc::now().signed_duration_since(created_at).num_hours() < PATH_TOKENS_REUSE_HOURS {
-            return HttpResponse::Ok().json(PathTokenResponse {
-                token: Token::read(&token.token),
-            });
+            return Token::read(&token.token);
         }
     }
 
@@ -504,7 +504,7 @@ async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpRespon
         created_at: Set(chrono::Utc::now().to_rfc3339()),
     };
     path_token.insert(&state.db).await.unwrap_or_log();
-    HttpResponse::Ok().json(PathTokenResponse { token })
+    token
 }
 
 #[tracing::instrument]
