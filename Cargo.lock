@@ -913,6 +913,7 @@ dependencies = [
  "derive_more",
  "futures",
  "governor",
+ "migration",
  "nanoid",
  "num_cpus",
  "opentelemetry",

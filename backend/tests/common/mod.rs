@@ -6,12 +6,12 @@ use std::{
 use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
     auth::{add_new_user, create_user_folder, make_token},
+    db::get_db,
     ratelimit_middleware::RateLimit,
     server::setup_app_deps,
     state::{AppState, Token},
     storage::make_path_token,
 };
-use sea_orm::Database;
 use tokio::fs;
 
 pub struct TestEnv {
@@ -29,7 +29,7 @@ impl TestEnv {
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
         let datastore = "sqlite::memory:".to_string();
-        let connection = Database::connect(&datastore).await.unwrap();
+        let connection = get_db(&datastore).await.unwrap();
         let (state, _) = setup_app_deps(folder.clone(), connection)
             .await
             .expect("Failed to set up app dependencies");

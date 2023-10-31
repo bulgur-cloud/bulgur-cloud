@@ -86,6 +86,7 @@ sea-orm = { version = "^0", features = [
   "with-chrono",
 ] }
 sea-query = "0"
+migration = { path = "../migration" }
 
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"

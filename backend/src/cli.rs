@@ -3,10 +3,10 @@ use std::env;
 use rpassword::prompt_password;
 
 use clap::{Parser, Subcommand};
-use sea_orm::Database;
 
 use crate::{
     auth::{add_new_user, create_user_folder, delete_user, validate_username},
+    db::get_db,
     server::setup_app_deps,
     state::UserType,
 };
@@ -63,7 +63,7 @@ pub struct Opt {
     /// By default this is set to `0.0.0.0:8000` which will bind to all interfaces on port 8000.
     pub bind: String,
 
-    #[clap(long, default_value = "sqlite://data.sqlite")]
+    #[clap(long, default_value = "sqlite://data.sqlite?mode=rwc")]
     /// The data store where important information such as user data is stored.
     /// This must be in one of the following forms:
     ///
@@ -103,7 +103,7 @@ pub async fn cli_command<Ctx: CLIContext>(opt: Opt) -> anyhow::Result<()> {
                         Some(password) => password,
                         None => Ctx::prompt_password()?,
                     };
-                    let connection = Database::connect(&opt.datastore).await?;
+                    let connection = get_db(&opt.datastore).await?;
                     let (state, _) = setup_app_deps(env::current_dir().unwrap(), connection)
                         .await
                         .unwrap();
@@ -112,7 +112,7 @@ pub async fn cli_command<Ctx: CLIContext>(opt: Opt) -> anyhow::Result<()> {
                     create_user_folder(&add.username).await?;
                 }
                 User::UserRemove(remove) => {
-                    let connection = Database::connect(&opt.datastore).await?;
+                    let connection = get_db(&opt.datastore).await?;
                     let (state, _) = setup_app_deps(env::current_dir().unwrap(), connection)
                         .await
                         .unwrap();

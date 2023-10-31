@@ -1,5 +1,6 @@
 use bulgur_cloud::{
     cli::{cli_command, CLITerminalContext, Opt},
+    db::get_db,
     server::{setup_app, setup_app_deps},
 };
 
@@ -8,7 +9,6 @@ use clap::Parser;
 #[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
 
-use sea_orm::Database;
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
 
@@ -103,7 +103,7 @@ async fn main() -> anyhow::Result<()> {
         }
         None => {
             // Running the server
-            let connections = Database::connect(opts.datastore).await?;
+            let connections = get_db(&opts.datastore).await?;
             let (state, login_governor) =
                 setup_app_deps(env::current_dir().unwrap_or_log(), connections).await?;
             setup_logging();
