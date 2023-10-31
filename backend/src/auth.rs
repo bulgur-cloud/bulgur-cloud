@@ -131,7 +131,14 @@ pub async fn delete_user(
 
 /// Creates a "nobody" user which is used to resist user probing
 pub async fn create_nobody(db: &DatabaseConnection) -> anyhow::Result<()> {
-    add_new_user(USER_NOBODY, &nanoid!(), UserType::User, db).await?;
+    let existing = user::Entity::find()
+        .filter(user::Column::Username.eq(USER_NOBODY))
+        .one(db)
+        .await?;
+    if existing.is_none() {
+        add_new_user(USER_NOBODY, &nanoid!(), UserType::User, db).await?;
+    }
+
     Ok(())
 }
 
