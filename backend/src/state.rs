@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use cuttlestore::Cuttlestore;
 use nanoid::nanoid;
+use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize, Serializer};
 
 use simple_secrecy;
@@ -97,13 +97,9 @@ pub struct Username(pub String);
 
 #[derive(Debug)]
 pub struct AppState {
+    // for uptime
     pub started_at: chrono::DateTime<chrono::Local>,
-    /// User data
-    pub users: Cuttlestore<UserData>,
-    /// Maps access tokens to users
-    pub access_tokens: Cuttlestore<Username>,
-    /// Maps file paths to access tokens
-    pub path_tokens: Cuttlestore<PathTokenStored>,
+    pub db: DatabaseConnection,
 }
 
 #[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]

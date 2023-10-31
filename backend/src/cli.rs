@@ -1,14 +1,12 @@
-use std::{env, path::PathBuf};
+use std::env;
 
-use cuttlestore::CuttlestoreBuilder;
 use rpassword::prompt_password;
 
 use clap::{Parser, Subcommand};
-use tokio::fs;
+use sea_orm::Database;
 
 use crate::{
-    auth::{add_new_user, create_user_folder, validate_username},
-    folder::STORAGE,
+    auth::{add_new_user, create_user_folder, delete_user, validate_username},
     server::setup_app_deps,
     state::UserType,
 };
@@ -105,28 +103,21 @@ pub async fn cli_command<Ctx: CLIContext>(opt: Opt) -> anyhow::Result<()> {
                         Some(password) => password,
                         None => Ctx::prompt_password()?,
                     };
-                    let connection = CuttlestoreBuilder::new(&opt.datastore)
-                        .finish_connection()
-                        .await?;
-                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), &connection)
+                    let connection = Database::connect(&opt.datastore).await?;
+                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), connection)
                         .await
                         .unwrap();
 
-                    add_new_user(&add.username, &password, add.user_type, &state.users).await?;
+                    add_new_user(&add.username, &password, add.user_type, &state.db).await?;
                     create_user_folder(&add.username).await?;
                 }
                 User::UserRemove(remove) => {
-                    let connection = CuttlestoreBuilder::new(&opt.datastore)
-                        .finish_connection()
-                        .await?;
-                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), &connection)
+                    let connection = Database::connect(&opt.datastore).await?;
+                    let (state, _) = setup_app_deps(env::current_dir().unwrap(), connection)
                         .await
                         .unwrap();
-                    state.users.delete(&remove.username).await?;
-                    if remove.delete_files {
-                        let store = PathBuf::from(STORAGE).join(&remove.username);
-                        fs::remove_dir_all(store).await?;
-                    }
+
+                    delete_user(&state.db, &remove.username, remove.delete_files).await?
                 }
             },
         },

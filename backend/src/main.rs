@@ -5,10 +5,10 @@ use bulgur_cloud::{
 
 use clap::Parser;
 
-use cuttlestore::CuttlestoreBuilder;
 #[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
 
+use sea_orm::Database;
 #[cfg(feature = "telemetry_opentelemetry")]
 use tonic::metadata::{MetadataKey, MetadataMap};
 
@@ -103,11 +103,9 @@ async fn main() -> anyhow::Result<()> {
         }
         None => {
             // Running the server
-            let connections = CuttlestoreBuilder::new(opts.datastore)
-                .finish_connection()
-                .await?;
+            let connections = Database::connect(opts.datastore).await?;
             let (state, login_governor) =
-                setup_app_deps(env::current_dir().unwrap_or_log(), &connections).await?;
+                setup_app_deps(env::current_dir().unwrap_or_log(), connections).await?;
             setup_logging();
 
             HttpServer::new(move || setup_app(state.clone(), login_governor.clone()))

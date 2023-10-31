@@ -10,9 +10,15 @@
     },
     "ghcr.io/devcontainers/features/rust:1": {}
   },
+  "onCreateCommand": {
+    // Needs to be installed to install sea-orm-cli
+    "pkg-config": "apt install pkg-config"
+  },
   "postCreateCommand": {
     // Used to watch for code changes and restart backend
     "cargo-watch": "cargo install cargo-watch",
+    // Used for migrations
+    "sea-orm-cli": "cargo install sea-orm-cli",
     // Deps for the frontend need to be installed before any of the tools run
     "frontend-deps": "cd frontend && npm install",
     // Bunyan is used to view the logs of the backend

@@ -56,7 +56,7 @@ pub async fn page_login_post(
     form: web::Form<LoginFormData>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    if verify_pass(&form.username, &form.password, &state.users)
+    if verify_pass(&form.username, &form.password, &state.db)
         .await
         .is_ok()
     {

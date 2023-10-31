@@ -1,5 +1,11 @@
 [workspace]
-members = ["backend", "simple-secrecy", "atomic-rename", "frontend"]
+members = [
+  "backend",
+  "simple-secrecy",
+  "atomic-rename",
+  "frontend",
+  "migration",
+]
 resolver = "2"
 
 [profile.release]

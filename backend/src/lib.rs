@@ -4,6 +4,7 @@
 pub mod auth;
 pub mod auth_middleware;
 pub mod cli;
+pub mod entity;
 pub mod error;
 pub mod folder;
 pub mod meta;
