@@ -28,7 +28,7 @@ impl TestEnv {
         let folder = temp_dir().join(format!("bulgur-cloud-{}", nanoid::nanoid!()));
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
-        let datastore = "sqlite::memory:".to_string();
+        let datastore = "sqlite://data.sqlite?mode=rwc".to_string();
         let connection = get_db(&datastore).await.unwrap();
         let (state, _) = setup_app_deps(folder.clone(), connection)
             .await

@@ -148,7 +148,7 @@ async fn verify_auth(
                     DateTime::parse_from_rfc3339(&known_token.created_at).unwrap_or_log();
 
                 let seconds_old = Utc::now().signed_duration_since(created_at).num_seconds();
-                known_token.token.eq(path_token.reveal()) && seconds_old < PATH_TOKENS_VALID_SECONDS
+                known_token.path.eq(&path) && seconds_old < PATH_TOKENS_VALID_SECONDS
             })
         } else {
             None

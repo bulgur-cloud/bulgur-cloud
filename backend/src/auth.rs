@@ -118,13 +118,14 @@ pub async fn delete_user(
     let user = user::Entity::find()
         .filter(user::Column::Username.eq(username))
         .one(db)
-        .await?
-        .unwrap_or_log();
-    user.delete(db).await?;
+        .await?;
+    if let Some(user) = user {
+        user.delete(db).await.unwrap();
 
-    if delete_files {
-        let store = PathBuf::from(STORAGE).join(username);
-        fs::remove_dir_all(store).await?;
+        if delete_files {
+            let store = PathBuf::from(STORAGE).join(username);
+            fs::remove_dir_all(store).await?;
+        }
     }
     Ok(())
 }
