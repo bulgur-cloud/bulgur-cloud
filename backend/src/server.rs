@@ -28,7 +28,7 @@ use actix_web::{
 };
 
 use actix_web_query_method_middleware::QueryMethod;
-use cuttlestore::CuttleConnection;
+use sea_orm::DatabaseConnection;
 use tokio::fs;
 use tracing_actix_web::TracingLogger;
 
@@ -152,15 +152,13 @@ const MAX_LOGIN_ATTEMPTS_PER_MIN: u32 = 10;
 
 pub async fn setup_app_deps(
     _base_folder: PathBuf,
-    connection: &CuttleConnection,
+    connection: DatabaseConnection,
 ) -> anyhow::Result<(Data<AppState>, RateLimit)> {
     // Make sure the needed folders are available
     fs::create_dir_all(PathBuf::from(folder::STORAGE)).await?;
     let state = web::Data::new(AppState {
         started_at: chrono::Local::now(),
-        access_tokens: connection.make("access-token").await?,
-        path_tokens: connection.make("path-token").await?,
-        users: connection.make("user").await?,
+        db: connection,
     });
 
     let login_governor = RateLimit::new(
@@ -169,7 +167,7 @@ pub async fn setup_app_deps(
     );
 
     // Make sure the nobody user is created if it doesn't exist
-    create_nobody(&state.users).await?;
+    create_nobody(&state.db).await?;
 
     Ok((state, login_governor))
 }

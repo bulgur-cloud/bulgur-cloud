@@ -1,11 +1,11 @@
 use bulgur_cloud::{
     cli::{cli_command, CLITerminalContext, Opt},
+    db::get_db,
     server::{setup_app, setup_app_deps},
 };
 
 use clap::Parser;
 
-use cuttlestore::CuttlestoreBuilder;
 #[cfg(feature = "telemetry_opentelemetry")]
 use opentelemetry_otlp::WithExportConfig;
 
@@ -103,11 +103,9 @@ async fn main() -> anyhow::Result<()> {
         }
         None => {
             // Running the server
-            let connections = CuttlestoreBuilder::new(opts.datastore)
-                .finish_connection()
-                .await?;
+            let connections = get_db(&opts.datastore).await?;
             let (state, login_governor) =
-                setup_app_deps(env::current_dir().unwrap_or_log(), &connections).await?;
+                setup_app_deps(env::current_dir().unwrap_or_log(), connections).await?;
             setup_logging();
 
             HttpServer::new(move || setup_app(state.clone(), login_governor.clone()))

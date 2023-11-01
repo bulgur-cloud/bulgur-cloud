@@ -14,17 +14,18 @@ use actix_web::{
     web::{self, ReqData},
     Either, HttpResponse, HttpResponseBuilder,
 };
-use chrono::{Duration, Utc};
-use cuttlestore::PutOptions;
+use chrono::{DateTime, Utc};
 use futures::TryStreamExt;
 use nanoid::nanoid;
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 use tokio::{fs, io::AsyncWriteExt};
 use tracing_unwrap::ResultExt;
 
 use crate::{
+    entity::path_token,
     folder,
-    state::{AppState, Authorized, PathTokenResponse, PathTokenStored, Token},
+    state::{AppState, Authorized, PathTokenResponse, Token},
 };
 
 #[cfg(feature = "generate_types")]
@@ -454,7 +455,9 @@ async fn post_storage(
     let (store, path) = params.as_ref();
     let store_path = get_authorized_path(&authorized, store, Some(path))?;
     match action.deref() {
-        StorageAction::MakePathToken => Ok(make_path_token(&state, &store_path).await),
+        StorageAction::MakePathToken => Ok(HttpResponse::Ok().json(PathTokenResponse {
+            token: make_path_token(&state, &store_path).await,
+        })),
         StorageAction::Move { new_path } => {
             let (to_store, to_path) = parse_store_path(new_path).ok_or(StorageError::BadPath)?;
             let to_store_path = get_authorized_path(&authorized, to_store, Some(&to_path))?;
@@ -468,39 +471,40 @@ async fn post_storage(
     }
 }
 
+/// Path tokens are temporary, discard them after this many hours.
+pub const PATH_TOKENS_LIVE_HOURS: i64 = 24;
+/// If a path token is newer than this, reuse it instead of creating a new one.
+pub const PATH_TOKENS_REUSE_HOURS: i64 = 18;
+
 #[tracing::instrument]
-async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> HttpResponse {
+pub async fn make_path_token(state: &web::Data<AppState>, path: &Path) -> Token {
     let full_path = format!("/{}", path.to_string_lossy());
-    let existing = state.path_tokens.get(&full_path).await.unwrap_or_log();
-    if let Some(token) = existing {
+
+    let token = path_token::Entity::find()
+        .filter(path_token::Column::Path.eq(&full_path))
+        .one(&state.db)
+        .await
+        .unwrap_or_log();
+
+    if let Some(token) = token {
         // Only reuse the existing token if it's going to be valid for a while
-        if token
-            .valid_until
-            .signed_duration_since(Utc::now())
-            .num_hours()
-            > 6
-        {
-            return HttpResponse::Ok().json(PathTokenResponse { token: token.token });
+        let created_at = DateTime::parse_from_rfc3339(&token.created_at).unwrap_or_log();
+
+        if Utc::now().signed_duration_since(created_at).num_hours() < PATH_TOKENS_REUSE_HOURS {
+            return Token::read(&token.token);
         }
     }
 
     let token = Token::new();
     tracing::debug!("Creating a token for {}", full_path);
-    let live_until = Utc::now() + Duration::hours(24);
-    state
-        .path_tokens
-        .put_with(
-            full_path,
-            &PathTokenStored {
-                token: token.clone(),
-                created_at: Utc::now(),
-                valid_until: live_until,
-            },
-            PutOptions::live_until(live_until.into()),
-        )
-        .await
-        .unwrap_or_log();
-    HttpResponse::Ok().json(PathTokenResponse { token })
+
+    let path_token = path_token::ActiveModel {
+        token: Set(token.reveal().to_string()),
+        path: Set(full_path.clone()),
+        created_at: Set(chrono::Utc::now().to_rfc3339()),
+    };
+    path_token.insert(&state.db).await.unwrap_or_log();
+    token
 }
 
 #[tracing::instrument]

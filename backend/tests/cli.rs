@@ -101,6 +101,7 @@ async fn test_cli_user_remove_delete_files() {
     let user_store = PathBuf::from(STORAGE).join("testuser");
     assert!(
         fs::metadata(&user_store).await.is_err(),
-        "User store has been deleted"
+        "User store {:?} has been deleted",
+        &user_store
     );
 }

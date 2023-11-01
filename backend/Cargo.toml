@@ -78,10 +78,15 @@ anyhow = "1.0"
 # Middleware for simple pages that allows changing HTTP method using a query parameter
 actix-web-query-method-middleware = "1.0"
 # Data storage
-cuttlestore = { version = "0.2.1", default-features = false, features = [
-  "backend-sqlite-rustls",
-  "logging-tracing",
-] } # Data storage
+sea-orm = { version = "^0", features = [
+  "sqlx-postgres",
+  "sqlx-sqlite",
+  "runtime-tokio-rustls",
+  "macros",
+  "with-chrono",
+] }
+sea-query = "0"
+migration = { path = "../migration" }
 
 # Can we limit this to only if `generate_types` is set?
 typescript-type-def = "0.5"

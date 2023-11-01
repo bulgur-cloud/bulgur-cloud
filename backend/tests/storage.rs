@@ -37,7 +37,7 @@ async fn test_get_home_auth_token() {
 async fn test_get_home_path_token() {
     let ctx = TestEnv::setup().await;
     ctx.add_user("testuser", "testpass").await;
-    let token = ctx.setup_path_token("/storage/testuser/").await;
+    let token = ctx.setup_path_token("storage/testuser/").await;
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
 
     let uri = format!("/storage/testuser/?token={}", token.reveal());
@@ -58,7 +58,7 @@ async fn test_path_token_unauthorized_store() {
     let ctx = TestEnv::setup().await;
     ctx.add_user("testuser", "testpass").await;
     ctx.add_user("user2", "testpass").await;
-    let token = ctx.setup_path_token("/storage/testuser/").await;
+    let token = ctx.setup_path_token("storage/testuser/").await;
     let app = test::init_service(setup_app(ctx.state(), ctx.login_governor())).await;
 
     let uri = format!("/storage/user2/?token={}", token.reveal());
@@ -397,7 +397,7 @@ async fn test_upload_file_duplicate_name() {
 
     let req = test::TestRequest::put()
         .uri("/storage/testuser/")
-        .insert_header((header::AUTHORIZATION, token_data.clone()))
+        .insert_header((header::AUTHORIZATION, token_data))
         .set_payload("--zzz\r\nContent-Disposition: form-data; name=\"test.txt\"; filename=\"test.txt\"\r\n\r\nAutem tempore\r\n--zzz--\r\n\r\n")
         .insert_header((header::CONTENT_TYPE, "multipart/form-data; boundary=zzz"))
         .to_request();

@@ -5,13 +5,15 @@ use actix_web::body::EitherBody;
 use actix_web::dev::{self, ServiceRequest, ServiceResponse};
 use actix_web::dev::{Service, Transform};
 use actix_web::{http, web, Error, HttpMessage, HttpRequest, HttpResponse};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use futures::future::LocalBoxFuture;
 use qstring::QString;
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::Serialize;
 use tracing_unwrap::ResultExt;
 
-use crate::state::{AppState, Authorized, Token};
+use crate::entity::{path_token, user, user_token};
+use crate::state::{AppState, Authorized, Token, Username};
 
 #[derive(Clone)]
 pub struct CheckLogin {
@@ -101,6 +103,8 @@ enum AuthMiddlewareError {
 }
 type AuthMiddlewareResult<T> = std::result::Result<T, AuthMiddlewareError>;
 
+pub const PATH_TOKENS_VALID_SECONDS: i64 = 24 * 60 * 60;
+
 #[tracing::instrument(skip(state))]
 /// If the user token is valid, returns the user. If user token is missing or is invalid, then tries the path token.
 /// If the path token is valid for the given path, then returns Either::Right.
@@ -115,12 +119,15 @@ async fn verify_auth(
 
     let username = if let Some(user_token) = user_token {
         tracing::debug!("Found user token attached to request");
-        let username = state
-            .access_tokens
-            .get(user_token.reveal())
+
+        user_token::Entity::find()
+            .filter(user_token::Column::Token.eq(user_token.reveal()))
+            .find_also_related(user::Entity)
+            .one(&state.db)
             .await
-            .unwrap_or_log();
-        username
+            .unwrap_or_log()
+            .and_then(|u| u.1)
+            .map(|u| u.username)
     } else {
         None
     };
@@ -128,14 +135,20 @@ async fn verify_auth(
     let path_authorized = (if let Some(path_token) = path_token {
         if let Ok(path) = urlencoding::decode(path) {
             tracing::debug!("Found path token attached to request {:?}", path);
-            let known_token = state.path_tokens.get(&path).await.unwrap_or_log();
+
+            let known_token = path_token::Entity::find()
+                .filter(path_token::Column::Token.eq(path_token.reveal()))
+                .one(&state.db)
+                .await
+                .unwrap_or_log();
+
             tracing::debug!("Token exists for path {:?}", &path);
             known_token.map(|known_token| {
-                let valid_secs_left = known_token
-                    .valid_until
-                    .signed_duration_since(Utc::now())
-                    .num_seconds();
-                known_token.token.eq(&path_token) && valid_secs_left > 0
+                let created_at =
+                    DateTime::parse_from_rfc3339(&known_token.created_at).unwrap_or_log();
+
+                let seconds_old = Utc::now().signed_duration_since(created_at).num_seconds();
+                known_token.path.eq(&path) && seconds_old < PATH_TOKENS_VALID_SECONDS
             })
         } else {
             None
@@ -148,10 +161,10 @@ async fn verify_auth(
     if let Some(username) = username {
         if path_authorized {
             tracing::debug!("Authorized path and user");
-            Ok(Authorized::Both(username))
+            Ok(Authorized::Both(Username(username)))
         } else {
             tracing::debug!("Authorized user");
-            Ok(Authorized::User(username))
+            Ok(Authorized::User(Username(username)))
         }
     } else if path_authorized {
         tracing::debug!("Authorized path");

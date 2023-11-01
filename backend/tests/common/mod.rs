@@ -6,11 +6,12 @@ use std::{
 use actix_web::{body::MessageBody, dev::ServiceResponse, http::header::AsHeaderName, web::Data};
 use bulgur_cloud::{
     auth::{add_new_user, create_user_folder, make_token},
+    db::get_db,
     ratelimit_middleware::RateLimit,
     server::setup_app_deps,
-    state::{AppState, PathTokenStored, Token},
+    state::{AppState, Token},
+    storage::make_path_token,
 };
-use cuttlestore::CuttlestoreBuilder;
 use tokio::fs;
 
 pub struct TestEnv {
@@ -27,12 +28,9 @@ impl TestEnv {
         let folder = temp_dir().join(format!("bulgur-cloud-{}", nanoid::nanoid!()));
         std::fs::create_dir_all(&folder).expect("Failed to create test dir");
         env::set_current_dir(&folder).expect("Failed to switch to the test dir");
-        let datastore = format!("sqlite://{}/data.sqlite", folder.to_string_lossy());
-        let connection = CuttlestoreBuilder::new(&datastore)
-            .finish_connection()
-            .await
-            .unwrap();
-        let (state, _) = setup_app_deps(folder.clone(), &connection)
+        let datastore = "sqlite://data.sqlite?mode=rwc".to_string();
+        let connection = get_db(&datastore).await.unwrap();
+        let (state, _) = setup_app_deps(folder.clone(), connection)
             .await
             .expect("Failed to set up app dependencies");
         TestEnv {
@@ -63,7 +61,7 @@ impl TestEnv {
             user,
             password,
             bulgur_cloud::state::UserType::User,
-            &self.state.users,
+            &self.state.db,
         )
         .await
         .expect("Failed to create user");
@@ -80,20 +78,7 @@ impl TestEnv {
 
     #[allow(dead_code)]
     pub async fn setup_path_token(&self, path: &str) -> Token {
-        let token = Token::new();
-        self.state
-            .path_tokens
-            .put(
-                path.to_string(),
-                &PathTokenStored {
-                    token: token.clone(),
-                    created_at: chrono::Utc::now(),
-                    valid_until: chrono::Utc::now() + chrono::Duration::hours(24),
-                },
-            )
-            .await
-            .unwrap();
-        token
+        make_path_token(&self.state, &PathBuf::from(path)).await
     }
 }
 

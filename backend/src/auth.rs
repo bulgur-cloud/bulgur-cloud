@@ -1,13 +1,13 @@
 use crate::{
+    entity::{user, user_token},
     error::ServerError,
     folder::{STORAGE, USERS_DIR},
-    state::{self, AppState, Token, UserData, UserType},
+    state::{AppState, Token, UserType},
 };
 use std::path::PathBuf;
 
 use actix_web::{http, post, web, HttpResponse, HttpResponseBuilder};
 use anyhow::Result;
-use cuttlestore::Cuttlestore;
 use nanoid::nanoid;
 use sanitize_filename::is_sanitized_with_options;
 use scrypt::{
@@ -15,6 +15,9 @@ use scrypt::{
         rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, Salt, SaltString,
     },
     Params, Scrypt,
+};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter, Set,
 };
 use tracing_unwrap::{OptionExt, ResultExt};
 
@@ -46,13 +49,9 @@ fn scrypt_params() -> Params {
     }
 }
 
-async fn create_user(
-    username: &str,
-    password: &str,
-    user_type: UserType,
-) -> anyhow::Result<UserData> {
+async fn hash_password(password: &str) -> anyhow::Result<String> {
     let salt = SaltString::generate(&mut OsRng);
-    let password_hash = Scrypt
+    let password_hash: String = Scrypt
         .hash_password_customized(
             password.as_bytes(),
             None,
@@ -61,11 +60,7 @@ async fn create_user(
             Salt::try_from(&salt)?,
         )?
         .to_string();
-    Ok(UserData {
-        username: username.to_string(),
-        password_hash,
-        user_type,
-    })
+    Ok(password_hash)
 }
 
 const USER_NOBODY: &str = "nobody";
@@ -90,11 +85,21 @@ pub async fn add_new_user(
     username: &str,
     password: &str,
     user_type: UserType,
-    kv: &Cuttlestore<UserData>,
+    db: &DatabaseConnection,
 ) -> anyhow::Result<()> {
     validate_username(username)?;
-    let data = create_user(username, password, user_type).await?;
-    kv.put(username, &data).await?;
+    let password_hash = hash_password(password).await?;
+    let user = user::ActiveModel {
+        id: Set(nanoid!()),
+        username: Set(username.to_owned()),
+        password_hash: Set(password_hash),
+        user_type: match user_type {
+            UserType::User => Set("U".to_owned()),
+            UserType::Admin => Set("A".to_owned()),
+        },
+    };
+    user.insert(db).await?;
+
     Ok(())
 }
 
@@ -105,9 +110,36 @@ pub async fn create_user_folder(username: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub async fn delete_user(
+    db: &DatabaseConnection,
+    username: &str,
+    delete_files: bool,
+) -> anyhow::Result<()> {
+    let user = user::Entity::find()
+        .filter(user::Column::Username.eq(username))
+        .one(db)
+        .await?;
+    if let Some(user) = user {
+        user.delete(db).await.unwrap();
+
+        if delete_files {
+            let store = PathBuf::from(STORAGE).join(username);
+            fs::remove_dir_all(store).await?;
+        }
+    }
+    Ok(())
+}
+
 /// Creates a "nobody" user which is used to resist user probing
-pub async fn create_nobody(kv: &Cuttlestore<UserData>) -> anyhow::Result<()> {
-    add_new_user(USER_NOBODY, &nanoid!(), UserType::User, kv).await?;
+pub async fn create_nobody(db: &DatabaseConnection) -> anyhow::Result<()> {
+    let existing = user::Entity::find()
+        .filter(user::Column::Username.eq(USER_NOBODY))
+        .one(db)
+        .await?;
+    if existing.is_none() {
+        add_new_user(USER_NOBODY, &nanoid!(), UserType::User, db).await?;
+    }
+
     Ok(())
 }
 
@@ -115,14 +147,19 @@ pub async fn create_nobody(kv: &Cuttlestore<UserData>) -> anyhow::Result<()> {
 pub async fn verify_pass(
     username: &str,
     password_input: &Password,
-    kv: &Cuttlestore<UserData>,
+    db: &DatabaseConnection,
 ) -> Result<()> {
-    let user = match kv.get(username).await? {
+    let user = match user::Entity::find()
+        .filter(user::Column::Username.eq(username))
+        .one(db)
+        .await?
+    {
         Some(data) => data,
-        None => {
-            let _key = format!("{USER_NOBODY}.toml");
-            kv.get(USER_NOBODY).await?.unwrap_or_log()
-        }
+        None => user::Entity::find()
+            .filter(user::Column::Username.eq(format!("{USER_NOBODY}")))
+            .one(db)
+            .await?
+            .unwrap_or_log(),
     };
 
     if user.username != username && user.username != USER_NOBODY {
@@ -203,19 +240,30 @@ impl actix_web::error::ResponseError for LoginFailed {
 pub async fn make_token(state: &web::Data<AppState>, username: &str) -> anyhow::Result<Token> {
     // generate and save token
     let access_token = Token::new();
-    // Impossibly unlikely, but token collisions would be extremely bad so check it anyway
-    assert!(state
-        .access_tokens
-        .get(access_token.reveal())
+
+    let user_id = user::Entity::find()
+        .filter(user::Column::Username.eq(username))
+        .one(&state.db)
         .await?
-        .is_none());
-    state
-        .access_tokens
-        .put(
-            access_token.reveal(),
-            &state::Username(username.to_string()),
-        )
+        .unwrap_or_log()
+        .id;
+
+    let existing_token = user_token::Entity::find()
+        .filter(user_token::Column::Token.eq(access_token.reveal()))
+        .one(&state.db)
         .await?;
+
+    assert!(
+        existing_token.is_none(),
+        "Extremely rare token collision! You're the one-in-a-trillion unlucky, or there's something wrong with the random number generator."
+    );
+
+    let user_token = user_token::ActiveModel {
+        token: Set(access_token.reveal().to_string()),
+        user_id: Set(user_id),
+        created_at: Set(chrono::Utc::now().to_rfc3339()),
+    };
+    user_token.insert(&state.db).await?;
 
     Ok(access_token)
 }
@@ -226,7 +274,7 @@ pub async fn login(
     data: web::Json<Login>,
     state: web::Data<AppState>,
 ) -> Result<web::Json<LoginResponse>, LoginFailed> {
-    if verify_pass(&data.username, &data.password, &state.users)
+    if verify_pass(&data.username, &data.password, &state.db)
         .await
         .is_ok()
     {
