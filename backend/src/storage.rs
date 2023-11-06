@@ -97,7 +97,11 @@ pub fn get_authorized_path(
             let path_base = PathBuf::from(folder::STORAGE).join(store);
             let path_full = path_base.join(path);
             // path token authentication is only good for read-only access
-            let is_authorized = (authenticated.path_token.as_ref().map(|p| p.eq(&format!("/{}", path_full.to_str().unwrap_or_log()))).unwrap_or(false)
+            let is_authorized = (authenticated.path_token.as_ref().map(|p|
+                // TODO: ew, this is disgusting. We need to standardize how
+                // paths are represented, like /storage or not, leading slash or
+                // not etc.
+                 p.eq(&format!("/{}", path_full.to_str().unwrap_or_log()))).unwrap_or(false)
                 && read_only)
                 // user authentication is good for the users own store
                 || authenticated
