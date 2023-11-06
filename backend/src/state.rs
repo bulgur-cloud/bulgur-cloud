@@ -102,11 +102,11 @@ pub struct AppState {
     pub db: DatabaseConnection,
 }
 
-#[derive(Clone, simple_secrecy::Debug, simple_secrecy::Display)]
-pub enum Authorized {
-    User(Username),
-    Path,
-    Both(Username),
+#[derive(Clone, Debug)]
+pub struct Authentication {
+    pub user: Option<Username>,
+    pub path_token: Option<String>,
+    pub share_token: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

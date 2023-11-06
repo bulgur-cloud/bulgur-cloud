@@ -20,12 +20,12 @@ use nanoid::nanoid;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
 use serde::{Deserialize, Serialize};
 use tokio::{fs, io::AsyncWriteExt};
-use tracing_unwrap::ResultExt;
+use tracing_unwrap::{OptionExt, ResultExt};
 
 use crate::{
     entity::path_token,
     folder,
-    state::{AppState, Authorized, PathTokenResponse, Token},
+    state::{AppState, Authentication, PathTokenResponse, Token, Username},
 };
 
 #[cfg(feature = "generate_types")]
@@ -86,48 +86,57 @@ fn parse_params(params: &str) -> (&str, &str) {
 /// Gets the path, but only if the user is authorized for it.
 #[tracing::instrument]
 pub fn get_authorized_path(
-    authorized: &Option<ReqData<Authorized>>,
+    authenticated: &Option<ReqData<Authentication>>,
     store: &str,
-    path: Option<&str>,
+    path: &str,
+    read_only: bool,
 ) -> Result<PathBuf, StorageError> {
     #[allow(clippy::single_match)]
-    match authorized {
-        Some(authorized) => {
-            let is_authorized = match authorized.deref() {
-                Authorized::User(user) => store.eq(&user.0),
-                Authorized::Path => true,
-                Authorized::Both(_) => true,
-            };
+    match authenticated {
+        Some(authenticated) => {
+            let path_base = PathBuf::from(folder::STORAGE).join(store);
+            let path_full = path_base.join(path);
+            // path token authentication is only good for read-only access
+            let is_authorized = (authenticated.path_token.as_ref().map(|p| p.eq(&format!("/{}", path_full.to_str().unwrap_or_log()))).unwrap_or(false)
+                && read_only)
+                // user authentication is good for the users own store
+                || authenticated
+                    .user
+                    .as_ref()
+                    .map(|Username(u)| u.eq(store))
+                    .unwrap_or(false)
+                // share authentication is good for all paths under the share
+                || authenticated
+                    .share_token.as_ref()
+                    .map(|p| path.starts_with(p))
+                    .unwrap_or(false);
             if is_authorized {
-                tracing::debug!("User or path token is authorized");
-                let path_base = PathBuf::from(folder::STORAGE).join(store);
+                tracing::debug!("Authorized");
 
-                match path {
-                    Some(path) => {
-                        let path_full = path_base.join(path);
-                        // Make sure to avoid someone using ".." to escape their
-                        // authorized store. This may be unnecessary in some
-                        // cases because actix cleans relative paths when
-                        // parsing the URL, but keeping this for safety unless
-                        // it becomes a performance bottleneck.
-                        let relative_path = pathdiff::diff_paths(path_base, &path_full);
-                        match relative_path {
-                            Some(relative_path) => {
-                                if relative_path.starts_with("../")
-                                    || relative_path.eq(&PathBuf::from(""))
-                                {
-                                    return Ok(path_full);
-                                }
-                            }
-                            None => {}
+                // Make sure to avoid someone using ".." to escape their
+                // authorized store. This may be unnecessary in some
+                // cases because actix cleans relative paths when
+                // parsing the URL, but keeping this for safety unless
+                // it becomes a performance bottleneck.
+                let relative_path = pathdiff::diff_paths(path_base, &path_full);
+                match relative_path {
+                    Some(relative_path) => {
+                        if relative_path.starts_with("../") || relative_path.eq(&PathBuf::from(""))
+                        {
+                            return Ok(path_full);
                         }
-                        tracing::info!("Tried to access path {:?}", path);
-                        Err(StorageError::NotAuthorized)
                     }
-                    None => Ok(path_base),
+                    None => {}
                 }
+                tracing::info!("Tried to access path {:?}", path);
+                Err(StorageError::NotAuthorized)
             } else {
-                tracing::debug!("Not authorized");
+                tracing::debug!(
+                    "Not authorized {auth:?}, read_only {read_only} path {path_full:?}",
+                    auth = authenticated,
+                    read_only = read_only,
+                    path_full = path_full
+                );
                 Err(StorageError::NotAuthorized)
             }
         }
@@ -154,11 +163,11 @@ pub struct FolderEntry {
 
 pub async fn get_storage_internal(
     params: (&str, &str),
-    authorized: &Option<ReqData<Authorized>>,
+    authorized: &Option<ReqData<Authentication>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
     let (store, path) = params;
 
-    let store_path = get_authorized_path(authorized, store, Some(path))?;
+    let store_path = get_authorized_path(authorized, store, path, true)?;
     tracing::debug!("Requested path {}", store_path.to_string_lossy());
     if fs::metadata(&store_path).await?.is_file() {
         tracing::debug!("Path is a file");
@@ -202,7 +211,7 @@ pub struct EmptySuccess {
 #[get("/{store_and_path:.*}")]
 pub async fn get_storage(
     params: web::Path<String>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> Result<Either<NamedFile, web::Json<FolderResults>>, StorageError> {
     let (store, path) = parse_params(&params);
     get_storage_internal((store, path), &authorized).await
@@ -218,11 +227,11 @@ fn empty_ok_response() -> HttpResponse {
 #[delete("/{store}/{path:.*}")]
 async fn delete_storage(
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
 
-    common_delete(&authorized, store, Some(path)).await?;
+    common_delete(&authorized, store, path).await?;
     Ok(empty_ok_response())
 }
 
@@ -230,31 +239,25 @@ async fn delete_storage(
 ///
 /// Returns the deleted path.
 pub async fn common_delete(
-    authorized: &Option<ReqData<Authorized>>,
+    authorized: &Option<ReqData<Authentication>>,
     store: &str,
-    path: Option<&str>,
+    path: &str,
 ) -> Result<PathBuf, StorageError> {
-    let store_path = get_authorized_path(authorized, store, path)?;
-    match path {
-        Some(path) => {
-            if path.is_empty() {
-                // Don't allow empty paths, otherwise the store itself will get
-                // deleted
-                Err(StorageError::BadPath)
-            } else {
-                if fs::metadata(&store_path).await?.is_file() {
-                    tracing::debug!("Deleting file {:?}", store_path);
-                    fs::remove_file(&store_path).await?;
-                } else {
-                    tracing::debug!("Deleting folder {:?}", store_path);
-                    fs::remove_dir_all(&store_path).await?;
-                }
-                Ok(store_path)
-            }
-        }
-        // Don't allow missing paths, otherwise the store itself will get
+    let store_path = get_authorized_path(authorized, store, path, false)?;
+
+    if path.is_empty() {
+        // Don't allow empty paths, otherwise the store itself will get
         // deleted
-        None => Err(StorageError::BadPath),
+        Err(StorageError::BadPath)
+    } else {
+        if fs::metadata(&store_path).await?.is_file() {
+            tracing::debug!("Deleting file {:?}", store_path);
+            fs::remove_file(&store_path).await?;
+        } else {
+            tracing::debug!("Deleting folder {:?}", store_path);
+            fs::remove_dir_all(&store_path).await?;
+        }
+        Ok(store_path)
     }
 }
 
@@ -262,12 +265,12 @@ pub async fn common_delete(
 #[head("/{store_and_path:.*}")]
 async fn head_storage(
     params: web::Path<String>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> HttpResponse {
     let (store, path) = parse_params(&params);
 
     let check = async {
-        let store_path = get_authorized_path(&authorized, store, Some(path))?;
+        let store_path = get_authorized_path(&authorized, store, path, true)?;
         tracing::debug!("Requested path {}", store_path.to_string_lossy());
 
         let meta = fs::metadata(store_path).await?;
@@ -297,12 +300,12 @@ pub struct FileMeta {
 #[route("/{store_and_path:.*}", method = "META")]
 async fn meta_storage(
     params: web::Path<String>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> HttpResponse {
     let (store, path) = parse_params(&params);
 
     let check = async {
-        let store_path = get_authorized_path(&authorized, store, Some(path))?;
+        let store_path = get_authorized_path(&authorized, store, path, true)?;
         tracing::debug!("Requested path {}", store_path.to_string_lossy());
         Ok(fs::metadata(store_path).await?)
     }
@@ -328,11 +331,11 @@ pub struct PutStoragePayload {
 #[put("/{store_and_path:.*}")]
 async fn put_storage(
     params: web::Path<String>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
     mut payload: Multipart,
 ) -> Result<web::Json<PutStoragePayload>, StorageError> {
     let (store, path) = parse_params(&params);
-    let store_path = get_authorized_path(&authorized, store, Some(path))?;
+    let store_path = get_authorized_path(&authorized, store, path, false)?;
 
     tokio::fs::create_dir(&store_path).await.or_else(|err| {
         tracing::debug!("Error: {:?}", err);
@@ -450,17 +453,17 @@ async fn post_storage(
     state: web::Data<AppState>,
     action: web::Json<StorageAction>,
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
-    let store_path = get_authorized_path(&authorized, store, Some(path))?;
+    let store_path = get_authorized_path(&authorized, store, path, false)?;
     match action.deref() {
         StorageAction::MakePathToken => Ok(HttpResponse::Ok().json(PathTokenResponse {
             token: make_path_token(&state, &store_path).await,
         })),
         StorageAction::Move { new_path } => {
             let (to_store, to_path) = parse_store_path(new_path).ok_or(StorageError::BadPath)?;
-            let to_store_path = get_authorized_path(&authorized, to_store, Some(&to_path))?;
+            let to_store_path = get_authorized_path(&authorized, to_store, &to_path, false)?;
             fs::rename(store_path, to_store_path).await?;
             Ok(empty_ok_response())
         }

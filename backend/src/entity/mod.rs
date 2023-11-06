@@ -3,5 +3,6 @@
 pub mod prelude;
 
 pub mod path_token;
+pub mod sharing;
 pub mod user;
 pub mod user_token;

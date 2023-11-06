@@ -12,8 +12,8 @@ use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::Serialize;
 use tracing_unwrap::ResultExt;
 
-use crate::entity::{path_token, user, user_token};
-use crate::state::{AppState, Authorized, Token, Username};
+use crate::entity::{path_token, sharing, user, user_token};
+use crate::state::{AppState, Authentication, Token, Username};
 
 #[derive(Clone)]
 pub struct CheckLogin {
@@ -66,17 +66,19 @@ where
         let service = self.service.clone();
 
         // The user token could be either in the header or the cookie, we allow both.
-        let user_token =
-            get_token_from_header(&request).or_else(|| get_token_from_cookie(&request));
+        let user_token = get_token_from_header(&request)
+            .or_else(|| get_token_from_cookie(USER_COOKIE_NAME, &request));
         // Path tokens are part of the query path.
         let path_token = if self.allow_path_tokens {
             get_token_from_query(&request)
         } else {
             None
         };
+        let share_token = get_token_from_header(&request)
+            .or_else(|| get_token_from_cookie(SHARE_COOKIE_NAME, &request));
 
         Box::pin(async move {
-            match verify_auth(state, user_token, path_token, request.path()).await {
+            match verify_auth(state, user_token, path_token, share_token, request.path()).await {
                 Ok(authorized) => {
                     tracing::debug!("Request authorized, inserting authorization token");
                     request.extensions_mut().insert(authorized);
@@ -113,8 +115,9 @@ async fn verify_auth(
     state: web::Data<AppState>,
     user_token: Option<Token>,
     path_token: Option<Token>,
+    share_token: Option<Token>,
     path: &str,
-) -> AuthMiddlewareResult<Authorized> {
+) -> AuthMiddlewareResult<Authentication> {
     tracing::trace!("Starting to verify user");
 
     let username = if let Some(user_token) = user_token {
@@ -132,43 +135,49 @@ async fn verify_auth(
         None
     };
 
-    let path_authorized = (if let Some(path_token) = path_token {
-        if let Ok(path) = urlencoding::decode(path) {
-            tracing::debug!("Found path token attached to request {:?}", path);
+    let share_path_auth = if let Some(share_token) = share_token {
+        tracing::debug!("Found share token attached to request");
 
-            let known_token = path_token::Entity::find()
-                .filter(path_token::Column::Token.eq(path_token.reveal()))
-                .one(&state.db)
-                .await
-                .unwrap_or_log();
-
-            tracing::debug!("Token exists for path {:?}", &path);
-            known_token.map(|known_token| {
-                let created_at =
-                    DateTime::parse_from_rfc3339(&known_token.created_at).unwrap_or_log();
-
-                let seconds_old = Utc::now().signed_duration_since(created_at).num_seconds();
-                known_token.path.eq(&path) && seconds_old < PATH_TOKENS_VALID_SECONDS
-            })
-        } else {
-            None
-        }
+        sharing::Entity::find()
+            .filter(sharing::Column::Id.eq(share_token.reveal()))
+            .one(&state.db)
+            .await
+            .unwrap_or_log()
+            .map(|u| u.path)
     } else {
         None
-    })
-    .unwrap_or(false);
+    };
 
-    if let Some(username) = username {
-        if path_authorized {
-            tracing::debug!("Authorized path and user");
-            Ok(Authorized::Both(Username(username)))
-        } else {
-            tracing::debug!("Authorized user");
-            Ok(Authorized::User(Username(username)))
-        }
-    } else if path_authorized {
-        tracing::debug!("Authorized path");
-        Ok(Authorized::Path)
+    let path_auth = if let Some(path_token) = path_token {
+        tracing::debug!("Found path token attached to request {:?}", path);
+
+        let known_token = path_token::Entity::find()
+            .filter(path_token::Column::Token.eq(path_token.reveal()))
+            .one(&state.db)
+            .await
+            .unwrap_or_log();
+
+        tracing::debug!("Token exists for path {:?}", &path);
+        known_token.and_then(|known_token| {
+            let created_at = DateTime::parse_from_rfc3339(&known_token.created_at).unwrap_or_log();
+
+            let seconds_old = Utc::now().signed_duration_since(created_at).num_seconds();
+            if seconds_old < PATH_TOKENS_VALID_SECONDS {
+                Some(known_token.path)
+            } else {
+                None
+            }
+        })
+    } else {
+        None
+    };
+
+    if username.is_some() || path_auth.is_some() || share_path_auth.is_some() {
+        Ok(Authentication {
+            user: username.map(|u| Username(u)),
+            path_token: path_auth,
+            share_token: share_path_auth,
+        })
     } else {
         tracing::debug!("Authorization failed");
         Err(AuthMiddlewareError::Failed)
@@ -186,10 +195,11 @@ fn get_token_from_header(request: &HttpRequest) -> Option<Token> {
     None
 }
 
-pub static AUTH_COOKIE_NAME: &str = "bulgur-cloud-auth";
+pub static USER_COOKIE_NAME: &str = "bulgur-cloud-auth";
+pub static SHARE_COOKIE_NAME: &str = "bulgur-cloud-share";
 
-fn get_token_from_cookie(request: &HttpRequest) -> Option<Token> {
-    let header_token = request.cookie(AUTH_COOKIE_NAME);
+fn get_token_from_cookie(cookie: &str, request: &HttpRequest) -> Option<Token> {
+    let header_token = request.cookie(cookie);
     if let Some(token) = header_token {
         return Some(Token::read(token.value()));
     }

@@ -9,7 +9,7 @@ use actix_web::{
 };
 use bulgur_cloud::{
     auth::Password,
-    auth_middleware::AUTH_COOKIE_NAME,
+    auth_middleware::USER_COOKIE_NAME,
     folder::STORAGE,
     pages::{CreateFolderForm, LoginFormData},
     server::setup_app,
@@ -41,7 +41,7 @@ async fn test_get_basic_missing() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/not-found/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_service(&app, req).await;
 
@@ -99,7 +99,7 @@ async fn test_get_basic_folder_listing() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
@@ -130,7 +130,7 @@ async fn test_get_subfolder_listing() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/apple/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
@@ -157,7 +157,7 @@ async fn test_delete_item() {
 
     let req = test::TestRequest::post()
         .uri("/basic/testuser/banana.txt?_method=DELETE")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.clone().reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.clone().reveal()))
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert!(
@@ -167,7 +167,7 @@ async fn test_delete_item() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
@@ -187,7 +187,7 @@ async fn test_create_folder() {
         .set_form(CreateFolderForm {
             folder: "testfolder".to_string(),
         })
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.clone().reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.clone().reveal()))
         .to_request();
     let resp = test::call_service(&app, req).await;
     assert!(
@@ -197,7 +197,7 @@ async fn test_create_folder() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
@@ -230,7 +230,7 @@ async fn test_upload_file() {
 
     let req = test::TestRequest::get()
         .uri("/basic/testuser/")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_and_read_body(&app, req).await;
     let resp_str = String::from_utf8(resp.to_vec()).expect("Failed to read response body");
@@ -261,7 +261,7 @@ async fn test_basic_login() {
     let auth_cookie = resp
         .response()
         .cookies()
-        .find(|cookie| cookie.name() == AUTH_COOKIE_NAME);
+        .find(|cookie| cookie.name() == USER_COOKIE_NAME);
     assert!(
         auth_cookie.is_some(),
         "basic login responded with the auth cookie"
@@ -280,14 +280,14 @@ async fn test_basic_logout() {
 
     let req = test::TestRequest::post()
         .uri("/basic/logout")
-        .cookie(Cookie::new(AUTH_COOKIE_NAME, token.reveal()))
+        .cookie(Cookie::new(USER_COOKIE_NAME, token.reveal()))
         .to_request();
     let resp = test::call_service(&app, req).await;
 
     let logout_cookie = resp
         .response()
         .cookies()
-        .find(|cookie| cookie.name() == AUTH_COOKIE_NAME);
+        .find(|cookie| cookie.name() == USER_COOKIE_NAME);
     assert!(
         logout_cookie.is_some(),
         "basic logout responded with the logout cookie"

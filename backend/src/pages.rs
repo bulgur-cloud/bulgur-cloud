@@ -1,4 +1,4 @@
-use std::{ops::Deref, path::PathBuf};
+use std::path::PathBuf;
 
 use actix_files::NamedFile;
 use actix_web::{
@@ -16,8 +16,8 @@ use tracing_unwrap::ResultExt;
 
 use crate::{
     auth::{make_token, verify_pass, Password},
-    auth_middleware::AUTH_COOKIE_NAME,
-    state::{AppState, Authorized},
+    auth_middleware::USER_COOKIE_NAME,
+    state::{AppState, Authentication, Username},
     storage::{
         common_delete, get_authorized_path, get_storage_internal, write_files, FolderEntry,
         StorageError,
@@ -64,7 +64,7 @@ pub async fn page_login_post(
 
         HttpResponse::SeeOther()
             .cookie(Cookie::new(
-                AUTH_COOKIE_NAME,
+                USER_COOKIE_NAME,
                 format!("{}; SameSite=Strict", token.reveal()),
             ))
             .append_header(("Location", format!("/basic/{}/", form.username)))
@@ -77,7 +77,7 @@ pub async fn page_login_post(
 #[tracing::instrument]
 #[post("/basic/logout")]
 pub async fn page_logout() -> HttpResponse {
-    let mut remove_cookie = Cookie::named(AUTH_COOKIE_NAME);
+    let mut remove_cookie = Cookie::named(USER_COOKIE_NAME);
     remove_cookie.make_removal();
 
     HttpResponse::SeeOther()
@@ -106,11 +106,11 @@ pub struct ErrorPage {
 #[put("/{store}/{path:.*}")]
 pub async fn page_folder_upload(
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
     mut payload: Multipart,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
-    let store_path = get_authorized_path(&authorized, store, Some(path))?;
+    let store_path = get_authorized_path(&authorized, store, path, false)?;
     let folder_path = format!("/basic/{store}/{path}");
 
     match write_files(&mut payload, &store_path).await {
@@ -134,10 +134,10 @@ pub async fn page_folder_upload(
 #[delete("/{store}/{path:.*}")]
 pub async fn page_delete(
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
-    common_delete(&authorized, store, Some(path)).await?;
+    common_delete(&authorized, store, path).await?;
     // We want to redirect the user back to the folder they were in.
     let mut path = PathBuf::from(path);
     path.pop();
@@ -158,11 +158,11 @@ pub struct CreateFolderForm {
 #[tracing::instrument]
 pub async fn page_create_folder(
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
     form: web::Form<CreateFolderForm>,
 ) -> Result<HttpResponse, StorageError> {
     let (store, path) = params.as_ref();
-    let mut store_path = get_authorized_path(&authorized, store, Some(path))?;
+    let mut store_path = get_authorized_path(&authorized, store, path, false)?;
 
     let folder_name = sanitize_filename::sanitize(&form.folder);
     store_path.push(&folder_name);
@@ -177,7 +177,7 @@ pub async fn page_create_folder(
 #[get("/{store}/{path:.*}")]
 pub async fn page_folder_list(
     params: web::Path<(String, String)>,
-    authorized: Option<ReqData<Authorized>>,
+    authorized: Option<ReqData<Authentication>>,
     // TODO: Add a new error type with an HTML responder here
 ) -> Result<Either<NamedFile, FolderListPage>, StorageError> {
     let (store, path) = params.clone();
@@ -193,16 +193,15 @@ pub async fn page_folder_list(
         Either::Left(file) => Ok(Either::Left(file)),
         Either::Right(folder_list) => {
             let username = match &authorized {
-                Some(user) => match user.deref() {
-                    Authorized::User(user) => user.0.as_str(),
-                    Authorized::Path => "anonymous",
-                    Authorized::Both(user) => user.0.as_str(),
-                },
+                Some(user) => user
+                    .user
+                    .as_ref()
+                    .map(|Username(u)| u.to_owned())
+                    .unwrap_or_else(|| "anonymous".to_string()),
                 None => {
                     return Err(StorageError::NotAuthorized);
                 }
-            }
-            .to_string();
+            };
             let parent_path = store_path
                 .parent()
                 .map(|parent| parent.to_string_lossy().to_string())
