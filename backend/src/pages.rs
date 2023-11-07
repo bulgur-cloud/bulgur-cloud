@@ -17,7 +17,7 @@ use tracing_unwrap::ResultExt;
 use crate::{
     auth::{make_token, verify_pass, Password},
     auth_middleware::USER_COOKIE_NAME,
-    state::{AppState, Authentication, User},
+    state::{AppState, Authentication},
     storage::{
         common_delete, get_authorized_path, get_storage_internal, write_files, FolderEntry,
         StorageError,

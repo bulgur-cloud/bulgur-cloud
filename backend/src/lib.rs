@@ -12,6 +12,7 @@ pub mod meta;
 pub mod pages;
 pub mod ratelimit_middleware;
 pub mod server;
+pub mod share;
 pub mod state;
 pub mod static_files;
 pub mod storage;
