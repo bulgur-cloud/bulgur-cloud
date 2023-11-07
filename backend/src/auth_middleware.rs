@@ -13,7 +13,7 @@ use serde::Serialize;
 use tracing_unwrap::ResultExt;
 
 use crate::entity::{path_token, sharing, user, user_token};
-use crate::state::{AppState, Authentication, Token, Username};
+use crate::state::{AppState, Authentication, Token, User};
 
 #[derive(Clone)]
 pub struct CheckLogin {
@@ -120,7 +120,7 @@ async fn verify_auth(
 ) -> AuthMiddlewareResult<Authentication> {
     tracing::trace!("Starting to verify user");
 
-    let username = if let Some(user_token) = user_token {
+    let user = if let Some(user_token) = user_token {
         tracing::debug!("Found user token attached to request");
 
         user_token::Entity::find()
@@ -130,7 +130,10 @@ async fn verify_auth(
             .await
             .unwrap_or_log()
             .and_then(|u| u.1)
-            .map(|u| u.username)
+            .map(|u| User {
+                username: u.username,
+                user_id: u.id,
+            })
     } else {
         None
     };
@@ -172,9 +175,9 @@ async fn verify_auth(
         None
     };
 
-    if username.is_some() || path_auth.is_some() || share_path_auth.is_some() {
+    if user.is_some() || path_auth.is_some() || share_path_auth.is_some() {
         Ok(Authentication {
-            user: username.map(|u| Username(u)),
+            user,
             path_token: path_auth,
             share_token: share_path_auth,
         })

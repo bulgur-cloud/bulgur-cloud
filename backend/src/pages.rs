@@ -17,7 +17,7 @@ use tracing_unwrap::ResultExt;
 use crate::{
     auth::{make_token, verify_pass, Password},
     auth_middleware::USER_COOKIE_NAME,
-    state::{AppState, Authentication, Username},
+    state::{AppState, Authentication, User},
     storage::{
         common_delete, get_authorized_path, get_storage_internal, write_files, FolderEntry,
         StorageError,
@@ -196,7 +196,7 @@ pub async fn page_folder_list(
                 Some(user) => user
                     .user
                     .as_ref()
-                    .map(|Username(u)| u.to_owned())
+                    .map(|u| u.username.to_owned())
                     .unwrap_or_else(|| "anonymous".to_string()),
                 None => {
                     return Err(StorageError::NotAuthorized);

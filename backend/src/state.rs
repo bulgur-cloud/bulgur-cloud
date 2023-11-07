@@ -92,8 +92,11 @@ pub struct PathTokenStored {
     pub valid_until: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(std::fmt::Debug, Serialize, Deserialize, derive_more::Display, Clone)]
-pub struct Username(pub String);
+#[derive(std::fmt::Debug, Serialize, Deserialize, Clone)]
+pub struct User {
+    pub username: String,
+    pub user_id: String,
+}
 
 #[derive(Debug)]
 pub struct AppState {
@@ -104,7 +107,7 @@ pub struct AppState {
 
 #[derive(Clone, Debug)]
 pub struct Authentication {
-    pub user: Option<Username>,
+    pub user: Option<User>,
     pub path_token: Option<String>,
     pub share_token: Option<String>,
 }

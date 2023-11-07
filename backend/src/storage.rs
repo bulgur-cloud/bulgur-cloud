@@ -25,7 +25,7 @@ use tracing_unwrap::{OptionExt, ResultExt};
 use crate::{
     entity::path_token,
     folder,
-    state::{AppState, Authentication, PathTokenResponse, Token, Username},
+    state::{AppState, Authentication, PathTokenResponse, Token},
 };
 
 #[cfg(feature = "generate_types")]
@@ -75,7 +75,7 @@ impl actix_web::error::ResponseError for StorageError {
     }
 }
 
-fn parse_params(params: &str) -> (&str, &str) {
+pub fn parse_params(params: &str) -> (&str, &str) {
     let (store, path) = params
         .split_once('/')
         // If there is no `/`, then we just have the store and the path is empty.
@@ -107,7 +107,7 @@ pub fn get_authorized_path(
                 || authenticated
                     .user
                     .as_ref()
-                    .map(|Username(u)| u.eq(store))
+                    .map(|u| u.username.eq(store))
                     .unwrap_or(false)
                 // share authentication is good for all paths under the share
                 || authenticated
