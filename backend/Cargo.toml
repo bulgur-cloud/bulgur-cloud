@@ -92,7 +92,7 @@ migration = { path = "../migration" }
 typescript-type-def = "0.5"
 
 # Tracing (optional, enabled with `telemetry_opentelemetry` option)
-opentelemetry = { version = "0.20", features = [
+opentelemetry = { version = "0.21", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
