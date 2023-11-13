@@ -96,7 +96,7 @@ opentelemetry = { version = "0.20", features = [
   "rt-tokio",
   "metrics",
 ], optional = true }
-opentelemetry-otlp = { version = "0.13", features = [
+opentelemetry-otlp = { version = "0.14", features = [
   "tonic",
   "tls",
   "tls-roots",
